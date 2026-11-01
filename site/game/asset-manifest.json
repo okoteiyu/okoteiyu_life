@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
   "fileCount": 154,
-  "totalBytes": 137542296,
+  "totalBytes": 141359346,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1173,20 +1173,20 @@
       "sha256": "f4bbf6f90be3f34c06e559365e5e4218ee6484b9d89996bdec5cf238b44ebd86"
     },
     {
-      "url": "assets/warehouse/room.glb?v=130278f3552aebd768e2beaaeadaa23bda6a88877dc79f7b1209b9672d9849ae",
+      "url": "assets/warehouse/room.glb?v=93cbf4c0298beb538d7b2f530e31fdb5e8f3fb1e146b034acd8410871cbc45e2",
       "label": "倉庫",
       "type": "binary",
-      "bytes": 2106968,
+      "bytes": 5919276,
       "priority": 2,
-      "sha256": "130278f3552aebd768e2beaaeadaa23bda6a88877dc79f7b1209b9672d9849ae"
+      "sha256": "93cbf4c0298beb538d7b2f530e31fdb5e8f3fb1e146b034acd8410871cbc45e2"
     },
     {
       "url": "assets/warehouse/metadata.json",
       "label": "倉庫の設定",
       "type": "json",
-      "bytes": 11602,
+      "bytes": 16344,
       "priority": 2,
-      "sha256": "d165169289260c727498b31b37a04bf1a071453ec49122975e1a230983247c5f"
+      "sha256": "2b99864319697ca346d8c8a6c79d9d6bbfa74dd12219736c282bf8df3d5c3f8e"
     },
     {
       "url": "assets/production-room/room.glb?v=9b8e8d79bc3b2d9ea49cc82ea0fde5d459152777f9b4f1178599284fab29e427",
