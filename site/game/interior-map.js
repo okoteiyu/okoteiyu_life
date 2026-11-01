@@ -23,9 +23,24 @@ function loungeFurniture(f,p,q){
  else body=round(p.x,p.y,w,d,'#ded2bd',3,outline);
  return `<g data-interior-feature="${f.id}" data-feature-role="${f.role}" data-model-node="${f.node}" data-world-footprint="${escape(JSON.stringify(f.footprint))}"><title>${escape(f.label)}</title>${body}</g>`;
 }
+function managementFurniture(f,p,q){
+ const w=q.x-p.x,d=q.y-p.y,kind=f.officeKind||f.role,outline='stroke="#9ea89b" stroke-width=".9"';
+ let body=rect(p.x,p.y,w,d,{desk:'#dbc8a8',chair:'#b7c9bf',monitor:'#a2b7ae',shelf:'#cbb68e',storage:'#c4cec3',whiteboard:'#f6f6ec',plant:'#b7cda3'}[f.role]||'#d2dbc7',outline);
+ if(kind==='workstation')body+=[.13,.54].map(at=>rect(p.x+w*at,p.y+d*.12,w*.3,d*.28,'#547a74')+rect(p.x+w*(at+.02),p.y+d*.61,w*.26,d*.13,'#eee9da')).join('');
+ else if(f.role==='chair'){
+  const cx=p.x+w*.5,cy=p.y+d*.5,yaw=f.yaw||0;
+  body=`<ellipse cx="${n(cx)}" cy="${n(cy)}" rx="${n(w*.40)}" ry="${n(d*.40)}" fill="#b7c9bf" ${outline}/><path d="M${n(cx-Math.cos(yaw)*w*.32-Math.sin(yaw)*w*.28)} ${n(cy-Math.sin(yaw)*d*.32+Math.cos(yaw)*d*.28)}L${n(cx+Math.cos(yaw)*w*.32-Math.sin(yaw)*w*.28)} ${n(cy+Math.sin(yaw)*d*.32+Math.cos(yaw)*d*.28)}" stroke="#7f9a8c" stroke-width="2.5" stroke-linecap="round"/>`;
+ }else if(kind==='console')body+=[.10,.38,.66].map(at=>rect(p.x+w*.16,p.y+d*at,w*.65,d*.19,'#537b73')).join('');
+ else if(kind==='reference-shelf')body+=Array.from({length:10},(_,i)=>rect(p.x+2+i*(w-4)/10,p.y+2,(w-4)/10-1,d-4,['#9eb7a7','#d2bc91','#adbccc'][i%3])).join('');
+ else if(kind==='meeting-table')body+=rect(p.x+w*.19,p.y+d*.24,w*.24,d*.42,'#f7f2e3')+`<circle cx="${n(p.x+w*.7)}" cy="${n(p.y+d*.5)}" r="${n(d*.12)}" fill="#b5c6b9"/>`;
+ else if(kind==='supply-cabinet')body+=`<path d="M${n(p.x+w*.5)} ${n(p.y+2)}V${n(q.y-2)}M${n(p.x+w*.42)} ${n(p.y+d*.35)}V${n(p.y+d*.65)}M${n(p.x+w*.58)} ${n(p.y+d*.35)}V${n(p.y+d*.65)}" stroke="#82998b"/>`;
+ else if(f.role==='plant')body=`<ellipse cx="${n(p.x+w*.5)}" cy="${n(p.y+d*.5)}" rx="${n(w*.45)}" ry="${n(d*.45)}" fill="#9ebb8c" ${outline}/><path d="M${n(p.x+w*.25)} ${n(p.y+d*.3)}L${n(p.x+w*.7)} ${n(p.y+d*.72)}M${n(p.x+w*.72)} ${n(p.y+d*.25)}L${n(p.x+w*.3)} ${n(p.y+d*.7)}" stroke="#718f68"/>`;
+ return `<g data-interior-feature="${f.id}" data-feature-role="${f.role}" data-model-node="${f.node}" data-world-footprint="${escape(JSON.stringify(f.footprint))}"><title>${escape(f.label)}</title>${body}</g>`;
+}
 function furniture(id,f,options){
  const [x,z,w,d]=f.footprint,p=interiorMapPoint(id,[x,0,z],options),q=interiorMapPoint(id,[x+w,0,z+d],options),ww=q.x-p.x,dd=q.y-p.y;
  if(id==='guest-lounge')return loungeFurniture(f,p,q);
+ if(id==='management-room')return managementFurniture(f,p,q);
  const newRoom=id==='research-room'||id==='maintenance-room';
  const palette={loft:'#e3e6d8',stairs:'#dec9a4',bed:'#c2d3d5',bookcase:'#c7b28c',sofa:'#becfc7',desk:'#d8bf96',chair:'#afc5bc',rug:'#f7f5e9',plant:'#a8c995',fridge:'#c6d2cf',rack:'#c4b79d',tools:'#c3c6b0',crate:'#e1c598',cart:'#a4b4b0',planter:'#c2ce9b',nursery:'#c6d4b7',partition:'#a1b9ae',reactor:'#a3d8cf',console:'#bac8c2',controls:'#b6cac3',cabinet:'#becbc1',monitors:'#93b6ad',pump:'#9aaba9',kitchen:'#d7c7a7',toilet:'#f7faf1',basin:'#f5faf2',bath:'#d8e9e5'};
  let detail='';

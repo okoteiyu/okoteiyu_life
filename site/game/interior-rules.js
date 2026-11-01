@@ -6,7 +6,8 @@ export const INTERIOR_ROOMS=Object.freeze(Object.fromEntries([
  ['production-room','生産施設','b1','B1','production','production-room'],
  ['research-room','研究所','b1','B1','research','research-room'],
  ['maintenance-room','整備施設','b1','B1','maintenance','maintenance-room'],
- ['guest-lounge','珍生物待機エリア','b2','B2','guest-lounge','guest-lounge']
+ ['guest-lounge','休憩室','b2','B2','guest-lounge','guest-lounge'],
+ ['management-room','管理室','b2','B2','control','management-room']
 ].map(([id,title,floorId,floorLabel,areaId,assetDirectory])=>[id,Object.freeze({id,title,floorId,floorLabel,areaId,assetDirectory})])));
 export const isInteriorScene=scene=>Object.hasOwn(INTERIOR_ROOMS,scene);
 export const isBuildingVisitScene=scene=>scene==='training-hall'||isInteriorScene(scene);

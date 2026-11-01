@@ -8,8 +8,8 @@ import {INTERIOR_LAYOUTS} from './interior-layouts.js';
 export const BUILDING_FLOORS=Object.freeze([
  {id:'b2',label:'B2',name:'地下の訓練場',areas:[
   {id:'training',name:'訓練所',text:'招待した珍生物と訓練する施設。'},
-  {id:'guest-lounge',name:'珍生物待機エリア',text:'招待した珍生物が自由にくつろぐためのラウンジ。'},
-  {id:'control',name:'訓練管理室',mapOnly:true,text:''},
+  {id:'guest-lounge',name:'休憩室',text:'招待した珍生物と施設作業員が自由にくつろぐための休憩室。'},
+  {id:'control',name:'管理室',text:'施設の運営を支える管理室。'},
   {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
   {id:'core',name:'階段・エレベーター',text:''}]},
  {id:'b1',label:'B1',name:'研究と支援',areas:[
@@ -222,13 +222,13 @@ export class BuildingMapDialog{
    target.append(svgNode('rect',{x,y,width:w,height:h,rx:8,'class':'building-map-region__hit','vector-effect':'non-scaling-stroke'}));
    if(available){
     const cx=Number(rect.getAttribute('data-map-marker-x')??x+w/2),cy=Number(rect.getAttribute('data-map-marker-y')??y+24*unit),markerUnit=Number(rect.getAttribute('data-map-marker-unit')??unit),badge=svgNode('g',{transform:'translate('+cx+' '+cy+') scale('+markerUnit+')','class':'building-map-region__badge','aria-hidden':'true'});
-    if(this.floorId==='b2'&&area.id==='guest-lounge')badge.style.pointerEvents='auto';
+    if(this.floorId==='b2'&&['guest-lounge','control'].includes(area.id))badge.style.pointerEvents='auto';
     badge.append(svgNode('path',{d:'M0-20c-12 0-20 8-20 19 0 14 20 30 20 30S20 13 20-1C20-12 12-20 0-20Z',fill:'#6e8652',stroke:'#fffdf2','stroke-width':2}));
     badge.append(svgNode('path',{d:'M-7 3 7-9M-5-9H7V3',fill:'none',stroke:'#fffdf2','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'}));
     badge.append(svgNode('rect',{x:-92,y:32,width:184,height:40,rx:18,fill:'#fffdf2',stroke:'#99ac78','stroke-width':2}));
     const label=svgNode('text',{x:0,y:60,'font-size':24,'font-weight':600,'text-anchor':'middle',fill:'#5e7447'});label.textContent='タップで移動';badge.append(label);target.append(badge);
    }else if(here){
-    const anchored=(this.floorId==='b1'||this.floorId==='b2'&&area.id==='guest-lounge')&&rect.hasAttribute('data-map-marker-y'),tagUnit=anchored?Number(rect.getAttribute('data-map-marker-unit')??unit):unit,cx=anchored?Number(rect.getAttribute('data-map-marker-x')??x+w/2):x+w/2,cy=anchored?Number(rect.getAttribute('data-map-marker-y'))+52*tagUnit:Math.max(svg.viewBox.baseVal.y+18*unit,y-18*unit);
+    const anchored=(this.floorId==='b1'||this.floorId==='b2'&&['guest-lounge','control'].includes(area.id))&&rect.hasAttribute('data-map-marker-y'),tagUnit=anchored?Number(rect.getAttribute('data-map-marker-unit')??unit):unit,cx=anchored?Number(rect.getAttribute('data-map-marker-x')??x+w/2):x+w/2,cy=anchored?Number(rect.getAttribute('data-map-marker-y'))+52*tagUnit:Math.max(svg.viewBox.baseVal.y+18*unit,y-18*unit);
     const tag=svgNode('g',{'class':'building-map-region__badge','aria-hidden':'true'});tag.append(svgNode('rect',{x:cx-64*tagUnit,y:cy-16*tagUnit,width:128*tagUnit,height:32*tagUnit,rx:14*tagUnit,fill:'#8c7451',stroke:'#fffdf2','stroke-width':tagUnit}));
     const label=svgNode('text',{x:cx,y:cy+7*tagUnit,'font-size':21*tagUnit,'text-anchor':'middle',fill:'#fffdf2'});label.textContent='● 現在地';tag.append(label);target.append(tag);
    }

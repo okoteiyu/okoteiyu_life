@@ -1,7 +1,7 @@
 import {interiorMapDrawing} from './interior-map.js';
 // +Z points toward the right-hand entrance; +X is up on the floor plan.
 // Looking into the hall from that entrance, camera-left (-X) is map-down.
-// The guest lounge shares its authored 3D layout; the management room remains schematic.
+// The rest room and management room share their authored 3D layouts.
 const SCALE=28.8,ORIGIN={x:70,y:220},WORLD={minX:-5.36,minZ:-28.12,maxX:5.36,maxZ:3.46};
 export const BASEMENT_MAP_VIEWBOX='-240 55 1440 685';
 export const TRAINING_MAP_VIEWBOX=BASEMENT_MAP_VIEWBOX;
@@ -60,14 +60,14 @@ export function trainingMapDrawing({selected=null,compact=false,current=false}={
   feature('entrance',[0,0,3.22],'<path d="M3-44V44M-2-42V-4M-2 4V42" stroke="#9abeb6" stroke-width="4" fill="none"/>')+
   worldRect(0,-27.8,6.6,.14,'#b9c5bd','data-training-feature="freight-door" stroke="#899c8f" stroke-width="3"')+
   `<path d="M${freightTop.x-4} ${door.y}h8" stroke="#7b8c80" stroke-width="3"/>`;
- // Invited guests enter through the same east/west openings as the shared 3D layout.
+ // Guests and staff enter through the same east/west openings as the shared 3D layout.
  drawing+=zone('guest-lounge',70,550,535,145,'#f8f0de','data-map-marker-x="-90" data-map-marker-y="620" data-map-marker-unit=".9"')+
   '<g transform="translate(70 550)">'+interiorMapDrawing('guest-lounge',{selected:selected==='guest-lounge'})+'</g>'+
-  text(337,728,compact?'待機エリア':'珍生物待機エリア',compact?26:24);
- // The management room stays map-only, beside the lower wall of the hall.
- drawing+=zone('control',650,550,250,145,'#e4ece5',`stroke="${selected==='control'?'#936843':'#a2b7a7'}" stroke-width="${selected==='control'?5:2}"`)+
-  '<path data-training-access="control-door" d="M900 618v32" stroke="#e2d9c4" stroke-width="8"/><path d="M900 618h-30M900 648a30 30 0 0 1-30-30" fill="none" stroke="#9ba995" stroke-width="2"/>'+
-  text(775,635,compact?'管理室':'訓練管理室',compact?48:36)+
+  text(337,728,'休憩室',compact?26:24);
+ // Keep the existing east access; furniture and the doorway come from the model layout.
+ drawing+=zone('control',650,550,250,145,'#e4ece5','data-map-marker-x="1006" data-map-marker-y="620" data-map-marker-unit=".8"')+
+  '<g transform="translate(650 550)">'+interiorMapDrawing('management-room',{selected:selected==='control'})+'</g>'+
+  text(775,728,'管理室',compact?26:24)+
   basementCoreDrawing({selected,compact})+basementFreightDrawing({selected,compact})+
   '<path data-training-access="freight-lounge-entry" d="M-106 484h32" fill="none" stroke="#e2d9c4" stroke-width="8"/>';
  if(!compact){
@@ -81,5 +81,5 @@ export function trainingMapDrawing({selected=null,compact=false,current=false}={
  return `<g data-training-plan="right-entrance" font-family="system-ui, sans-serif">${drawing}</g>`;
 }
 export function trainingMapSvg({compact=true,current=true}={}){
- return `<svg class="room-map" viewBox="${compact?'-240 160 1440 580':TRAINING_MAP_VIEWBOX}" role="img" aria-label="右側が入口の訓練所。奥の大型EVは屋外搬入口につながります。訓練マット、操作端末、送風機、照明、収納、ベンチと管理室。招待した珍生物がくつろぐ待機エリア。${current?'おこていゆは入口付近で待機しています。':''}">${trainingMapDrawing({compact,current})}</svg>`;
+ return `<svg class="room-map" viewBox="${compact?'-240 160 1440 580':TRAINING_MAP_VIEWBOX}" role="img" aria-label="右側が入口の訓練所。奥の大型EVは屋外搬入口につながります。訓練マット、操作端末、送風機、照明、収納、ベンチと管理室。招待した珍生物と施設作業員がくつろぐ休憩室。${current?'おこていゆは入口付近で待機しています。':''}">${trainingMapDrawing({compact,current})}</svg>`;
 }

@@ -1,0 +1,583 @@
+{
+  "schemaVersion": 1,
+  "revision": "R174",
+  "id": "management-room",
+  "title": "管理室",
+  "floor": "b2",
+  "areaId": "control",
+  "units": "metres",
+  "dimensionsAreArtProductionValues": true,
+  "architecturalDimensionsConfirmed": false,
+  "room": {
+    "width": 10,
+    "depth": 5.8,
+    "height": 3.8,
+    "bounds": {
+      "min": [
+        -5,
+        0,
+        -2.9
+      ],
+      "max": [
+        5,
+        3.8,
+        2.9
+      ]
+    }
+  },
+  "entrance": {
+    "center": [
+      5,
+      0,
+      0.46
+    ],
+    "width": 1.28,
+    "height": 2.65,
+    "side": "east",
+    "heroStand": [
+      4.28,
+      0,
+      0.46
+    ],
+    "heroYaw": -1.5707963267948966,
+    "camera": {
+      "position": [
+        4.76,
+        1.55,
+        0.46
+      ],
+      "yaw": -1.5707963267948966
+    }
+  },
+  "secondaryEntrances": [],
+  "camera": {
+    "position": [
+      7.8,
+      7.3,
+      10.7
+    ],
+    "target": [
+      -0.25,
+      0.95,
+      -0.18
+    ],
+    "fov": 58,
+    "near": 0.06,
+    "far": 70
+  },
+  "reverseCamera": {
+    "position": [
+      -7.8,
+      7.3,
+      -10.7
+    ],
+    "target": [
+      0,
+      0.95,
+      0
+    ],
+    "fov": 58,
+    "near": 0.06,
+    "far": 70,
+    "hideNodes": [
+      "Interior.NorthShell",
+      "Interior.WestShell",
+      "Interior.Ceiling"
+    ]
+  },
+  "hideFromEntranceCamera": [
+    "Interior.SouthShell",
+    "Interior.EastShell",
+    "Interior.Ceiling"
+  ],
+  "background": "#e7ece9",
+  "lighting": {
+    "ambient": 2.1,
+    "sun": 2.2
+  },
+  "map": {
+    "width": 250,
+    "height": 145
+  },
+  "features": [
+    {
+      "id": "operator-west",
+      "node": "Interior.operator-west",
+      "label": "PCと操作機器のデスク",
+      "role": "desk",
+      "officeKind": "workstation",
+      "position": [
+        -2.45,
+        0.87,
+        -2.17
+      ],
+      "size": [
+        2.6,
+        1.74,
+        1.1
+      ],
+      "yaw": 0,
+      "footprint": [
+        -3.75,
+        -2.7200000286102295,
+        2.5999999046325684,
+        1.0999999046325684
+      ],
+      "actualBounds": {
+        "min": [
+          -3.75,
+          0.0,
+          -2.7200000286102295
+        ],
+        "max": [
+          -1.1500000953674316,
+          1.657999873161316,
+          -1.6200001239776611
+        ]
+      }
+    },
+    {
+      "id": "operator-east",
+      "node": "Interior.operator-east",
+      "label": "PCと連絡機器のデスク",
+      "role": "desk",
+      "officeKind": "workstation",
+      "position": [
+        0.6,
+        0.87,
+        -2.17
+      ],
+      "size": [
+        2.6,
+        1.74,
+        1.1
+      ],
+      "yaw": 0,
+      "footprint": [
+        -0.6999999284744263,
+        -2.7200000286102295,
+        2.5999999046325684,
+        1.0999999046325684
+      ],
+      "actualBounds": {
+        "min": [
+          -0.6999999284744263,
+          0.0,
+          -2.7200000286102295
+        ],
+        "max": [
+          1.899999976158142,
+          1.6579999923706055,
+          -1.6200001239776611
+        ]
+      }
+    },
+    {
+      "id": "operator-chair-west",
+      "node": "Interior.operator-chair-west",
+      "label": "職員用チェア",
+      "role": "chair",
+      "officeKind": "office-chair",
+      "position": [
+        -2.45,
+        0.57,
+        -0.98
+      ],
+      "size": [
+        0.73,
+        1.14,
+        0.75
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        -2.8125,
+        -1.334999918937683,
+        0.7250001430511475,
+        0.6624999046325684
+      ],
+      "actualBounds": {
+        "min": [
+          -2.8125,
+          0.0,
+          -1.334999918937683
+        ],
+        "max": [
+          -2.0874998569488525,
+          1.090000033378601,
+          -0.6725000143051147
+        ]
+      }
+    },
+    {
+      "id": "operator-chair-east",
+      "node": "Interior.operator-chair-east",
+      "label": "職員用チェア",
+      "role": "chair",
+      "officeKind": "office-chair",
+      "position": [
+        0.6,
+        0.57,
+        -0.98
+      ],
+      "size": [
+        0.73,
+        1.14,
+        0.75
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        0.23749999701976776,
+        -1.3350000381469727,
+        0.7250000387430191,
+        0.6625000238418579
+      ],
+      "actualBounds": {
+        "min": [
+          0.23749999701976776,
+          0.0,
+          -1.3350000381469727
+        ],
+        "max": [
+          0.9625000357627869,
+          1.090000033378601,
+          -0.6725000143051147
+        ]
+      }
+    },
+    {
+      "id": "status-console",
+      "node": "Interior.status-console",
+      "label": "設備状態を確認する操作卓",
+      "role": "monitor",
+      "officeKind": "console",
+      "position": [
+        -4.46,
+        1.03,
+        -0.08
+      ],
+      "size": [
+        2.65,
+        2.06,
+        0.78
+      ],
+      "yaw": 1.5707963267948966,
+      "footprint": [
+        -4.840000152587891,
+        -1.4050003290176392,
+        0.8100004196166992,
+        2.6500004529953003
+      ],
+      "actualBounds": {
+        "min": [
+          -4.840000152587891,
+          0.0,
+          -1.4050003290176392
+        ],
+        "max": [
+          -4.029999732971191,
+          2.0300002098083496,
+          1.2450001239776611
+        ]
+      }
+    },
+    {
+      "id": "reference-shelf",
+      "node": "Interior.reference-shelf",
+      "label": "資料とファイルの棚",
+      "role": "shelf",
+      "officeKind": "reference-shelf",
+      "position": [
+        -3.25,
+        1.04,
+        2.4
+      ],
+      "size": [
+        2.1,
+        2.08,
+        0.68
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        -4.299999713897705,
+        2.069999933242798,
+        2.0999999046325684,
+        0.6600003242492676
+      ],
+      "actualBounds": {
+        "min": [
+          -4.299999713897705,
+          0.0,
+          2.069999933242798
+        ],
+        "max": [
+          -2.1999998092651367,
+          2.0799999237060547,
+          2.7300002574920654
+        ]
+      }
+    },
+    {
+      "id": "meeting-table",
+      "node": "Interior.meeting-table",
+      "label": "打ち合わせ用テーブル",
+      "role": "desk",
+      "officeKind": "meeting-table",
+      "position": [
+        0.2,
+        0.41,
+        1.98
+      ],
+      "size": [
+        2.0,
+        0.82,
+        1.04
+      ],
+      "yaw": 0,
+      "footprint": [
+        -0.800000011920929,
+        1.4600000381469727,
+        2.0000000596046448,
+        1.0399999618530273
+      ],
+      "actualBounds": {
+        "min": [
+          -0.800000011920929,
+          0.0,
+          1.4600000381469727
+        ],
+        "max": [
+          1.2000000476837158,
+          0.922999918460846,
+          2.5
+        ]
+      }
+    },
+    {
+      "id": "meeting-chair-west",
+      "node": "Interior.meeting-chair-west",
+      "label": "打ち合わせ用チェア",
+      "role": "chair",
+      "officeKind": "meeting-chair",
+      "position": [
+        -1.35,
+        0.45,
+        1.98
+      ],
+      "size": [
+        0.6,
+        0.9,
+        0.62
+      ],
+      "yaw": 1.5707963267948966,
+      "footprint": [
+        -1.6575000286102295,
+        1.6799999475479126,
+        0.6024999618530273,
+        0.6000000238418579
+      ],
+      "actualBounds": {
+        "min": [
+          -1.6575000286102295,
+          0.0,
+          1.6799999475479126
+        ],
+        "max": [
+          -1.0550000667572021,
+          1.0863341093063354,
+          2.2799999713897705
+        ]
+      }
+    },
+    {
+      "id": "meeting-chair-east",
+      "node": "Interior.meeting-chair-east",
+      "label": "打ち合わせ用チェア",
+      "role": "chair",
+      "officeKind": "meeting-chair",
+      "position": [
+        1.75,
+        0.45,
+        1.98
+      ],
+      "size": [
+        0.6,
+        0.9,
+        0.62
+      ],
+      "yaw": -1.5707963267948966,
+      "footprint": [
+        1.4550001621246338,
+        1.6800000667572021,
+        0.6024999618530273,
+        0.5999999046325684
+      ],
+      "actualBounds": {
+        "min": [
+          1.4550001621246338,
+          0.0,
+          1.6800000667572021
+        ],
+        "max": [
+          2.057500123977661,
+          1.0863341093063354,
+          2.2799999713897705
+        ]
+      }
+    },
+    {
+      "id": "supply-cabinet",
+      "node": "Interior.supply-cabinet",
+      "label": "備品収納",
+      "role": "storage",
+      "officeKind": "supply-cabinet",
+      "position": [
+        3.62,
+        0.62,
+        2.38
+      ],
+      "size": [
+        1.75,
+        1.24,
+        0.72
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        2.7299997806549072,
+        1.972000002861023,
+        1.7799999713897705,
+        0.7830003499984741
+      ],
+      "actualBounds": {
+        "min": [
+          2.7299997806549072,
+          -1.1920928955078125e-07,
+          1.972000002861023
+        ],
+        "max": [
+          4.509999752044678,
+          1.6080000400543213,
+          2.755000352859497
+        ]
+      }
+    },
+    {
+      "id": "communication-board",
+      "node": "Interior.communication-board",
+      "label": "連絡ボード",
+      "role": "whiteboard",
+      "officeKind": "communication-board",
+      "position": [
+        3.18,
+        2.12,
+        -2.77
+      ],
+      "size": [
+        2.15,
+        1.2,
+        0.13
+      ],
+      "yaw": 0,
+      "footprint": [
+        2.1050000190734863,
+        -2.819999933242798,
+        2.1500000953674316,
+        0.1399998664855957
+      ],
+      "actualBounds": {
+        "min": [
+          2.1050000190734863,
+          1.5199998617172241,
+          -2.819999933242798
+        ],
+        "max": [
+          4.255000114440918,
+          2.7199997901916504,
+          -2.680000066757202
+        ]
+      }
+    },
+    {
+      "id": "office-plant",
+      "node": "Interior.office-plant",
+      "label": "室内の観葉植物",
+      "role": "plant",
+      "officeKind": "plant",
+      "position": [
+        3.98,
+        0.7,
+        -1.73
+      ],
+      "size": [
+        0.66,
+        1.4,
+        0.68
+      ],
+      "yaw": 0,
+      "footprint": [
+        3.643368721008301,
+        -2.0091562271118164,
+        0.676630973815918,
+        0.546116828918457
+      ],
+      "actualBounds": {
+        "min": [
+          3.643368721008301,
+          1.4901161193847656e-08,
+          -2.0091562271118164
+        ],
+        "max": [
+          4.319999694824219,
+          1.3859083652496338,
+          -1.4630393981933594
+        ]
+      }
+    }
+  ],
+  "status": "complete",
+  "sourceRevision": "R174",
+  "surfaceRevision": "R174",
+  "pbrSurfaceSets": [
+    "oak",
+    "plaster",
+    "floor",
+    "steel",
+    "enamel",
+    "fabric",
+    "rubber",
+    "cork",
+    "walnut"
+  ],
+  "pbrMaterialCount": 9,
+  "textureImagesEmbedded": true,
+  "bounds": {
+    "min": [
+      -5.059999942779541,
+      -0.11999999731779099,
+      -2.9600000381469727
+    ],
+    "max": [
+      5.09499979019165,
+      3.879999876022339,
+      2.9600000381469727
+    ]
+  },
+  "model": {
+    "url": "room.glb",
+    "bytes": 4820176,
+    "sha256": "ac07a5b3e39186e22d5db15dae365cd5e402009eedb81d7833f3841bf345acbb"
+  },
+  "animationCount": 0,
+  "meshBatchCount": 89,
+  "previews": [
+    {
+      "id": "overview",
+      "url": "preview.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 31784,
+      "sha256": "513fbe3d85710316a9355fdf6dd4861ea845864b5584e05f8719354d9f12b5de"
+    }
+  ],
+  "source": "environments/interiors/source/build_management_room.py",
+  "layoutSource": "environments/interiors/layouts/management-room.json"
+}

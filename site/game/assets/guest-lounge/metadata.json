@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "revision": "R171",
+  "revision": "R174",
   "id": "guest-lounge",
-  "title": "珍生物待機エリア",
+  "title": "休憩室",
   "floor": "b2",
   "areaId": "guest-lounge",
   "units": "metres",
   "dimensionsAreArtProductionValues": true,
   "architecturalDimensionsConfirmed": false,
   "guestCapacityUndecided": true,
-  "purpose": "Invited guests relax freely in a warm lounge; not a confinement facility.",
+  "purpose": "A shared rest room for invited creatures and facility staff; guests are welcomed freely, not confined. Staff NPCs and facility services remain undecided.",
   "room": {
     "width": 21.4,
     "depth": 5.8,
@@ -222,7 +222,7 @@
       "actualBounds": {
         "min": [
           -5.625,
-          0.0,
+          0.022000014781951904,
           -0.5400000214576721
         ],
         "max": [
@@ -286,16 +286,16 @@
       ],
       "yaw": 3.141592653589793,
       "footprint": [
-        -4.220000267028809,
+        -4.21999979019165,
         1.3799998760223389,
-        1.080000400543213,
+        1.0799999237060547,
         1.130000352859497
       ],
       "area": "lounge",
       "loungeKind": "armchair",
       "actualBounds": {
         "min": [
-          -4.220000267028809,
+          -4.21999979019165,
           0.0,
           1.3799998760223389
         ],
@@ -407,7 +407,7 @@
       "actualBounds": {
         "min": [
           3.9750001430511475,
-          0.0,
+          0.022000014781951904,
           -0.5400000214576721
         ],
         "max": [
@@ -900,8 +900,8 @@
     }
   ],
   "status": "complete",
-  "sourceRevision": "R171",
-  "surfaceRevision": "R171",
+  "sourceRevision": "R174",
+  "surfaceRevision": "R174",
   "pbrSurfaceSets": [
     "oak",
     "plaster",
@@ -930,8 +930,8 @@
   },
   "model": {
     "url": "room.glb",
-    "bytes": 6173784,
-    "sha256": "0b513ad47c1fcbb4ceb41980b75ddae44f5b5d237c048193b57853c5e52f4b25"
+    "bytes": 6173764,
+    "sha256": "b5c8c6c0096059bee0fb4c524acf05413c4beaed002d7466016e47fa7bd72e29"
   },
   "animationCount": 0,
   "meshBatchCount": 116,
@@ -941,8 +941,8 @@
       "url": "preview.webp",
       "width": 960,
       "height": 640,
-      "bytes": 35650,
-      "sha256": "649408e8cacf6f66cc19f6cf88014d76f08fb7e89bfc64d306d98035a3b17668"
+      "bytes": 35022,
+      "sha256": "429556a3ae060affd2d98d6c806ee988f2e89b704a2aa4a88212c0194f96537f"
     }
   ],
   "source": "environments/interiors/source/build_guest_lounge.py",

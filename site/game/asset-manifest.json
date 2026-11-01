@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
-  "fileCount": 156,
-  "totalBytes": 147553308,
+  "fileCount": 158,
+  "totalBytes": 152385110,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1237,20 +1237,36 @@
       "sha256": "0d793d7d90e079a811d7fe0ec622350a975a85036f0f4adbeab896055aba6102"
     },
     {
-      "url": "assets/guest-lounge/room.glb?v=0b513ad47c1fcbb4ceb41980b75ddae44f5b5d237c048193b57853c5e52f4b25",
-      "label": "珍生物待機エリア",
+      "url": "assets/guest-lounge/room.glb?v=b5c8c6c0096059bee0fb4c524acf05413c4beaed002d7466016e47fa7bd72e29",
+      "label": "休憩室",
       "type": "binary",
-      "bytes": 6173784,
+      "bytes": 6173764,
       "priority": 2,
-      "sha256": "0b513ad47c1fcbb4ceb41980b75ddae44f5b5d237c048193b57853c5e52f4b25"
+      "sha256": "b5c8c6c0096059bee0fb4c524acf05413c4beaed002d7466016e47fa7bd72e29"
     },
     {
       "url": "assets/guest-lounge/metadata.json",
-      "label": "珍生物待機エリアの設定",
+      "label": "休憩室の設定",
       "type": "json",
-      "bytes": 18681,
+      "bytes": 18779,
       "priority": 2,
-      "sha256": "f447ea22a6ecc07abf6d234bd2746b27925f62b49624cdf56293f8391767865f"
+      "sha256": "e2f49caabbeca0a633a9da392e3877973a014c0df7e384fd9346702162955184"
+    },
+    {
+      "url": "assets/management-room/room.glb?v=ac07a5b3e39186e22d5db15dae365cd5e402009eedb81d7833f3841bf345acbb",
+      "label": "管理室",
+      "type": "binary",
+      "bytes": 4820176,
+      "priority": 2,
+      "sha256": "ac07a5b3e39186e22d5db15dae365cd5e402009eedb81d7833f3841bf345acbb"
+    },
+    {
+      "url": "assets/management-room/metadata.json",
+      "label": "管理室の設定",
+      "type": "json",
+      "bytes": 11548,
+      "priority": 2,
+      "sha256": "5efc0b6a9c1e495ce1d9c8833f43976221d11c3f6709a96a063042132cabb34a"
     }
   ]
 }
