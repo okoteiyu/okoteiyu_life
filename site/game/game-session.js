@@ -319,8 +319,8 @@ export class GameSession{
   if(first){s.phase='guarding';s.guardStartedAt=b.time;s.returnStartedAt=null;s.returnEndsAt=null;s.cancelReason=null;this.emit('support-guard',{actor:'support',supportId:s.id,actorName:s.name,target:actor.id,time:b.time});}
   return true;
  }
- absorbSupportAttack(actor,rawDamage){
-  const b=this.state.battle,s=b?.support;if(!s||s.id!=='moai_kun'||s.guardUsed||actor.id==='player')return false;
+ absorbSupportAttack(actor,rawDamage,incomingAmount){
+  const b=this.state.battle,s=b?.support;if(!s||s.id!=='moai_kun'||s.guardUsed||actor.id==='player'||!Number.isFinite(incomingAmount)||incomingAmount<=0)return false;
   Object.assign(s,{guardUsed:true,phase:'waiting',attackerId:actor.id,absorbedAt:b.time,
    counterStartsAt:b.time+MOAI_COUNTER_TIMING.delay,counterAttackStartsAt:b.time+MOAI_COUNTER_TIMING.delay+MOAI_COUNTER_TIMING.travel,
    counterEndsAt:b.time+MOAI_COUNTER_TIMING.delay+MOAI_COUNTER_TIMING.travel+MOAI_COUNTER_TIMING.attack,
@@ -381,7 +381,7 @@ export class GameSession{
    const nextAttackDamageMultiplier=actor.nextAttackDamageMultiplier;
    const factors=equipmentMultipliers(this.player.equipment),amount=power*(actorId==='player'?factors.damageDealt:factors.damageReceived)*damageMultiplier*nextAttackDamageMultiplier;
    actor.nextAttackDamageMultiplier=1;
-   const absorbed=target.id==='player'&&this.absorbSupportAttack(actor,power*bodyDamageMultiplier*auraDamageMultiplier*nextAttackDamageMultiplier);
+   const absorbed=target.id==='player'&&this.absorbSupportAttack(actor,power*bodyDamageMultiplier*auraDamageMultiplier*nextAttackDamageMultiplier,amount);
    b.completedAttacks[actorId]++;
    if(!absorbed){const remaining=Math.max(0,target.hp-amount);target.hp=remaining<EPSILON?0:remaining;
     if(target.hp>0)for(const effect of TECHNIQUES[action.technique].additionalEffects||[])if(effect.type==='next_attack_damage_multiplier')target.nextAttackDamageMultiplier*=effect.multiplier;

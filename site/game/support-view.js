@@ -5,8 +5,19 @@ import {MOAI_COUNTER_TIMING} from './support-rules.js';
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const finite=(v,fallback=0)=>Number.isFinite(v)?v:fallback;
 const smooth=value=>{const t=clamp(value);return t*t*(3-2*t);};
+const particleHash=index=>{let value=(index+1)>>>0;value=Math.imul(value^(value>>>16),0x21f0aaad);value=Math.imul(value^(value>>>15),0x735a2d97);return ((value^(value>>>15))>>>0)/4294967296;};
 const point=record=>record?.anchor?.getWorldPosition(new THREE.Vector3())||new THREE.Vector3();
 const towards=(from,to,fallback)=>{const d=to.clone().sub(from);d.y=0;return d.lengthSq()>1e-10?d.normalize():fallback.clone();};
+const turnFacing=(from,to,progress)=>{const a=Math.atan2(from.x,from.z),b=Math.atan2(to.x,to.z),angle=a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*clamp(progress);return new THREE.Vector3(Math.sin(angle),0,Math.cos(angle));};
+function returnAroundPlayer(from,to,center,side,forward,progress,radius){
+ const a=from.clone().sub(center),b=to.clone().sub(center);a.y=b.y=0;const da=a.length(),db=b.length();
+ const aa=Math.atan2(a.dot(side),a.dot(forward)),ab=Math.atan2(b.dot(side),b.dot(forward)),turn=Math.atan2(Math.sin(ab-aa),Math.cos(ab-aa));
+ const first=Math.max(0,da-radius),arc=Math.abs(turn)*radius,last=Math.max(0,db-radius),travel=progress*(first+arc+last);let angle=aa,distance=da;
+ if(travel<first)distance=da-travel;
+ else if(travel<first+arc){distance=radius;angle=aa+turn*(travel-first)/Math.max(.001,arc);}
+ else{distance=radius+Math.min(last,travel-first-arc);angle=ab;}
+ const result=center.clone().addScaledVector(side,Math.sin(angle)*distance).addScaledVector(forward,Math.cos(angle)*distance);result.y=from.y+(to.y-from.y)*progress;return result;
+}
 
 /** A rigid, canonical-sized companion. All phases are derived from Core time. */
 export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=null){
@@ -14,10 +25,15 @@ export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=n
  if(!player)return null;
  const start=point(player),forward=new THREE.Vector3(0,0,1).applyQuaternion(player.facing?.getWorldQuaternion(new THREE.Quaternion())||new THREE.Quaternion());forward.y=0;forward.normalize();
  const side=new THREE.Vector3(1,0,0).applyQuaternion(player.facing?.getWorldQuaternion(new THREE.Quaternion())||new THREE.Quaternion());side.y=0;side.normalize();
- const idle=start.clone().addScaledVector(side,player.height*.82+height*.12).addScaledVector(forward,-player.height*.10);
+ const beside=start.clone().addScaledVector(side,player.height*.82+height*.12).addScaledVector(forward,-player.height*.10);
+ const behind=start.clone().addScaledVector(forward,-(player.height*.80+height*.45)).addScaledVector(side,player.height*.20);
+ const idle=support.id==='moai_kun'&&support.guardUsed?behind:beside;
  const target=actors[support.attackerId],enemy=target?point(target):start.clone().addScaledVector(forward,1),direction=towards(start,enemy,forward);
- const guard=start.clone().addScaledVector(direction,player.height*.60+height*.28).addScaledVector(side,player.height*.85);guard.y+=Math.max(.025,player.height*.55-height*.5);
- const guardFrom=guardOrigin?.clone?.()||idle.clone();
+ const guard=start.clone().addScaledVector(direction,player.height*.95+height*.40).addScaledVector(side,player.height*.25);guard.y=start.y;
+ const bridge=guardOrigin?.isVector3?{position:guardOrigin}:guardOrigin;
+ const guardFrom=bridge?.position?.clone?.()||idle.clone(),visualGuardStart=finite(bridge?.blendStartedAt,finite(support.guardStartedAt,time));
+ const idleFacing=forward.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-Math.PI*.5),profile=direction.clone().applyAxisAngle(new THREE.Vector3(0,1,0),Math.PI*.5);
+ const guardFacingAt=at=>turnFacing(bridge?.facing||idleFacing,profile,smooth((at-visualGuardStart)/.18));
  const desiredClearance=target?Math.max(target.height*.40,finite(target.forwardExtent))+height*.75:height;
  const clearance=Math.min(desiredClearance,Math.max(height*.75,start.distanceTo(enemy)-player.height*.65));
  const counter=enemy.clone().addScaledVector(direction,-clearance);counter.y=start.y;
@@ -31,20 +47,30 @@ export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=n
  };
  let phase=support.phase||'idle',position=idle.clone(),facing=forward.clone(),attackElapsed=null;
  if(support.id==='moai_kun'){
-  if(phase==='guarding')position.copy(guardFrom).lerp(guard,smooth((time-finite(support.guardStartedAt,time))/.18));
+  if(phase==='guarding')position.copy(guardFrom).lerp(guard,smooth((time-visualGuardStart)/.18));
   else if(phase==='waiting')position.copy(guard);
   else if(phase==='counter'){
    position.copy(counterPosition(time));
    if(time>=attackStart&&time<counterEnd)attackElapsed=time-attackStart;
   }else if(phase==='returning'){
-   const from=support.guardUsed?counterPosition(returnStart):guardFrom.clone().lerp(guard,smooth((returnStart-finite(support.guardStartedAt,returnStart))/.18));
-   position.copy(from).lerp(idle,smooth((time-returnStart)/Math.max(.001,returnEnd-returnStart)));
+   const from=support.guardUsed?counterPosition(returnStart):guardFrom.clone().lerp(guard,smooth((returnStart-visualGuardStart)/.18));
+   if(support.guardUsed&&returnStart>=counterStart&&returnStart<attackStart)from.y+=Math.sin(Math.PI*smooth((returnStart-counterStart)/Math.max(.001,attackStart-counterStart)))*height*.35;
+   const progress=smooth((time-returnStart)/Math.max(.001,returnEnd-returnStart));
+   position.copy(support.guardUsed?returnAroundPlayer(from,idle,start,side,forward,progress,player.height*.65+height*.35):from.lerp(idle,progress));
    if(time>=returnEnd)phase='idle';
   }
-  if(phase!=='idle')facing=towards(position,enemy,forward);
+  const counterFacingAt=at=>turnFacing(profile,towards(counterPosition(at),enemy,forward),smooth((at-counterStart)/Math.max(.001,attackStart-counterStart)));
+  if(phase==='guarding')facing=guardFacingAt(time);
+  else if(phase==='waiting')facing=profile;
+  else if(phase==='counter')facing=counterFacingAt(time);
+  else if(phase==='returning')facing=turnFacing(support.guardUsed?counterFacingAt(returnStart):guardFacingAt(returnStart),idleFacing,smooth((time-returnStart)/Math.max(.001,returnEnd-returnStart)));
+  else facing=idleFacing;
  }
  const flashAge=Number.isFinite(support.absorbedAt)?time-support.absorbedAt:Infinity;
- return {position,facing,idle,guard,counter,phase,attackElapsed,flashAge};
+ const travel=phase==='counter'&&time<attackStart?smooth((time-counterStart)/Math.max(.001,attackStart-counterStart)):phase==='returning'?smooth((time-returnStart)/Math.max(.001,returnEnd-returnStart)):null;
+ const hop=travel===null?0:Math.sin(Math.PI*travel)*height*.35;
+ position.y+=hop;
+ return {position,facing,idle,beside,behind,guard,counter,phase,attackElapsed,flashAge,hop};
 }
 
 function commonAttackOffset(elapsed){
@@ -59,9 +85,13 @@ export class BattleSupportView{
   Object.assign(this,{scene,loader,baseUrl});this.cache=new Map();this.pending=new Map();this.id=null;this.destroyed=false;this.sampleTime=0;this.clockOffset=0;
   this.root=new THREE.Group();this.root.name='Battle.Support';this.root.visible=false;scene.add(this.root);
   this.flash=new THREE.Group();this.flash.name='Battle.Support.Absorb';this.flash.visible=false;this.root.add(this.flash);
-  const sphere=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),new THREE.MeshBasicMaterial({color:0xfff4cc,transparent:true,opacity:0,depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending}));
-  const ring=new THREE.Mesh(new THREE.RingGeometry(.70,1,32),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending}));
-  this.flash.add(sphere,ring);this.flashParts=[sphere,ring];
+  const geometry=new THREE.BufferGeometry(),count=160;this.particleSeeds=Float64Array.from({length:count*4},(_,index)=>particleHash(index));geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(count*3),3));geometry.setAttribute('aAlpha',new THREE.BufferAttribute(new Float32Array(count),1));geometry.setAttribute('aSize',new THREE.BufferAttribute(new Float32Array(count),1));
+  const material=new THREE.ShaderMaterial({uniforms:{viewportHeight:{value:390},pixelRatio:{value:1}},transparent:true,depthWrite:false,depthTest:true,blending:THREE.NormalBlending,toneMapped:false,
+   vertexShader:'uniform float viewportHeight;uniform float pixelRatio;attribute float aAlpha;attribute float aSize;varying float vAlpha;void main(){vec4 p=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*p;gl_PointSize=clamp(aSize*viewportHeight*pixelRatio*projectionMatrix[1][1]/(2.*max(.01,-p.z)),4.5*pixelRatio,16.*pixelRatio);vAlpha=aAlpha;}',
+   fragmentShader:'varying float vAlpha;void main(){vec2 p=gl_PointCoord*2.-1.;float r=dot(p,p);float alpha=exp(-r*2.4)*vAlpha*(1.-smoothstep(.65,1.,r));if(alpha<.005)discard;gl_FragColor=vec4(1.,.80+.13*(1.-min(1.,r)),.025,alpha);\n#include <colorspace_fragment>\n}'});
+  this.auraParticles=new THREE.Points(geometry,material);this.auraParticles.frustumCulled=false;this.auraParticles.name='Battle.Support.YellowAbsorptionAura';this.flash.add(this.auraParticles);this.particleCount=count;
+  this.halo=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.ShaderMaterial({uniforms:{strength:{value:0}},transparent:true,depthWrite:false,depthTest:true,blending:THREE.AdditiveBlending,toneMapped:false,
+   vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float strength;varying vec2 vUv;void main(){vec2 p=(vUv-.5)*2.;float a=exp(-dot(p,p)*3.5)*strength;gl_FragColor=vec4(1.,.81,.05,a);\n#include <colorspace_fragment>\n}'}));this.flash.add(this.halo);
   this.shadow=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x344137,transparent:true,opacity:.12,depthWrite:false}));this.shadow.rotation.x=-Math.PI/2;this.shadow.name='Battle.Support.Shadow';this.root.add(this.shadow);
  }
  async prepare(id){
@@ -82,8 +112,8 @@ export class BattleSupportView{
   this.id=id||null;this.clockOffset=ended&&Number.isFinite(resumeTime)?Math.max(0,resumeTime-baseTime):0;
   this.state=null;this.logicalState=null;this.phase='idle';this.sampleTime=baseTime+this.clockOffset;
   const vector=value=>Array.isArray(value)&&value.length===3&&value.every(Number.isFinite)?new THREE.Vector3(...value):null,saved=resumeState?.id===this.id?resumeState:null;
-  this.guardStartedAt=Number.isFinite(saved?.guardStartedAt)?saved.guardStartedAt:null;this.lastPosition=vector(saved?.position);
-  const origin=vector(saved?.guardBridge?.position);this.guardBridge=origin&&Number.isFinite(saved.guardBridge.startedAt)?{startedAt:saved.guardBridge.startedAt,position:origin}:null;
+  this.guardStartedAt=Number.isFinite(saved?.guardStartedAt)?saved.guardStartedAt:null;this.guardAttackerId=saved?.guardAttackerId??null;this.lastPosition=vector(saved?.position);this.lastFacing=vector(saved?.facing);this.cameraBlend=Number.isFinite(saved?.cameraBlend)?clamp(saved.cameraBlend):0;this.lastCameraTime=this.sampleTime;
+  const origin=vector(saved?.guardBridge?.position);this.guardBridge=origin&&Number.isFinite(saved.guardBridge.startedAt)?{startedAt:saved.guardBridge.startedAt,attackerId:saved.guardBridge.attackerId??null,blendStartedAt:finite(saved.guardBridge.blendStartedAt,saved.guardBridge.startedAt),position:origin,facing:vector(saved.guardBridge.facing)}:null;
   for(const record of this.cache.values())record.anchor.visible=record.id===this.id;this.root.visible=false;
  }
  setVisible(visible){this.root.visible=Boolean(visible&&this.id&&this.cache.has(this.id));}
@@ -92,27 +122,37 @@ export class BattleSupportView{
   if(!record||!enabled||equipped!==this.id||snapshot?.phase==='visiting'){this.root.visible=false;this.flash.visible=false;return;}
   this.root.visible=true;record.anchor.visible=true;this.sampleTime=finite(time)+this.clockOffset;this.logicalState=snapshot.support||null;
   const logical=this.logicalState;
-  if(logical?.phase==='guarding'&&Number.isFinite(logical.guardStartedAt)&&logical.guardStartedAt!==this.guardStartedAt){
-   const position=this.state?.position||this.lastPosition;this.guardBridge=position?{startedAt:logical.guardStartedAt,position:position.clone()}:null;this.guardStartedAt=logical.guardStartedAt;
+  if(logical?.phase==='guarding'&&Number.isFinite(logical.guardStartedAt)&&(logical.guardStartedAt!==this.guardStartedAt||logical.attackerId!==this.guardAttackerId)){
+   const position=this.state?.position||this.lastPosition,facing=this.state?.facing||this.lastFacing,newGuard=logical.guardStartedAt!==this.guardStartedAt;
+   this.guardBridge=position?{startedAt:logical.guardStartedAt,attackerId:logical.attackerId,blendStartedAt:newGuard?logical.guardStartedAt:this.sampleTime,position:position.clone(),facing:facing?.clone()||null}:null;this.guardStartedAt=logical.guardStartedAt;this.guardAttackerId=logical.attackerId;
   }
-  const origin=this.guardBridge&&this.guardBridge.startedAt===logical?.guardStartedAt?this.guardBridge.position:null;
+  const origin=this.guardBridge&&this.guardBridge.startedAt===logical?.guardStartedAt&&this.guardBridge.attackerId===logical?.attackerId?this.guardBridge:null;
   const state=sampleSupportMotion(snapshot,actors,this.sampleTime,record.height,origin);if(!state){this.root.visible=false;return;}
   record.anchor.position.copy(state.position);record.facing.rotation.y=Math.atan2(state.facing.x,state.facing.z);record.motion.position.set(0,0,state.attackElapsed===null?0:record.height*.16*commonAttackOffset(state.attackElapsed));
-  if(record.action){record.action.time=state.attackElapsed===null?this.sampleTime%Math.max(.001,record.clip.duration):0;record.mixer.update(0);}
+  if(record.action){record.action.time=this.sampleTime%Math.max(.001,record.clip.duration);record.mixer.update(0);}
+  const cameraTarget=this.id==='moai_kun'&&['guarding','waiting','counter'].includes(state.phase)?1:0,delta=Math.max(0,Math.min(.1,this.sampleTime-finite(this.lastCameraTime,this.sampleTime)));
+  this.cameraBlend+=(cameraTarget-this.cameraBlend)*(1-Math.exp(-delta*7));this.lastCameraTime=this.sampleTime;
   this.state=state;this.phase=state.phase;
   this.shadow.position.set(state.position.x,point(actors.player).y+.002,state.position.z);this.shadow.scale.set(record.height*.82,record.height*.56,1);
-  const age=state.flashAge;this.flash.visible=this.id==='moai_kun'&&age>=0&&age<.38;
-  if(this.flash.visible){
-   const progress=age/.38,envelope=(1-progress)**1.5;this.flash.position.copy(state.guard).add(new THREE.Vector3(0,record.height*.5,0));this.flash.scale.setScalar(record.height*(.65+progress));
-   if(camera)this.flash.quaternion.copy(camera.getWorldQuaternion(new THREE.Quaternion()));this.flashParts[0].material.opacity=.40*envelope;this.flashParts[1].material.opacity=.88*envelope;
+  const absorbing=this.id==='moai_kun'&&['guarding','waiting'].includes(state.phase);this.flash.visible=absorbing;
+  if(absorbing){
+   const charging=state.phase==='guarding',age=this.sampleTime-finite(logical?.guardStartedAt,this.sampleTime),impact=state.flashAge>=0?Math.exp(-state.flashAge*5):0,intensity=(charging?.80:.95)+impact*.20;
+   this.flash.position.copy(state.position);this.flash.scale.setScalar(1);this.flash.quaternion.identity();
+   const pos=this.auraParticles.geometry.attributes.position,alpha=this.auraParticles.geometry.attributes.aAlpha,size=this.auraParticles.geometry.attributes.aSize;
+   for(let i=0;i<this.particleCount;i++){const seed=i*4,life=(age*1.65+this.particleSeeds[seed])%1,angle=this.particleSeeds[seed+1]*Math.PI*2+age*.6,radius=record.height*(.62+.60*this.particleSeeds[seed+2])*(1-life*.3);pos.setXYZ(i,Math.cos(angle)*radius,record.height*(.05+life*3.3),Math.sin(angle)*radius);alpha.setX(i,Math.sin(life*Math.PI)*intensity*.82);size.setX(i,record.height*(.28+.34*this.particleSeeds[seed+3]));}
+   pos.needsUpdate=true;alpha.needsUpdate=true;size.needsUpdate=true;
+   this.halo.position.set(0,record.height*1.35,0);this.halo.scale.set(record.height*3.0,record.height*4.0,1);this.halo.material.uniforms.strength.value=.18*intensity;if(camera)this.halo.quaternion.copy(camera.getWorldQuaternion(new THREE.Quaternion()));
   }
+
  }
  interceptionPoint(snapshot,actorId){
   const s=snapshot?.support;if(!this.root.visible||this.id!=='moai_kun'||s?.phase!=='guarding'||s.guardUsed||s.attackerId!==actorId)return null;
   return this.state?.position.clone().add(new THREE.Vector3(0,this.cache.get(this.id).height*.5,0))||null;
  }
- capturePresentationState(){return {id:this.id,time:this.sampleTime,guardStartedAt:this.guardStartedAt??null,position:(this.state?.position||this.lastPosition)?.toArray()||null,guardBridge:this.guardBridge?{startedAt:this.guardBridge.startedAt,position:this.guardBridge.position.toArray()}:null};}
- getDiagnostics(){const record=this.cache.get(this.id),s=this.state,logical=this.logicalState||{};return {id:this.id,visible:this.root.visible,phase:this.phase||'idle',height:record?.height??null,position:record?.anchor.position.toArray()||null,currentClip:record?.clip?.name||null,sampleTime:this.sampleTime,attackElapsed:s?.attackElapsed??null,flashVisible:this.flash.visible,clockOffset:this.clockOffset,guardUsed:Boolean(logical.guardUsed),attackerId:logical.attackerId??null,absorbedAt:logical.absorbedAt??null,counterStartsAt:logical.counterStartsAt??null,counterAttackStartsAt:logical.counterAttackStartsAt??null,counterEndsAt:logical.counterEndsAt??null,returnEndsAt:logical.returnEndsAt??null,reflectDamage:logical.reflectDamage??0};}
+ setViewport(height,pixelRatio=1){this.auraParticles.material.uniforms.viewportHeight.value=Math.max(1,height);this.auraParticles.material.uniforms.pixelRatio.value=Math.max(1,pixelRatio);}
+ framingBounds(){const record=this.cache.get(this.id);if(!this.root.visible||!record)return null;record.model.updateWorldMatrix(true,true);const bounds=new THREE.Box3().setFromObject(record.model);bounds.expandByScalar(record.height*.12);if(this.flash.visible){const origin=this.flash.getWorldPosition(new THREE.Vector3()),radius=record.height*1.6;bounds.union(new THREE.Box3(new THREE.Vector3(-radius,-record.height*.35,-radius).add(origin),new THREE.Vector3(radius,record.height*3.7,radius).add(origin)));}return bounds;}
+ capturePresentationState(){return {id:this.id,time:this.sampleTime,cameraBlend:this.cameraBlend,guardStartedAt:this.guardStartedAt??null,guardAttackerId:this.guardAttackerId??null,position:(this.state?.position||this.lastPosition)?.toArray()||null,facing:(this.state?.facing||this.lastFacing)?.toArray()||null,guardBridge:this.guardBridge?{startedAt:this.guardBridge.startedAt,attackerId:this.guardBridge.attackerId,blendStartedAt:this.guardBridge.blendStartedAt,position:this.guardBridge.position.toArray(),facing:this.guardBridge.facing?.toArray()||null}:null};}
+ getDiagnostics(){const record=this.cache.get(this.id),s=this.state,logical=this.logicalState||{};return {id:this.id,visible:this.root.visible,phase:this.phase||'idle',height:record?.height??null,position:record?.anchor.position.toArray()||null,currentClip:record?.clip?.name||null,sampleTime:this.sampleTime,attackElapsed:s?.attackElapsed??null,flashVisible:this.flash.visible,auraParticleCount:this.flash.visible?this.particleCount:0,auraColor:'yellow',cameraBlend:this.cameraBlend||0,groundY:this.state?.guard.y??null,hop:s?.hop||0,clockOffset:this.clockOffset,guardUsed:Boolean(logical.guardUsed),attackerId:logical.attackerId??null,absorbedAt:logical.absorbedAt??null,counterStartsAt:logical.counterStartsAt??null,counterAttackStartsAt:logical.counterAttackStartsAt??null,counterEndsAt:logical.counterEndsAt??null,returnEndsAt:logical.returnEndsAt??null,reflectDamage:logical.reflectDamage??0,guardBridge:this.guardBridge?{attackerId:this.guardBridge.attackerId,blendStartedAt:this.guardBridge.blendStartedAt}:null};}
  disposeTree(root){const geometry=new Set(),materials=new Set(),textures=new Set();root?.traverse(node=>{if(node.geometry)geometry.add(node.geometry);for(const material of Array.isArray(node.material)?node.material:node.material?[node.material]:[]){materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});for(const value of geometry)value.dispose();for(const value of materials)value.dispose();for(const value of textures)value.dispose();}
  dispose(){if(this.destroyed)return;this.destroyed=true;for(const record of this.cache.values())record.mixer.stopAllAction();this.disposeTree(this.root);this.root.removeFromParent();this.cache.clear();this.id=null;}
 }
