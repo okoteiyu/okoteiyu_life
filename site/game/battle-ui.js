@@ -12,9 +12,9 @@ const calls=[['slot0','未設定','スロット1'],['slot1','未設定','スロ�
 
 /** HP and calls share the existing square view and lower-right action slot. */
 export class BattleUI{
- constructor({view,homeElement,isPaused=()=>false,onCall=()=>false,onTarget=()=>false,onReturn=()=>{},onReady=()=>{},onError=()=>{}}={}){
+ constructor({view,homeElement,isPaused=()=>false,canReturn=()=>false,onCall=()=>false,onTarget=()=>false,onReturn=()=>{},onReady=()=>{},onError=()=>{}}={}){
   if(!view?.surface||!homeElement)throw new TypeError('戦闘UIの表示先がありません。');
-  Object.assign(this,{view,homeElement,isPaused,onCall,onTarget,onReturn,onReady,onError});this.active=false;this.loading=false;this.failed=false;this.generation=0;this.snapshot=null;
+  Object.assign(this,{view,homeElement,isPaused,canReturn,onCall,onTarget,onReturn,onReady,onError});this.active=false;this.loading=false;this.failed=false;this.generation=0;this.snapshot=null;this.resultCutinVisible=false;
   this.container=document.createElement('div');this.container.className='battle-scene';this.container.id='battleScene';
   this.targetMarker=document.createElement('div');this.targetMarker.className='battle-lockon';this.targetMarker.hidden=true;this.targetMarker.setAttribute('aria-hidden','true');
   this.targetMarker.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="battle-lockon__rim" d="M25 4H13Q4 4 4 13V25M75 4H87Q96 4 96 13V25M96 75V87Q96 96 87 96H75M25 96H13Q4 96 4 87V75"/><path class="battle-lockon__corners" d="M25 4H13Q4 4 4 13V25M75 4H87Q96 4 96 13V25M96 75V87Q96 96 87 96H75M25 96H13Q4 96 4 87V75"/><path class="battle-lockon__diamond" d="m50 0 4 4-4 4-4-4Z"/></svg>';this.container.append(this.targetMarker);
@@ -27,6 +27,9 @@ export class BattleUI{
   this.panel=document.createElement('section');this.panel.className='lower-right battle-actions';this.panel.id='battleCallChoices';this.panel.hidden=true;this.panel.setAttribute('aria-label','戦闘中のかけごえ');
   this.panel.innerHTML='<header class="battle-actions__heading"><span>見つからないように、そっと</span><h2>かけごえ</h2></header><nav class="battle-calls" aria-label="おこていゆへのかけごえ">'+calls.map(([id,label,description])=>'<button type="button" data-battle-call="'+id+'"><span>'+label+'<small>'+description+'</small></span><b aria-hidden="true">›</b></button>').join('')+'</nav><p class="battle-call-status" role="status">おこていゆは、自分で考えて動く。</p>';homeElement.after(this.panel);
   this.panel.addEventListener('click',event=>{const button=event.target.closest('[data-battle-call]');if(button&&!button.disabled&&!this.blocked()){const accepted=this.onCall(button.dataset.battleCall);if(accepted!==false&&accepted?.ok!==false)this.panel.querySelector('.battle-call-status').textContent=button.dataset.battleCall==='auto'?'おこていゆを、そっと見守る。':button.dataset.battleCall==='super'?'んんーーーーー！':'次の動きのヒントを、そっと送った。';}});
+  this.returnView=document.createElement('div');this.returnView.className='battle-return';this.returnView.hidden=true;
+  this.returnView.innerHTML='<button type="button" class="battle-return__button" id="battleReturnHome" aria-label="ホーム画面に帰る" disabled><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m4 15 12-10 12 10M7 13v15h18V13M13 28V18h6v10"/><path d="M12 12h8"/></svg><span>ホーム画面に<br>帰る</span></button>';this.panel.append(this.returnView);this.returnButton=this.returnView.querySelector('button');
+  this.returnButton.addEventListener('click',()=>{if(this.active&&!this.returnButton.disabled&&this.canReturn())this.onReturn();});
  }
  get ready(){return Boolean(this.controller?.ready&&!this.controller?.contextLost&&!this.loading&&!this.failed);}
  get ended(){return this.snapshot?.phase==='ended'||this.snapshot?.status==='ended';}
@@ -82,7 +85,7 @@ export class BattleUI{
  }
  async start(snapshot,stage={}, {presentationState=null}={}){
   this.resetTargetInput({clearPointers:true});this.container.classList.add('is-loading');this.controller?.setActive(false);this.targetMarker.hidden=true;this.announcedTarget=null;this.targetAnnouncement.textContent='';
-  this.view.clear();this.active=true;this.loading=true;this.failed=false;this.snapshot=snapshot;this.stage=stage;const generation=++this.generation;
+  this.view.clear();this.active=true;this.loading=true;this.failed=false;this.snapshot=snapshot;this.stage=stage;this.resultCutinVisible=false;const generation=++this.generation;
   this.view.surface.append(this.container);this.panel.hidden=false;this.hud.hidden=true;this.status.hidden=false;this.status.querySelector('span').textContent='戦闘のモデルを読み込んでいます…';this.status.querySelector('button').hidden=true;this.panel.querySelector('.battle-call-status').textContent='おこていゆは、そっと身構える。';this.updateControls();
   this.controller??=new BattleView({container:this.container,isPresentationPaused:()=>this.isPaused(),onTargetFrame:target=>this.paintTarget(target),getContentInsets:()=>{const surface=this.view.surface.getBoundingClientRect(),hud=this.hud.getBoundingClientRect();return {top:this.hud.hidden?surface.height*.14:hud.bottom-surface.top+8,bottom:12};},onStatus:text=>{this.status.querySelector('span').textContent=text;this.status.hidden=!this.active||!text;},onError:error=>this.showError(error)});
   const ready=await this.controller.load(snapshot,stage,{presentationState});
@@ -92,9 +95,15 @@ export class BattleUI{
  setSnapshot(snapshot){this.snapshot=snapshot;this.controller?.setSnapshot(snapshot);this.updateControls();}
  handleEvent(event){this.controller?.handleEvent(event);const type=event?.type||event?.kind;if(type==='damage'||type==='hit'){const box=this.hud.querySelector('[data-battle-actor="'+(event.target||event.actor)+'"]');if(box){box.classList.remove('is-hit');void box.offsetWidth;box.classList.add('is-hit');}}}
  advance(dt){if(!this.active)return;if(!this.isPaused()&&!isModalBlocked())this.controller?.advance(dt);this.updateControls();}
+ showReturn({cutin=this.resultCutinVisible}={}){
+  this.resultCutinVisible=Boolean(cutin);this.panel.dataset.mode='result';this.panel.hidden=!this.active;this.returnView.hidden=false;
+  if(this.resultCutinVisible)this.hud.hidden=true;
+  this.returnButton.disabled=!this.active||!this.canReturn();this.returnButton.title=this.returnButton.disabled?'戦闘終了の演出を見終えると帰れます。':'ホーム画面へ戻ります。';
+ }
  updateControls(){
   const snapshot=this.snapshot;if(!snapshot)return;
-  const enemies=opponents(snapshot),ids=enemies.map(enemy=>enemy.id||'enemy'),hudKey=ids.join('|');if(this.hudKey!==hudKey){this.hudKey=hudKey;releasePaintedLabels(this.hud);this.hud.innerHTML=hpMarkup('player')+'<div class="battle-hud__opponents">'+ids.map(hpMarkup).join('')+'</div>';}this.hud.dataset.enemyCount=String(enemies.length);this.panel.hidden=!this.active;this.hud.hidden=!this.active||!this.ready||Boolean(this.controller?.cutin);
+  const enemies=opponents(snapshot),ids=enemies.map(enemy=>enemy.id||'enemy'),hudKey=ids.join('|');if(this.hudKey!==hudKey){this.hudKey=hudKey;releasePaintedLabels(this.hud);this.hud.innerHTML=hpMarkup('player')+'<div class="battle-hud__opponents">'+ids.map(hpMarkup).join('')+'</div>';}this.hud.dataset.enemyCount=String(enemies.length);this.panel.hidden=!this.active;this.hud.hidden=!this.active||!this.ready||Boolean(this.controller?.cutin)||this.resultCutinVisible;
+  this.panel.dataset.mode=this.ended?'result':'battle';this.returnView.hidden=!this.ended;
   const slots=snapshot.techniques?.slots||['punch',snapshot.techniques?.energyRayUnlocked?'energy_ray':null,null];this.panel.style.setProperty('--battle-call-count',String(slots.filter(Boolean).length+1));for(const [index,button]of [...this.panel.querySelectorAll('.battle-calls button')].slice(0,3).entries()){const id=slots[index];button.hidden=!id;button.dataset.battleCall=id||'';if(id){const label=button.querySelector('span'),small=label.querySelector('small');if(label.firstChild.nodeType===Node.TEXT_NODE)label.firstChild.textContent=TECHNIQUES[id].name;small.textContent='スロット '+(index+1);}}
   const energyUnlocked=Boolean(snapshot.techniques?.energyRayUnlocked),superUsed=Boolean(snapshot.player?.superUsed??snapshot.super?.used);
   const requested=snapshot.queuedTechnique||snapshot.player?.queuedTechnique||snapshot.player?.requestedTechnique||'auto';
@@ -107,6 +116,7 @@ export class BattleUI{
   }
   const cameraEnabled=this.cameraInputAvailable();this.container.dataset.cameraEnabled=String(cameraEnabled);if(!cameraEnabled&&(this.targetGesture||this.pendingTargetTap))this.resetTargetInput();
   this.container.dataset.targetingEnabled=String(this.ready&&!this.blocked()&&!this.ended&&!document.hidden);this.paintTarget(this.controller?.getLockOnTarget()||null);
+  if(this.ended)this.showReturn();
  }
  showError(error){this.failed=true;this.loading=false;this.status.hidden=!this.active;this.status.querySelector('span').textContent='戦闘の3D表示を読み込めませんでした。もう一度お試しください。';this.status.querySelector('button').hidden=false;this.hud.hidden=true;this.updateControls();this.onError(error);}
  async retry(){if(!this.active||this.isPaused()||isModalBlocked()||(!this.failed&&this.controller?.cutin))return false;const presentationState=this.controller?.capturePresentationState();return this.start(this.snapshot,this.stage,{presentationState});}

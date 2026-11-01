@@ -15,9 +15,9 @@ export class GameRuntime {
  constructor({view,house,patrol,trainingHall,analysisRoom,homeElement,isPaused,isModalPaused,isMessageVisible,showMessage,hideMessage,setLocation,setGauges,toast,readMessagePage,advanceMessagePage}){
   Object.assign(this,{view,house,patrol,trainingHall,analysisRoom,homeElement,isPaused,isModalPaused,isMessageVisible,showMessage,hideMessage,setLocation,setGauges,toast,readMessagePage,advanceMessagePage});
   this.isPaused=()=>Boolean(this.recovery?.blocked)||Boolean(isPaused?.());this.isModalPaused=()=>Boolean(this.recovery?.blocked)||Boolean(isModalPaused?.());this.destroyed=false;this.frameEpoch=0;
-  this.scene='house';this.messageLocked=false;this.manualClock=false;this.pendingEncounter=null;this.pendingCutin=false;this.resultDelay=null;this.messages=[];this.lastAngerResult=null;this.battlePresentationSerial=0;
+  this.scene='house';this.messageLocked=false;this.manualClock=false;this.pendingEncounter=null;this.pendingCutin=false;this.resultDelay=null;this.resultCutinComplete=false;this.messages=[];this.lastAngerResult=null;this.battlePresentationSerial=0;
   this.session=new GameSession({onEvent:event=>this.onSessionEvent(event)});
-  this.battleUI=new BattleUI({view,homeElement,isPaused:()=>this.isPaused()||document.hidden,onCall:id=>this.requestBattleAction(id),onTarget:id=>this.requestBattleTarget(id),onReturn:()=>this.returnHomeAfterBattle(),onError:()=>this.toast('3Dの読み込みを再試行してください。戦闘の時計は停止しています。')});
+  this.battleUI=new BattleUI({view,homeElement,isPaused:()=>this.isPaused()||document.hidden,canReturn:()=>this.canReturnHomeAfterBattle(),onCall:id=>this.requestBattleAction(id),onTarget:id=>this.requestBattleTarget(id),onReturn:()=>this.returnHomeAfterBattle(),onError:()=>this.toast('3Dの読み込みを再試行してください。戦闘の時計は停止しています。')});
   this.angerPlayer=new AngerCutinPlayer({view,prepareSource:(url,{signal})=>loadAssetBuffer(url,{signal}),isPaused:()=>this.isModalPaused()||document.hidden,
    onUtterance:payload=>{this.messageLocked=true;this.say({...payload,type:'anger'});},
    onComplete:result=>this.finishCutin(result),onError:()=>this.hideMessage(),
@@ -160,6 +160,7 @@ export class GameRuntime {
  onMessageClosed(){this.sync();}
  tick(dt){
   this.serviceRecovery();
+  if(this.scene==='scene-cutin'&&['win','loss'].includes(this.sceneCutin.kind))this.battleUI.showReturn({cutin:true});
   if(this.recovery?.blocked){this.recovery.pump();return false;}
   if(this.scene==='scene-cutin'){if(!this.isModalPaused()&&!document.hidden){this.advanceResultMessage(dt);this.sceneCutin.advance(dt);}return true;}
   this.sync();if(this.scene==='battle')this.battleUI.updateControls();if(this.scene==='battle')this.battleUI.controller?.setTimeOfDay(currentTimeOfDay());if(this.isPaused()||document.hidden)return false;
@@ -195,7 +196,7 @@ export class GameRuntime {
  }
  startBattle(enemy,stage={}){
   this.patrol.suspendForBattle();this.scene='battle';this.setLocation(stage.encounterType==='training'?(TRAINING_COURSES[stage.trainingTier]?.label||'訓練（易）'):'戦闘');
-  const snapshot=this.session.startBattle(enemy,{kind:stage.encounterType==='training'?'training':'patrol'});this.resultDelay=null;this.battleUI.start(snapshot,{...stage,presentationId:'battle-'+(++this.battlePresentationSerial)});this.sync();return snapshot;
+  this.resultCutinComplete=false;const snapshot=this.session.startBattle(enemy,{kind:stage.encounterType==='training'?'training':'patrol'});this.resultDelay=null;this.battleUI.start(snapshot,{...stage,presentationId:'battle-'+(++this.battlePresentationSerial)});this.sync();return snapshot;
  }
  requestBattleAction(id){if(this.scene!=='battle'||this.isPaused()||document.hidden||!this.battleUI.ready)return {ok:false,reason:'paused'};const result=this.session.requestBattleAction(id);this.battleUI.setSnapshot(this.session.snapshotBattle());return result;}
  requestBattleTarget(id){
@@ -204,7 +205,8 @@ export class GameRuntime {
  }
  startSceneCutin(kind){
   if(['win','loss'].includes(kind)&&(this.scene!=='battle'||!this.battleUI.resultReady))return false;
-  this.messageLocked=true;this.hideMessage();this.scene='scene-cutin';this.homeElement.hidden=true;this.battleUI.hud.hidden=true;this.battleUI.panel.hidden=true;
+  this.resultCutinComplete=false;this.messageLocked=true;this.hideMessage();this.scene='scene-cutin';this.homeElement.hidden=true;this.battleUI.hud.hidden=true;
+  if(kind==='departure')this.battleUI.panel.hidden=true;else this.battleUI.showReturn({cutin:true});
   this.resultMessageElapsed=0;if(kind!=='departure')this.showBattleResult();
   this.sceneCutin.play(kind);this.sync();
  }
@@ -212,19 +214,21 @@ export class GameRuntime {
   // Ignore stale or duplicate completion callbacks; only a paid departure may enter the route.
   if(this.scene!=='scene-cutin'||this.sceneCutin.kind!==kind)return false;
   if(kind==='departure'&&(!this.departureDestination||this.session.state.location!==this.departureDestination.kind))return false;
+  if(kind!=='departure'){
+   if(!this.sceneCutin.completed||this.resultCutinComplete)return false;
+   this.resultCutinComplete=true;this.messageLocked=false;this.battleUI.showReturn({cutin:true});this.sync();return true;
+  }
   this.sceneCutin.stop();this.messageLocked=false;this.hideMessage();
   if(kind==='departure'){
    const destination=this.departureDestination;this.departureDestination=null;
    if(destination?.kind==='training'){this.startBattle(destination.enemy,{region:'training',timeOfDay:currentTimeOfDay(),encounterType:'training',trainingTier:destination.tier});this.sync();return;}
    this.scene='patrol';if(!this.patrol.start()){this.session.cancelPatrol();this.scene='house';this.view.setHouse();this.setLocation('おこていゆハウス');this.toast('道中の準備ができませんでした。もう一度お試しください。');}
-  }else{
-   this.scene='battle';this.returnHomeAfterBattle({automatic:true});
   }
   this.sync();
   return true;
  }
  advanceResultMessage(dt){
-  if(!['win','loss'].includes(this.sceneCutin.kind)||!this.sceneCutin.ready||!this.readMessagePage)return;
+  if(this.resultCutinComplete||!['win','loss'].includes(this.sceneCutin.kind)||!this.sceneCutin.ready||!this.readMessagePage)return;
   const {page,pages}=this.readMessagePage();if(pages<=1)return;
   // Long results stay in the cutin, showing every two-line page automatically.
   const secondsPerPage=2.5;this.sceneCutin.duration=Math.max(this.sceneCutin.duration,pages*secondsPerPage);
@@ -235,10 +239,13 @@ export class GameRuntime {
  showBattleResult(){
   const battle=this.session.snapshotBattle()||this.session.state.lastBattle;if(battle)this.say(battleResultMessage(battle));
  }
- returnHomeAfterBattle({automatic=false}={}){
-  if((!automatic&&(this.isPaused()||document.hidden))||this.scene!=='battle'||this.resultDelay!==null)return false;
+ canReturnHomeAfterBattle(){
+  return Boolean(this.scene==='scene-cutin'&&['win','loss'].includes(this.sceneCutin.kind)&&this.resultCutinComplete&&this.sceneCutin.completed&&this.sceneCutin.ready&&this.sceneCutin.active&&!this.sceneCutin.contextLost&&!this.isModalPaused()&&!document.hidden&&this.session.state.battle?.phase==='ended');
+ }
+ returnHomeAfterBattle(){
+  if(!this.canReturnHomeAfterBattle())return false;
   if(!this.session.returnHomeAfterBattle())return false;
-  this.battleUI.deactivate();this.setLocation('おこていゆハウス');this.scene='house';this.house.arriveFromOutside({afterBattle:true});this.view.setHouse();this.sync();
+  this.sceneCutin.stop();this.resultCutinComplete=false;this.messageLocked=false;this.battleUI.deactivate();this.setLocation('おこていゆハウス');this.scene='house';this.house.arriveFromOutside({afterBattle:true});this.view.setHouse();this.sync();
   this.messages=[];this.hideMessage();return true;
  }
  cancelPatrol(){if(this.scene==='analysis-room')return this.returnFromAnalysisRoom();if(this.scene==='training-hall')return this.returnFromTrainingHall();if(['battle','cutin','scene-cutin'].includes(this.scene)){this.toast('この場面が終わるまで、移動できません。');return false;}this.pendingEncounter=null;if(this.scene==='patrol'){this.session.cancelPatrol();this.patrol.returnHome();this.scene='house';}this.sync();return true;}

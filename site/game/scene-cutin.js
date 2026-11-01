@@ -19,7 +19,7 @@ export function sampleVictory(elapsed){
 /** Short, deterministic view-local cutscenes. The game owns the clock. */
 export class SceneCutin{
  constructor({view,onComplete=()=>{},onError=()=>{}}){
-  Object.assign(this,{view,onComplete,onError});this.loader=new GLTFLoader();this.cache=new Map();this.elapsed=0;this.active=false;this.ready=false;this.generation=0;this.contextListeners=[];
+  Object.assign(this,{view,onComplete,onError});this.loader=new GLTFLoader();this.cache=new Map();this.elapsed=0;this.active=false;this.ready=false;this.completed=false;this.generation=0;this.contextListeners=[];
   this.container=document.createElement('div');Object.assign(this.container.style,{position:'absolute',inset:'0',background:'#f1eddf'});this.container.className='scene-cutin';
   this.status=document.createElement('div');this.status.className='house3d-status anger-cutin-recovery';this.status.innerHTML='<span>カットインを準備しています…</span><button type="button" hidden>もう一度読み込む</button>';this.container.append(this.status);this.status.querySelector('button').onclick=()=>this.play(this.kind);
  }
@@ -30,7 +30,7 @@ export class SceneCutin{
  }
  async face(kind){const url='./assets/scene-cutins/face_'+(kind==='win'?'happy':'teary')+'.png';const buffer=await loadAssetBuffer(new URL(url,import.meta.url));const blob=new Blob([buffer],{type:'image/png'}),image=await createImageBitmap(blob),texture=new THREE.CanvasTexture(image);texture.flipY=false;texture.colorSpace=THREE.SRGBColorSpace;return texture;}
  async play(kind,{resumeState=null}={}){
-  this.kind=kind;this.duration=Number.isFinite(resumeState?.duration)&&resumeState.duration>0?resumeState.duration:SCENE_CUTIN_DURATIONS[kind];this.elapsed=Number.isFinite(resumeState?.elapsed)?THREE.MathUtils.clamp(resumeState.elapsed,0,this.duration):0;this.active=true;this.ready=false;const generation=++this.generation;
+  this.kind=kind;this.duration=Number.isFinite(resumeState?.duration)&&resumeState.duration>0?resumeState.duration:SCENE_CUTIN_DURATIONS[kind];this.elapsed=Number.isFinite(resumeState?.elapsed)?THREE.MathUtils.clamp(resumeState.elapsed,0,this.duration):0;this.completed=Boolean(resumeState?.completed)&&kind!=='departure'&&this.elapsed>=this.duration;this.active=true;this.ready=false;const generation=++this.generation;
   // The renderer is reused; keep its previous frame out of the new cut-in
   // while the model and expression are loading, including failed retries.
   if(this.renderer)this.renderer.domElement.style.visibility='hidden';
@@ -66,12 +66,12 @@ export class SceneCutin{
   }
   this.scene.updateMatrixWorld(true);
  }
- advance(dt){if(!this.active||!this.ready||this.contextLost)return;this.elapsed=Math.min(this.duration,this.elapsed+Math.max(0,dt));this.sample();this.render();if(this.elapsed>=this.duration){this.active=false;this.onComplete(this.kind);}}
+ advance(dt){if(!this.active||!this.ready||this.contextLost||this.completed)return;this.elapsed=Math.min(this.duration,this.elapsed+Math.max(0,dt));this.sample();this.render();if(this.elapsed>=this.duration){this.completed=true;if(this.kind==='departure')this.active=false;this.onComplete(this.kind);}}
  render(){if(!this.ready||!this.active||!this.renderer||this.contextLost)return;const rect=this.container.getBoundingClientRect();if(rect.width<1)return;this.renderer.setSize(Math.round(rect.width),Math.round(rect.height),false);this.camera.aspect=rect.width/rect.height;this.camera.updateProjectionMatrix();this.renderer.render(this.scene,this.camera);this.renderer.domElement.style.visibility='visible';}
  recoverAfterInterruption(){
   if(this.recoveryPromise)return this.recoveryPromise;
   if(!this.active||this.destroyed)return Promise.resolve(false);
-  const kind=this.kind,resumeState={elapsed:this.elapsed,duration:this.duration};
+  const kind=this.kind,resumeState={elapsed:this.elapsed,duration:this.duration,completed:this.completed};
   this.recoveryPromise=(async()=>{
    let timer,generation;
    try{
@@ -87,6 +87,6 @@ export class SceneCutin{
   return this.recoveryPromise;
  }
  releaseRenderer(){this.resizeObserver?.disconnect();this.resizeObserver=null;for(const off of this.contextListeners)off();this.contextListeners=[];this.contextEvents=false;const renderer=this.renderer;this.renderer=null;renderer?.domElement.remove();if(renderer){try{renderer.dispose();}catch{}try{renderer.forceContextLoss?.();}catch{}}}
- stop(){this.active=false;this.ready=false;this.generation++;this.container.remove();this.mixer?.stopAllAction();}
+ stop(){this.active=false;this.ready=false;this.completed=false;this.generation++;this.container.remove();this.mixer?.stopAllAction();}
  destroy(){this.destroyed=true;this.stop();this.releaseRenderer();this.expressionTexture?.image?.close?.();this.expressionTexture?.dispose();this.expressionMaterial?.dispose();}
 }
