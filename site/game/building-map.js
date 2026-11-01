@@ -5,30 +5,30 @@ import {analysisMapDrawing} from './analysis-map.js';
 
 export const BUILDING_FLOORS=Object.freeze([
  {id:'b2',label:'B2',name:'地下の訓練場',areas:[
-  {id:'training',name:'訓練所',text:'入口から見守る、地下の訓練所。'},
-  {id:'guest-lounge',name:'珍生物待機エリア',text:'招待した珍生物が自由にくつろぐ、上質なラウンジ。3Dエリアは準備中。'},
-  {id:'control',name:'訓練管理室',mapOnly:true,text:'訓練所に隣接する管理室。地図のみの表示です。'},
-  {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を、屋外の搬入口から訓練所へ迎える大型EV。'},
-  {id:'core',name:'階段・エレベーター',text:'各階をつなぐ階段とエレベーター。'}]},
+  {id:'training',name:'訓練所',text:'招待した珍生物と訓練する施設。'},
+  {id:'guest-lounge',name:'珍生物待機エリア',text:'招待した珍生物が自由にくつろぐためのラウンジ。'},
+  {id:'control',name:'訓練管理室',mapOnly:true,text:''},
+  {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
+  {id:'core',name:'階段・エレベーター',text:''}]},
  {id:'b1',label:'B1',name:'研究と支援',areas:[
   {id:'research',name:'研究所',text:'おこていゆの研究を支える施設。'},
-  {id:'analysis',name:'珍生物分析室',text:'珍生物を調べる分析室。研究机やモニター、資料棚、仮眠スペースがあります。'},
+  {id:'analysis',name:'珍生物分析室',text:''},
   {id:'production',name:'生産施設',text:'研究と支援のための生産エリア。'},
-  {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'屋外の搬入口と、研究・生産施設の奥をつなぐ大型EV。'},
+  {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
   {id:'maintenance',name:'整備施設',text:'研究と支援を支える整備エリア。'}]},
  {id:'1f',label:'F1',name:'おこていゆの暮らし',areas:[
   {id:'home',name:'おこていゆの部屋',text:'ホーム画面。おこていゆが暮らす部屋。'},
-  {id:'hall',name:'共用廊下',text:'部屋と入口、階段をつなぐ共用廊下。'},
-  {id:'entrance',name:'建物の入り口',text:'建物の入口。'},
-  {id:'core',name:'階段・エレベーター',text:'各階をつなぐ階段とエレベーター。'}]},
+  {id:'hall',name:'共用廊下',text:''},
+  {id:'entrance',name:'建物の入り口',text:''},
+  {id:'core',name:'階段・エレベーター',text:''}]},
  {id:'2f',label:'F2',name:'あなたの暮らし',areas:[
-  {id:'player',name:'あなたの部屋',text:'あなたが暮らす、おこていゆと同じ間取りの1K。'},
-  {id:'core',name:'階段・エレベーター',text:'各階をつなぐ階段とエレベーター。'}]},
+  {id:'player',name:'あなたの部屋',text:''},
+  {id:'core',name:'階段・エレベーター',text:''}]},
  {id:'outdoor',label:'屋外',name:'おこていゆハウス周辺',areas:[
   {id:'building',name:'おこていゆハウスの建物',mapOnly:true,text:'F1におこていゆ、F2にあなたが暮らす建物。'},
-  {id:'entrance',name:'建物入口',mapOnly:true,text:'通常の建物入口。'},
-  {id:'warehouse',name:'倉庫',mapOnly:true,text:'空き地の北側にある倉庫。左側は大型EVへ、南側は住宅街の道へつながっています。'},
-  {id:'freight',name:'大型搬入口・EV',mapOnly:true,text:'大きな珍生物が出入りする、搬入口と一体の大型EV。'}]}
+  {id:'entrance',name:'建物入口',mapOnly:true,text:''},
+  {id:'warehouse',name:'倉庫',mapOnly:true,text:''},
+  {id:'freight',name:'大型搬入口・EV',mapOnly:true,text:'通常のエレベーターに収まらない、大きな珍生物を迎える設備。'}]}
 ]);
 const rect=(x,y,w,h,fill,extra='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" ${extra}/>`;
 const text=(x,y,value,size=24,extra='')=>`<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" ${extra}>${value}</text>`;
@@ -195,7 +195,8 @@ export class BuildingMapDialog{
   const floor=BUILDING_FLOORS.find(f=>f.id===this.floorId),area=floor.areas.find(a=>a.id===id);if(!area)return false;
   this.areaId=id;this.dialog.querySelector('.building-map__drawing').innerHTML=buildingFloorSvg(this.floorId,id);
   const description=this.dialog.querySelector('.building-map__description'),current=this.getCurrentArea(),here=current.floorId===this.floorId&&current.areaId===id,available=!area.mapOnly&&this.canTravel({floorId:this.floorId,areaId:id});description.replaceChildren();
-  const heading=document.createElement('h3'),name=document.createElement('span'),status=document.createElement('small'),copy=document.createElement('p');name.textContent=area.name;status.textContent=here?'現在地':area.mapOnly?'マップのみ':available?'移動できます':'準備中';status.dataset.state=here?'current':available?'available':'unavailable';copy.textContent=area.text;heading.append(name,status);description.append(heading,copy);
+  const heading=document.createElement('h3'),name=document.createElement('span'),status=document.createElement('small');name.textContent=area.name;status.textContent=here?'現在地':area.mapOnly?'マップのみ':available?'移動できます':'準備中';status.dataset.state=here?'current':available?'available':'unavailable';heading.append(name,status);description.append(heading);
+  if(area.text?.trim()){const copy=document.createElement('p');copy.textContent=area.text;description.append(copy);}
   this.mountRoomMap();this.decorateMap();return true;
  }
  decorateMap(){
@@ -206,7 +207,7 @@ export class BuildingMapDialog{
   for(const area of floor.areas){
    const rect=svg.querySelector('[data-building-zone="'+area.id+'"]');if(!rect)continue;
    const [x,y,w,h]=['x','y','width','height'].map(k=>Number(rect.getAttribute(k))),here=current.floorId===this.floorId&&current.areaId===area.id,available=!area.mapOnly&&!here&&this.canTravel({floorId:this.floorId,areaId:area.id});
-   const target=svgNode('g',{'class':'building-map-region '+(available?'is-travelable':here?'is-current':'is-unavailable'),'data-building-map-area':area.id,'data-travel-available':String(available),role:'button',tabindex:0,'aria-label':area.name+'。'+(available?'タップして移動を確認':here?'現在地。説明を見る':area.mapOnly?'マップにのみ表示。説明を見る':'3Dエリアは準備中。説明を見る')});
+   const target=svgNode('g',{'class':'building-map-region '+(available?'is-travelable':here?'is-current':'is-unavailable'),'data-building-map-area':area.id,'data-travel-available':String(available),role:'button',tabindex:0,'aria-label':area.name+'。'+(available?'タップして移動を確認':here?'現在地。情報を見る':area.mapOnly?'マップにのみ表示。情報を見る':'3Dエリアは準備中。情報を見る')});
    target.append(svgNode('rect',{x,y,width:w,height:h,rx:8,'class':'building-map-region__hit','vector-effect':'non-scaling-stroke'}));
    if(available){
     const cx=Number(rect.getAttribute('data-map-marker-x')??x+w/2),cy=Number(rect.getAttribute('data-map-marker-y')??y+24*unit),markerUnit=Number(rect.getAttribute('data-map-marker-unit')??unit),badge=svgNode('g',{transform:'translate('+cx+' '+cy+') scale('+markerUnit+')','class':'building-map-region__badge','aria-hidden':'true'});
