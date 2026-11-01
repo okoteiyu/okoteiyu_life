@@ -26,9 +26,9 @@ export function formatBattleLogEvent(event,names=new Map()){
   case 'battle-start':return entry('system','開始',event.battle?.kind==='training'?'招待した珍生物との訓練が始まった。':'珍生物との戦闘が始まった。');
   case 'action-start':return event.technique==='super_awaken'?null:entry(team,team==='enemy'?'相手の技':'技',actor+'：'+technique(event.technique)+' → '+target);
   case 'damage':return entry(event.target==='player'?'enemy':team,event.target==='player'?'被ダメージ':event.actor==='support'?'反撃':'ダメージ',actor+' → '+target+'：'+amount(event.amount)+'ダメージ');
-  case 'battle-call':return entry('call','かけごえ',event.technique==='auto'?'そっと見守る。':technique(event.technique)+'のかけごえを送った。');
+  case 'battle-call':return null;
   case 'battle-target':return event.target?entry('call','対象','狙う相手を'+target+'に変更。'):null;
-  case 'super-requested':return event.source==='command'?entry('call','かけごえ','スーパーおこていゆ状態へのかけごえを送った。'):null;
+  case 'super-requested':return null;
   case 'super-start':return entry('state','覚醒','おこていゆがスーパーおこていゆ状態になった。');
   case 'super-end':return entry('state','変化','スーパーおこていゆ状態が落ち着いた。');
   case 'support-guard':return entry('support','助っ人',actor+'が前に出てかばう。');
