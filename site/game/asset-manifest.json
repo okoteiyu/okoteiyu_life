@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
   "fileCount": 154,
-  "totalBytes": 135047193,
+  "totalBytes": 137542296,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1141,20 +1141,20 @@
       "sha256": "3a7e5886256a2b3d35427faaeb1b537c98e2fed68332765409610b1dc487587a"
     },
     {
-      "url": "assets/analysis-room/room.glb?v=f56fd1c32346af5ee826aa0ee1344cb656528a64b3ddaa89055439cfd06a7740",
+      "url": "assets/analysis-room/room.glb?v=31b3a78473c1df129d30b232d8bbbfaf314c75080a1319200a154e834ddc2ef8",
       "label": "珍生物分析室",
       "type": "binary",
-      "bytes": 6086504,
+      "bytes": 8197248,
       "priority": 2,
-      "sha256": "f56fd1c32346af5ee826aa0ee1344cb656528a64b3ddaa89055439cfd06a7740"
+      "sha256": "31b3a78473c1df129d30b232d8bbbfaf314c75080a1319200a154e834ddc2ef8"
     },
     {
       "url": "assets/analysis-room/metadata.json",
       "label": "分析室の設定",
       "type": "json",
-      "bytes": 15341,
+      "bytes": 15878,
       "priority": 2,
-      "sha256": "04d1c4526145a6f4f1f35be9c45a4a95aaf9dc3cc7af009dbf075e5aba57e604"
+      "sha256": "cd91df7d689817b838ab9fa21e691c1a407d9f5e453d146dc1f314ad1cc7ab9d"
     },
     {
       "url": "assets/player-room/room.glb?v=cfe7b7850fc1a242175856355dd4b5586a34c6b4eaf2323f7b6bbcc981eff587",
@@ -1189,20 +1189,20 @@
       "sha256": "d165169289260c727498b31b37a04bf1a071453ec49122975e1a230983247c5f"
     },
     {
-      "url": "assets/production-room/room.glb?v=9915bb89ae33eb12299b95e15abe8d0c7e86ab4f987dd0134b1f7696c3238966",
+      "url": "assets/production-room/room.glb?v=9b8e8d79bc3b2d9ea49cc82ea0fde5d459152777f9b4f1178599284fab29e427",
       "label": "生産施設",
       "type": "binary",
-      "bytes": 5040148,
+      "bytes": 5423780,
       "priority": 2,
-      "sha256": "9915bb89ae33eb12299b95e15abe8d0c7e86ab4f987dd0134b1f7696c3238966"
+      "sha256": "9b8e8d79bc3b2d9ea49cc82ea0fde5d459152777f9b4f1178599284fab29e427"
     },
     {
       "url": "assets/production-room/metadata.json",
       "label": "生産施設の設定",
       "type": "json",
-      "bytes": 11371,
+      "bytes": 11561,
       "priority": 2,
-      "sha256": "8b6e7d8f629729f2b946f0a50c795d20effae958a12f4c6685bc08f59f519d71"
+      "sha256": "6e88ab50724fe7b3f3b62619a0dce934cf364afa2de1be5bc39c0fb738d982a6"
     },
     {
       "url": "assets/research-room/room.glb?v=9f4b4639b25613317d081126657c24f26c91067b6c33ef3d9206974cbedbdf12",

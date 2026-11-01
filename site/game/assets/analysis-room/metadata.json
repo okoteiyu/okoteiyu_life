@@ -779,7 +779,21 @@
     }
   ],
   "positionSemantics": "feature.position is reserved footprint center/half-height, and each furniture group root is placed at that center. Actual geometry bounds are measured separately.",
-  "surfaceRevision": "R165",
+  "surfaceRevision": "R167",
+  "surfaceSummary": "Original image-based wood grain, plaster, woven upholstery, linen, enamel and brushed metal surfaces with embedded normal and roughness maps. Existing equipment, drawings, cameras and geometry are retained.",
+  "pbrSurfaceSets": [
+    "ash",
+    "blue",
+    "bronze",
+    "enamel",
+    "floor",
+    "plaster",
+    "sage",
+    "sand",
+    "steel"
+  ],
+  "pbrMaterialCount": 10,
+  "textureImagesEmbedded": true,
   "status": "complete",
   "wallThickness": 0.12,
   "bounds": {
@@ -804,8 +818,8 @@
   },
   "model": {
     "url": "room.glb",
-    "sha256": "f56fd1c32346af5ee826aa0ee1344cb656528a64b3ddaa89055439cfd06a7740",
-    "bytes": 6086504
+    "sha256": "31b3a78473c1df129d30b232d8bbbfaf314c75080a1319200a154e834ddc2ef8",
+    "bytes": 8197248
   },
   "bookCount": 120,
   "meshBatchCount": 126,
@@ -815,7 +829,9 @@
       "id": "entry",
       "url": "preview.webp",
       "width": 1024,
-      "height": 448
+      "height": 448,
+      "bytes": 36830,
+      "sha256": "a5c7f36c4ca0a5ad6bc611a2fd7f924cee4dde8a763e216fa1f331af43e9e67b"
     }
   ],
   "source": "environments/analysis_room/source/build_analysis_room.py",

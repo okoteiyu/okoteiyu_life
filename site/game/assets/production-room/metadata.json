@@ -614,8 +614,8 @@
   },
   "model": {
     "url": "room.glb",
-    "bytes": 5040148,
-    "sha256": "9915bb89ae33eb12299b95e15abe8d0c7e86ab4f987dd0134b1f7696c3238966"
+    "bytes": 5423780,
+    "sha256": "9b8e8d79bc3b2d9ea49cc82ea0fde5d459152777f9b4f1178599284fab29e427"
   },
   "animationCount": 0,
   "meshBatchCount": 87,
@@ -627,5 +627,8 @@
     }
   ],
   "source": "environments/interiors/source/build_interior.py",
-  "layoutSource": "environments/interiors/layouts/production-room.json"
+  "layoutSource": "environments/interiors/layouts/production-room.json",
+  "materialRevision": "R167",
+  "surfaceRevision": "R167",
+  "materialEnhancement": "Embedded authored PBR color/normal/roughness-metallic textures; existing geometry and layout preserved"
 }
