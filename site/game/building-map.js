@@ -26,7 +26,8 @@ export const BUILDING_FLOORS=Object.freeze([
  {id:'outdoor',label:'屋外',name:'おこていゆハウス周辺',areas:[
   {id:'building',name:'おこていゆハウスの建物',mapOnly:true,text:'F1におこていゆ、F2にあなたが暮らす建物。'},
   {id:'entrance',name:'建物入口',mapOnly:true,text:'セキュリティ付きの、通常の建物入口。'},
-  {id:'freight',name:'大型搬入口・EV',mapOnly:true,text:'広い地下施設の端にあり、地上のおこていゆハウスから離れた搬入口兼大型EV。B1の研究・生産側と、B2の訓練所奥へつながります。'}]}
+  {id:'warehouse',name:'倉庫',mapOnly:true,text:'空き地の北側にある倉庫。左側の通路が、大型搬入口・EVの北側へつながっています。'},
+  {id:'freight',name:'大型搬入口・EV',mapOnly:true,text:'大きな珍生物が出入りする、搬入口と一体の大型EV。'}]}
 ]);
 const rect=(x,y,w,h,fill,extra='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" ${extra}/>`;
 const text=(x,y,value,size=24,extra='')=>`<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" ${extra}>${value}</text>`;
