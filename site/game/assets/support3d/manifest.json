@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "revision": "R146",
+  "models": [
+    {
+      "id": "moai_kun",
+      "name": "モアイくん",
+      "url": "moai_kun.glb",
+      "sha256": "189262d6452a92da9b4e86e7c5492b3cfeb95424eae8059dc198ca214765b429",
+      "bytes": 1276732,
+      "height": 0.2,
+      "geometryHeight": 0.19999830568222166,
+      "root": "Support.ModelRoot",
+      "forwardAxis": "+Z",
+      "clips": {
+        "idle": "Idle"
+      },
+      "idleDuration": 1.5,
+      "visualHeightIsAuthoringChoice": false,
+      "softAlpha": false,
+      "sourceGeometryPreserved": true
+    },
+    {
+      "id": "hard_glove",
+      "name": "かたいグローブ",
+      "url": "hard_glove.glb",
+      "sha256": "d949338e1a239310da3e3b6dafa650dbbca5b3e44e209c124b7a5903315cc7d1",
+      "bytes": 154396,
+      "height": 0.10700000077486038,
+      "geometryHeight": 0.10700000077486038,
+      "root": "Support.ModelRoot",
+      "forwardAxis": "+Z",
+      "clips": {
+        "idle": "Idle"
+      },
+      "idleDuration": 1.5,
+      "visualHeightIsAuthoringChoice": true,
+      "softAlpha": false,
+      "sourceGeometryPreserved": true
+    },
+    {
+      "id": "stored_ki",
+      "name": "溜めた気",
+      "url": "stored_ki.glb",
+      "sha256": "9ba823d840b1e27089a4bb10f36cf919cfb230304b4ceb037c0a8c8898fc0cfb",
+      "bytes": 13832,
+      "height": 0.13000001269827913,
+      "geometryHeight": 0.13000001269827913,
+      "root": "Support.ModelRoot",
+      "forwardAxis": "+Z",
+      "clips": {
+        "idle": "Idle"
+      },
+      "idleDuration": 1.5,
+      "visualHeightIsAuthoringChoice": true,
+      "softAlpha": true,
+      "sourceGeometryPreserved": true
+    }
+  ]
+}

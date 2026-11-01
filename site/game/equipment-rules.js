@@ -1,8 +1,8 @@
-/** Held equipment changes numeric effects through multiplicative factors only. */
+/** Numeric equipment effects multiply; support abilities also participate in battle. */
 export const SUPPORT_ITEMS=Object.freeze({
- hard_glove:Object.freeze({id:'hard_glove',name:'かたいグローブ',description:'小さく丸い手がすっぽり収まる、かたいグローブ。与えるダメージが1.25倍になります。',multipliers:Object.freeze({damageDealt:1.25})}),
- stored_ki:Object.freeze({id:'stored_ki',name:'溜めた気',description:'ぼんやりと白く光る、溜めた気の塊。HP・攻撃力・気・速さが1.1倍になります。',multipliers:Object.freeze({hp:1.1,attack:1.1,ki:1.1,speed:1.1})}),
- moai_kun:Object.freeze({id:'moai_kun',name:'モアイくん',description:'おこていゆについてくる、身長20cmのモアイのおもちゃ。特別な思い入れがあります。受けるダメージが0.9倍、与えるダメージが1.1倍になります。',multipliers:Object.freeze({damageReceived:.9,damageDealt:1.1})})
+ hard_glove:Object.freeze({id:'hard_glove',displayInBattle:true,name:'かたいグローブ',description:'小さく丸い手がすっぽり収まる、かたいグローブ。戦闘ではそばに浮かび、与えるダメージが1.25倍になります。',multipliers:Object.freeze({damageDealt:1.25})}),
+ stored_ki:Object.freeze({id:'stored_ki',displayInBattle:true,name:'溜めた気',description:'ぼんやりと白く光る、溜めた気の塊。戦闘ではそばに浮かび、HP・攻撃力・気・速さが1.1倍になります。',multipliers:Object.freeze({hp:1.1,attack:1.1,ki:1.1,speed:1.1})}),
+ moai_kun:Object.freeze({id:'moai_kun',displayInBattle:true,name:'モアイくん',description:'おこていゆについてくる、身長20cmのモアイのおもちゃ。特別な思い入れがあります。受けるダメージが0.9倍、与えるダメージが1.1倍になります。戦闘ではそばで待機し、最初に届いた攻撃を1回だけ吸収。被ダメージ軽減前の30%の威力で、攻撃した相手へ反撃します。',multipliers:Object.freeze({damageReceived:.9,damageDealt:1.1})})
 });
 export const DEFENSE_ITEMS=Object.freeze({
  iron_shield:Object.freeze({id:'iron_shield',name:'鉄の盾',description:'重厚な鉄の盾。受けるダメージが0.75倍、速さが0.8倍になります。',multipliers:Object.freeze({damageReceived:.75,speed:.8})}),

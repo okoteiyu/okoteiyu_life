@@ -138,7 +138,7 @@ export class GameRuntime {
   }else if((event.type==='training-start'||event.type==='patrol-start')&&!event.calmCostCommitted)this.house.spendCalmPoints(event.calmPointsCost);
   else if(event.type==='anger-ready')this.pendingCutin=true;
   else if(event.type==='battle-end')this.resultDelay=.5;
-  else if(event.type==='damage')this.log(event.actor!=='player'?'enemy':'action',(event.actorName||(event.actor!=='player'?'珍生物':'おこていゆ'))+'の攻撃。'+Number(event.amount.toFixed(2))+'のダメージ。');
+  else if(event.type==='damage'){const allied=event.actor==='player'||event.actor==='support';this.log(allied?'action':'enemy',(event.actorName||(allied?'おこていゆ':'珍生物'))+'の攻撃。'+Number(event.amount.toFixed(2))+'のダメージ。');}
   else if(event.type==='super-start')this.log('growth','スーパーおこていゆ状態！ 攻撃力・気・行動速度が'+event.multiplier+'倍。');
   else if(event.type==='battle-call')this.log('action',event.technique==='auto'?'かけごえをやめて、そっと見守る。':(TECHNIQUES[event.technique]?.name||'技')+'のかけごえを送った。');
   else if(event.type==='aura-equipped')this.log('action',event.speciesId?this.session.player.auras[event.speciesId].name+'を纏った。':'オーラを外した。');

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "scope": "ゲーム本編で現在使用するハウス、道中、戦闘、怒りカットイン、キャラクター、ナスの妖精と共通UI画像。専用モデル確認ページのみの素材は除外。",
-  "fileCount": 138,
-  "totalBytes": 103630377,
+  "scope": "ゲーム本編で現在使用するハウス、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
+  "fileCount": 142,
+  "totalBytes": 105077000,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1107,6 +1107,38 @@
       "priority": 3,
       "bytes": 341,
       "sha256": "22c872ba8b8dd9863edb3c1e692ff1fc758cb4a3321c16d393b8c7e97472a7d3"
+    },
+    {
+      "url": "assets/support3d/manifest.json",
+      "label": "サポートもちものの設定",
+      "type": "json",
+      "bytes": 1663,
+      "priority": 2,
+      "sha256": "9232f0a484880ae38e55ea47f5a4b291bd0e0819db35e76771decb08ba801efb"
+    },
+    {
+      "url": "assets/support3d/moai_kun.glb?v=189262d6452a92da9b4e86e7c5492b3cfeb95424eae8059dc198ca214765b429",
+      "label": "モアイくん",
+      "type": "binary",
+      "bytes": 1276732,
+      "priority": 3,
+      "sha256": "189262d6452a92da9b4e86e7c5492b3cfeb95424eae8059dc198ca214765b429"
+    },
+    {
+      "url": "assets/support3d/hard_glove.glb?v=d949338e1a239310da3e3b6dafa650dbbca5b3e44e209c124b7a5903315cc7d1",
+      "label": "かたいグローブ",
+      "type": "binary",
+      "bytes": 154396,
+      "priority": 3,
+      "sha256": "d949338e1a239310da3e3b6dafa650dbbca5b3e44e209c124b7a5903315cc7d1"
+    },
+    {
+      "url": "assets/support3d/stored_ki.glb?v=9ba823d840b1e27089a4bb10f36cf919cfb230304b4ceb037c0a8c8898fc0cfb",
+      "label": "溜めた気",
+      "type": "binary",
+      "bytes": 13832,
+      "priority": 3,
+      "sha256": "9ba823d840b1e27089a4bb10f36cf919cfb230304b4ceb037c0a8c8898fc0cfb"
     }
   ]
 }

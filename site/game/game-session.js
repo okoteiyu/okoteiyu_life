@@ -9,6 +9,7 @@ import {getRegionAt} from './patrol-map.js';
 import {ENCOUNTER_PROFILES,TRAINING_COURSES,overlapLevelBand,patrolSpeciesEligible,trainingLevelRange} from './encounter-rules.js';
 export {TRAINING_COURSES} from './encounter-rules.js';
 import {selectOkoteiyuReward,eligibleOkoteiyuRewards} from './okoteiyu-events.js';
+import {createBattleSupport,MOAI_COUNTER_TIMING,SUPPORT_COUNTER_TECHNIQUE,supportNextEventTime} from './support-rules.js';
 import {TECHNIQUES,techniqueDuration,ADDED_TECHNIQUE_IDS,PLAYER_TECHNIQUE_IDS,playerTechniqueLevel,availableTechniqueIds,defaultTechniqueSlots,validateTechniqueSlots,SUPER_CONFIGURATIONS,superStateDetails,SUPER_MAX_LEVEL,clampTechniqueLevel,techniquePower,syncLevelTechniques} from './technique-rules.js';
 /** Pure game rules shared by the browser and native WebView. */
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -258,7 +259,7 @@ export class GameSession{
   const enemies=members.map((enemy,index)=>{const speciesId=enemy?.speciesId||enemy?.creatureId;if(!Object.hasOwn(CREATURES,speciesId)||!Object.hasOwn(CREATURE_CATEGORIES,CREATURES[speciesId].category))throw new RangeError('Unsupported prototype opponent.');const level=integer(enemy.level,'opponent level',1,106);return {...actor(index?'enemy-'+(index+1):'enemy',speciesId,level,creatureStats(speciesId,level)),techniqueLevels:Object.fromEntries(CREATURES[speciesId].techniques.map(id=>[id,clampTechniqueLevel(id,level)])),sourceId:enemy.id||null};});
   const playerStatBase=playerStatValues(this.player);
   const completedAttacks=Object.fromEntries(['player',...enemies.map(enemy=>enemy.id)].map(id=>[id,0]));
-  const battle={kind,phase:'active',status:'active',time:0,player:actor('player','okoteiyu',this.player.level,applySuperStats(playerStatBase)),playerStatBase,completedAttacks,enemies,enemy:enemies[0],targetId:enemies[0].id,super:{used:false,pending:false,active:false,until:0,multiplier:1,duration:0},result:null,rewards:null,enemyId:encounter?.id||enemies[0].speciesId};
+  const battle={kind,phase:'active',status:'active',time:0,player:actor('player','okoteiyu',this.player.level,applySuperStats(playerStatBase)),playerStatBase,completedAttacks,support:createBattleSupport(this.player.equipment.support),enemies,enemy:enemies[0],targetId:enemies[0].id,super:{used:false,pending:false,active:false,until:0,multiplier:1,duration:0},result:null,rewards:null,enemyId:encounter?.id||enemies[0].speciesId};
   this.state.battle=battle;this.state.location='battle';
   for(const id of this.actorIds())this.combatant(id).nextActionAt=this.nextInterval(id);
   if(kind==='patrol')for(const enemy of enemies)recordJournalEncounter(this.player,enemy);
@@ -308,7 +309,58 @@ export class GameSession{
   const target=actorId==='player'?this.selectTarget():battle.player;if(!target)return false;
   const duration=technique==='super_awaken'?1.5:techniqueDuration(technique);
   actor.action={id:technique,technique,targetId:target.id,startedAt:battle.time,endsAt:battle.time+duration,duration};actor.nextActionAt=Infinity;
+  if(actorId!=='player')this.prepareSupportGuard(actor);
   this.emit('action-start',{actor:actorId,actorName:actor.name,target:target.id,technique,duration,time:battle.time});return true;
+ }
+ prepareSupportGuard(actor){
+  const b=this.state.battle,s=b?.support;if(!s||s.id!=='moai_kun'||s.guardUsed||!actor?.action||actor.action.targetId!=='player')return false;
+  const first=s.phase!=='guarding';
+  if(first||actor.action.endsAt<s.guardActionEndsAt){s.attackerId=actor.id;s.guardActionEndsAt=actor.action.endsAt;}
+  if(first){s.phase='guarding';s.guardStartedAt=b.time;s.returnStartedAt=null;s.returnEndsAt=null;s.cancelReason=null;this.emit('support-guard',{actor:'support',supportId:s.id,actorName:s.name,target:actor.id,time:b.time});}
+  return true;
+ }
+ absorbSupportAttack(actor,rawDamage){
+  const b=this.state.battle,s=b?.support;if(!s||s.id!=='moai_kun'||s.guardUsed||actor.id==='player')return false;
+  Object.assign(s,{guardUsed:true,phase:'waiting',attackerId:actor.id,absorbedAt:b.time,
+   counterStartsAt:b.time+MOAI_COUNTER_TIMING.delay,counterAttackStartsAt:b.time+MOAI_COUNTER_TIMING.delay+MOAI_COUNTER_TIMING.travel,
+   counterEndsAt:b.time+MOAI_COUNTER_TIMING.delay+MOAI_COUNTER_TIMING.travel+MOAI_COUNTER_TIMING.attack,
+   returnStartedAt:null,returnEndsAt:null,rawDamage,reflectDamage:rawDamage*.3,counterApplied:false,cancelReason:null});
+  this.emit('support-block',{actor:'support',supportId:s.id,actorName:s.name,attacker:actor.id,target:'player',rawDamage,reflectDamage:s.reflectDamage,time:b.time});return true;
+ }
+ returnSupport(cancelReason=null){
+  const b=this.state.battle,s=b?.support;if(!s||s.phase==='idle')return false;
+  s.phase='returning';s.returnStartedAt=b.time;s.returnEndsAt=b.time+MOAI_COUNTER_TIMING.return;s.cancelReason=cancelReason;
+  this.emit(cancelReason?'support-cancel':'support-return',{actor:'support',supportId:s.id,actorName:s.name,target:s.attackerId,reason:cancelReason,time:b.time});return true;
+ }
+ refreshSupportGuard(){
+  const b=this.state.battle,s=b?.support;if(!s||b.phase!=='active')return;
+  if(s.guardUsed){if(['waiting','counter'].includes(s.phase)&&!(this.combatant(s.attackerId)?.hp>0))this.returnSupport('attacker-fatigued');return;}
+  if(s.phase!=='guarding')return;
+  const actions=b.enemies.filter(enemy=>enemy.hp>0&&enemy.action?.targetId==='player').sort((a,c)=>a.action.endsAt-c.action.endsAt);
+  if(!actions.length){this.returnSupport('guard-no-attack');return;}
+  s.attackerId=actions[0].id;s.guardActionEndsAt=actions[0].action.endsAt;
+ }
+ finishFatigue(target){
+  const b=this.state.battle;target.action=null;target.nextActionAt=Infinity;this.emit('fatigue',{actor:target.id,name:target.name,time:b.time});
+  this.refreshSupportGuard();
+  if(target.id==='player'){this.endBattle('loss');return true;}if(!this.selectTarget()){this.endBattle('win');return true;}return false;
+ }
+ advanceSupport(){
+  const b=this.state.battle,s=b?.support;if(!s||b.phase!=='active')return;
+  this.refreshSupportGuard();
+  if(s.phase==='waiting'&&b.time+EPSILON>=s.counterStartsAt){s.phase='counter';this.emit('support-counter-start',{actor:'support',supportId:s.id,actorName:s.name,target:s.attackerId,technique:SUPPORT_COUNTER_TECHNIQUE,duration:s.counterEndsAt-s.counterStartsAt,time:b.time});}
+  if(s.phase==='counter'&&b.time+EPSILON>=s.counterEndsAt){
+   const target=this.combatant(s.attackerId);if(!target||target.hp<=0){this.returnSupport('attacker-fatigued');return;}
+   if(!s.counterApplied){s.counterApplied=true;
+    const defense={actor:target,allies:b.enemies,actorHeight:CREATURES[target.speciesId].height,attackerHeight:.2};
+    const targetBodyEffects=CREATURES[target.speciesId].additionalEffects,targetAuraEffects=NO_ADDITIONAL_EFFECTS;
+    const amount=s.reflectDamage*additionalDamageReceivedMultiplier(targetBodyEffects,defense)*additionalDamageReceivedMultiplier(targetAuraEffects,defense);
+    const remaining=Math.max(0,target.hp-amount);target.hp=remaining<EPSILON?0:remaining;
+    this.emit('damage',{actor:'support',actorName:s.name,supportId:s.id,target:target.id,targetName:target.name,technique:SUPPORT_COUNTER_TECHNIQUE,amount,baseAmount:s.reflectDamage,rawDamage:s.rawDamage,hp:target.hp,maxHp:target.maxHp,time:b.time});
+    this.returnSupport();if(target.hp<=0&&this.finishFatigue(target))return;this.autoSuper();
+   }
+  }
+  if(s.phase==='returning'&&b.time+EPSILON>=s.returnEndsAt)s.phase='idle';
  }
  finishAction(actorId){
   const b=this.state.battle,actor=this.combatant(actorId),action=actor?.action;if(!action||b.phase!=='active')return;
@@ -324,15 +376,18 @@ export class GameSession{
    const opponents=actorId==='player'?b.enemies:[b.player],allies=target.id==='player'?[b.player]:b.enemies;
    const targetBodyEffects=CREATURES[target.speciesId].additionalEffects,targetAuraEffects=target.id==='player'?CREATURES[this.player.equippedAura]?.auraAdditionalEffects:NO_ADDITIONAL_EFFECTS;
    const actorHeight=CREATURES[actor.speciesId].height,targetHeight=CREATURES[target.speciesId].height,offense={opponents,actorHeight,targetHeight,actor,allies:actorId==='player'?[b.player]:b.enemies,targetSpeciesId:target.speciesId},defense={actor:target,allies,actorHeight:targetHeight,attackerHeight:actorHeight};
-   const damageMultiplier=additionalDamageMultiplier(bodyEffects,offense)*additionalDamageMultiplier(auraEffects,offense)*additionalDamageReceivedMultiplier(targetBodyEffects,defense)*additionalDamageReceivedMultiplier(targetAuraEffects,defense);
+   const bodyDamageMultiplier=additionalDamageMultiplier(bodyEffects,offense),auraDamageMultiplier=additionalDamageMultiplier(auraEffects,offense);
+   const damageMultiplier=bodyDamageMultiplier*auraDamageMultiplier*additionalDamageReceivedMultiplier(targetBodyEffects,defense)*additionalDamageReceivedMultiplier(targetAuraEffects,defense);
    const nextAttackDamageMultiplier=actor.nextAttackDamageMultiplier;
    const factors=equipmentMultipliers(this.player.equipment),amount=power*(actorId==='player'?factors.damageDealt:factors.damageReceived)*damageMultiplier*nextAttackDamageMultiplier;
    actor.nextAttackDamageMultiplier=1;
-   const remaining=Math.max(0,target.hp-amount);target.hp=remaining<EPSILON?0:remaining;
-   if(target.hp>0)for(const effect of TECHNIQUES[action.technique].additionalEffects||[])if(effect.type==='next_attack_damage_multiplier')target.nextAttackDamageMultiplier*=effect.multiplier;
+   const absorbed=target.id==='player'&&this.absorbSupportAttack(actor,power*bodyDamageMultiplier*auraDamageMultiplier*nextAttackDamageMultiplier);
    b.completedAttacks[actorId]++;
-   this.emit('damage',{actor:actorId,actorName:actor.name,target:target.id,targetName:target.name,technique:action.technique,amount,hp:target.hp,maxHp:target.maxHp,time:b.time});
-   if(target.hp<=0){target.action=null;target.nextActionAt=Infinity;this.emit('fatigue',{actor:target.id,name:target.name,time:b.time});if(target.id==='player'){this.endBattle('loss');return;}if(!this.selectTarget()){this.endBattle('win');return;}}
+   if(!absorbed){const remaining=Math.max(0,target.hp-amount);target.hp=remaining<EPSILON?0:remaining;
+    if(target.hp>0)for(const effect of TECHNIQUES[action.technique].additionalEffects||[])if(effect.type==='next_attack_damage_multiplier')target.nextAttackDamageMultiplier*=effect.multiplier;
+    this.emit('damage',{actor:actorId,actorName:actor.name,target:target.id,targetName:target.name,technique:action.technique,amount,hp:target.hp,maxHp:target.maxHp,time:b.time});
+    if(target.hp<=0&&this.finishFatigue(target))return;
+   }
    this.autoSuper();
   }
   if(actorId==='player'&&b.super.pending){this.beginSuper();return;}
@@ -346,11 +401,13 @@ export class GameSession{
    if(++iterations>100000)throw new Error('Battle event budget exceeded.');
    const ids=this.actorIds();let next=targetTime;
    for(const id of ids){const a=this.combatant(id);if(a.hp>0)next=Math.min(next,a.action?a.action.endsAt:a.nextActionAt);}
+   next=Math.min(next,supportNextEventTime(b.support));
    if(b.super.active)next=Math.min(next,b.super.until);
    b.time=Math.max(b.time,next);
    if(b.super.active&&b.time+EPSILON>=b.super.until){const multiplier=b.super.multiplier;if(!b.player.action&&Number.isFinite(b.player.nextActionAt))b.player.nextActionAt=b.time+Math.max(0,b.player.nextActionAt-b.time)*multiplier;b.super.active=false;b.super.multiplier=1;this.emit('super-end',{actor:'player',active:false,time:b.time});}
    for(const id of ids){const a=this.combatant(id);if(b.phase==='active'&&a.hp>0&&a.action&&a.action.endsAt<=b.time+EPSILON)this.finishAction(id);if(pauseOnSuperAwakening&&this.isSuperAwakening())return this.snapshotBattle();}
    if(b.phase!=='active')break;
+   this.advanceSupport();if(b.phase!=='active')break;
    this.autoSuper();if(b.super.pending&&!b.player.action)this.beginSuper();
    if(pauseOnSuperAwakening&&this.isSuperAwakening())return this.snapshotBattle();
    for(const id of ids){const a=this.combatant(id);if(b.phase==='active'&&a.hp>0&&!a.action&&a.nextActionAt<=b.time+EPSILON)this.startAction(id);}
@@ -359,7 +416,7 @@ export class GameSession{
   if(b.phase==='active'&&!(pauseOnSuperAwakening&&this.isSuperAwakening()))b.time=targetTime;return this.snapshotBattle();
  }
  endBattle(result){
-  const b=this.state.battle;if(!b||b.phase!=='active')return false;b.phase=b.status='ended';b.result=result;for(const id of this.actorIds()){const a=this.combatant(id);a.action=null;a.nextActionAt=Infinity;a.nextAttackDamageMultiplier=1;}b.super.pending=false;
+  const b=this.state.battle;if(!b||b.phase!=='active')return false;if(b.support&&['waiting','counter','guarding'].includes(b.support.phase))this.returnSupport('battle-ended');b.phase=b.status='ended';b.result=result;for(const id of this.actorIds()){const a=this.combatant(id);a.action=null;a.nextActionAt=Infinity;a.nextAttackDamageMultiplier=1;}b.super.pending=false;
   // Aura draws occur only on a full win, once for every opponent.
   if(result==='win'){
    this.player.battlesWon++;let experience=0;const drops=[],opponents=[];

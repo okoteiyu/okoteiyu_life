@@ -5,6 +5,7 @@ import {SuperAwakeningStage} from './super-awakening-stage.js';
 import {SuperRisingAura} from './super-rising-aura.js';
 import {FATIGUE_DURATION,FATIGUE_MAX_FRAME_SECONDS,fatigueMotion,FatigueEffects} from './fatigue-motion.js';
 import {HitParticles} from './hit-particles.js';
+import {BattleSupportView} from './support-view.js';
 import {isModalBlocked} from './modal-layer.js';
 import { getBattleRegionAt } from './patrol-map.js';
 import * as THREE from './vendor/three/three.module.js';
@@ -41,6 +42,7 @@ export class BattleView{
   const sun=this.sun=new THREE.DirectionalLight(0xfff0da,2.4);sun.position.set(-3,6,4);this.scene.add(sun);
   const fill=new THREE.DirectionalLight(0xe9f1ff,.6);fill.position.set(3,3,-2);this.scene.add(fill);
   this.stage=new THREE.Group();this.stage.name='Battle.ReviewGround';this.scene.add(this.stage);
+  this.supportView=new BattleSupportView({scene:this.scene,loader:this.loader});
  }
  createRenderer(){
   if(this.renderer)return;
@@ -67,6 +69,7 @@ export class BattleView{
  async load(snapshot,stage={},{presentationState}={}){
   const generation=this.fieldGeneration=(this.fieldGeneration||0)+1;this.timeRequest=null;this.atmosphereTarget=null;
   this.loading=true;this.ready=false;this.lastError=null;this.snapshot=snapshot;this.stageOptions=stage;this.time=number(snapshot?.time);this.endVisualTime=null;this.cutin=null;
+  this.supportView.setVisible(false);
   this.presentationId=stage.presentationId??null;this.resetHitParticles(this.presentationId);this.fatigueStates=new Map();if(presentationState)this.restoreFatigueState(presentationState);this.observeFatigue(snapshot);this.restoreAwakeningPresentation(snapshot,presentationState);
   if(this.canvas)this.canvas.style.visibility='hidden';
   this.onStatus('戦闘のモデルを読み込んでいます…');
@@ -96,7 +99,11 @@ export class BattleView{
    this.field=field;this.fieldScene=fieldGLTF.scene;this.fieldScene.scale.setScalar(fieldRegion==='training'?1:Math.max(1,maxHeight/1.2));this.fieldScene.position.y=fieldRegion==='training'?0:-.02;this.stage.add(this.fieldScene);
    this.scene.background.set(field.sky);this.scene.fog.color.set(field.sky);this.hemi.intensity=field.ambient;this.sun.intensity=field.sunIntensity;this.sun.color.set(field.sunColor);this.cutin=null;
    if(['acrylic_shield','iron_shield','aura_shield'].includes(snapshot.player.equipment?.defense))await this.prepareShield(player,snapshot.player.equipment.defense);
+   const supportId=stage.presentation==='training-hall'?null:snapshot.player.equipment?.support||null;
+   await this.supportView.prepare(supportId);
    if(this.destroyed||generation!==this.fieldGeneration)return false;
+   const savedSupport=this.presentationId!==null&&presentationState?.presentationId===this.presentationId?presentationState.supportClock:null;
+   this.supportView.activate(supportId,{baseTime:this.time,resumeTime:savedSupport?.time,resumeState:savedSupport,ended:snapshot.phase==='ended'||snapshot.status==='ended'});
    this.restoreAwakeningPresentation(snapshot,presentationState);this.ready=true;this.loading=false;this.resize();this.updatePose();this.render();this.onStatus('');return true;
   }catch(error){if(this.destroyed||generation!==this.fieldGeneration)return false;this.ready=false;this.loading=false;this.lastError=error instanceof Error?error.message:String(error);this.onStatus('');this.onError(error);return false;}
  }
@@ -297,7 +304,7 @@ export class BattleView{
  fatiguePresentationBlocked(){return !this.ready||!this.active||this.loading||this.destroyed||this.contextLost||Boolean(this.cutin)||Boolean(this.isPresentationPaused?.())||this.container?.isConnected===false||typeof document!=='undefined'&&(document.hidden||isModalBlocked());}
  get presentationReadyForResult(){return !this.fatiguePresentationBlocked()&&!this.hasPendingFatigue();}
  captureFatigueState(){return {version:1,presentationId:this.presentationId,actors:[...this.fatigueStates?.values()||[]].map(state=>({...state}))};}
- capturePresentationState(){const awakening=this.cutin||this.awakeningState;return {...this.captureFatigueState(),awakening:awakening?{...awakening}:null};}
+ capturePresentationState(){const awakening=this.cutin||this.awakeningState;return {...this.captureFatigueState(),awakening:awakening?{...awakening}:null,supportClock:this.supportView?.capturePresentationState()||null};}
  restoreAwakeningPresentation(snapshot=this.snapshot,saved=null){
   this.cutin=null;this.awakeningState=null;const action=snapshot?.player?.action;if(action?.technique!=='super_awaken')return false;
   const proposedDuration=number(action.duration,1.5),duration=proposedDuration>0?proposedDuration:1.5,fromSnapshot=number(action.elapsed,Math.max(0,number(snapshot.time)-number(action.startedAt,number(snapshot.time)))),prior=saved?.version===1&&saved.presentationId===this.presentationId?saved.awakening:null;
@@ -360,7 +367,7 @@ export class BattleView{
   const effect=record.enemyRay??=this.makeEnemyRay(record),elapsed=number(current.elapsed,this.time-number(current.startedAt,this.time)),duration=current.duration||.8;
   effect.group.visible=elapsed>=.1&&elapsed<duration;if(!effect.group.visible)return;
   record.anchor.updateWorldMatrix(true,true);const origin=record.attackRoot.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,record.height*.78,0));
-  const player=this.actors.player;if(!player){effect.group.visible=false;return;}const target=player.anchor.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,player.height*.58,0));
+  const player=this.actors.player;if(!player){effect.group.visible=false;return;}const target=this.supportView?.interceptionPoint(this.snapshot,record.instanceId)||player.anchor.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,player.height*.58,0));
   const direction=target.clone().sub(origin).normalize();origin.addScaledVector(direction,record.height*.1);const length=origin.distanceTo(target)+player.height*.12;
   const from=record.anchor.worldToLocal(origin.clone()),to=record.anchor.worldToLocal(origin.clone().add(direction));effect.group.position.copy(from);effect.group.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),to.sub(from).normalize());
   const envelope=ease((elapsed-.1)/.12)*ease((duration-elapsed)/.15);
@@ -394,7 +401,7 @@ export class BattleView{
    const target=role==='player'?this.actors[this.snapshot?.targetId]||this.actors.enemy:this.actors.player;
    const muzzle=effectKind==='shell'?findNode(record.model,'Vehicle.Muzzle'):effectKind==='okoteiyu_beam'?findNode(record.model,'Ray.Charge'):null,origin=muzzle?muzzle.getWorldPosition(new THREE.Vector3()):record.attackRoot.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,record.height*(effectKind==='okoteiyu_beam'?.78:.60),0));
    if(effectKind==='tackle_impact')origin.add(new THREE.Vector3(0,0,record.forwardExtent??record.height*.55).applyQuaternion(record.facing.getWorldQuaternion(new THREE.Quaternion())));
-   const point=target?.anchor.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,target.height*.58,0));
+   const point=(role!=='player'&&this.supportView?.interceptionPoint(this.snapshot,record.instanceId))||target?.anchor.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,target.height*.58,0));
    record.attackEffects.sample(effectKind,current?{...current,elapsed:attackElapsed}:null,origin,point);
   }
   const appearance=record.appearance;
@@ -414,7 +421,9 @@ export class BattleView{
   const states=opponents(this.snapshot),target=states.find(state=>state.id===this.snapshot.targetId&&state.hp>0)||states.find(state=>state.hp>0)||states[0],targetRecord=this.actors[target?.id||'enemy'],player=this.actors.player;
   if(player&&targetRecord)player.facing.rotation.y=Math.atan2(targetRecord.anchor.position.x-player.anchor.position.x,targetRecord.anchor.position.z-player.anchor.position.z);
   for(const [id,shield]of player.shields||[])shield.visible=this.snapshot.player.equipment?.defense===id&&!this.cutin;
-  this.sampleActor(player,this.snapshot.player,'player');for(const state of states)this.sampleActor(this.actors[state.id||'enemy'],state,state.id||'enemy');this.scene.updateMatrixWorld(true);
+  this.sampleActor(player,this.snapshot.player,'player');
+  this.supportView?.sample(this.snapshot,this.actors,this.time,{enabled:this.active&&!this.cutin&&this.stageOptions?.presentation!=='training-hall',camera:this.camera});
+  for(const state of states)this.sampleActor(this.actors[state.id||'enemy'],state,state.id||'enemy');this.scene.updateMatrixWorld(true);
  }
  advance(dt){if(this.destroyed||!this.active||!this.ready||this.loading||this.contextLost||this.isPresentationPaused?.()||typeof document!=='undefined'&&(document.hidden||isModalBlocked()))return;this.updateAtmosphere(dt);if(this.endVisualTime!==null)this.time+=Math.max(0,number(dt));const hadCutin=Boolean(this.cutin);if(this.cutin){this.awakeningState=this.cutin;this.cutin.elapsed=Math.min(this.cutin.duration,this.cutin.elapsed+Math.min(.1,Math.max(0,number(dt))));if(this.cutin.duration-this.cutin.elapsed<1e-9){this.cutin.elapsed=this.cutin.duration;this.cutin=null;}}if(!hadCutin){this.advanceFatigue(dt);this.advanceHitParticles(dt);}this.updatePose();this.fitCamera();this.render();}
  fitCamera(){
@@ -462,7 +471,7 @@ export class BattleView{
   const visiting=this.stageOptions?.presentation==='training-hall',presentation=awakening?'super-awakening':visiting?'training-hall':'battle';if(this.canvas.dataset.presentation!==presentation){this.canvas.dataset.presentation=presentation;this.canvas.setAttribute('aria-label',awakening?'星々が煌めく宇宙で、マッスルポーズを取るスーパーおこていゆ状態への覚醒':visiting?'入口から見渡す地下の訓練所。おこていゆは入口を入ってすぐの場所で待っています。':'おこていゆと珍生物の戦闘。攻撃はその場で行い、疲れると戦闘が終わります。');}
   this.canvas.style.visibility='visible';this.renderFrames++;
  }
- setActive(active){this.active=Boolean(active);if(!this.active)for(const actor of this.actorCache.values())actor.hitParticles?.clear();if(this.active){this.resize();this.updatePose();this.render();}}
+ setActive(active){this.active=Boolean(active);if(!this.active){this.supportView?.setVisible(false);for(const actor of this.actorCache.values())actor.hitParticles?.clear();}if(this.active){this.resize();this.updatePose();this.render();}}
  /** Replace a suspended GPU context, retaining CPU models and this battle's clocks. */
  recoverAfterInterruption(snapshot=this.snapshot,stage=this.stageOptions,{presentationState=this.capturePresentationState()}={}){
   if(this.recoveryPromise)return this.recoveryPromise;
@@ -490,7 +499,7 @@ export class BattleView{
   if(renderer){try{renderer.dispose();}catch{}try{renderer.forceContextLoss?.();}catch{}}
  }
  cancelPendingLoad(){if(!this.loading)return false;this.fieldGeneration=(this.fieldGeneration||0)+1;this.loading=false;this.ready=false;this.timeRequest=null;return true;}
- getDiagnostics(){return {field:this.field?.id||null,trainingEntranceFixed:this.field?.region==='training'&&this.stageOptions?.presentation==='training-hall',trainingFrame:this.field?.region==='training'?this.trainingFrame||null:null,trainingPlacements:this.field?.region==='training'?this.trainingPlacements||{}:null,camera:{position:this.camera.position.toArray(),target:this.cameraAim?.toArray()||null,fov:this.camera.fov,near:this.camera.near},fieldScale:this.fieldScene?.scale.toArray()||null,fieldPosition:this.fieldScene?.position.toArray()||null,awakeningCutin:this.cutin?{...this.cutin}:null,awakeningPresentation:this.awakeningState?{...this.awakeningState}:null,fatigue:this.getFatigueDiagnostics(),hitParticles:this.getHitParticleDiagnostics(),ready:this.ready,loading:this.loading,active:this.active,error:this.lastError,contextLost:this.contextLost,time:this.time,renderFrames:this.renderFrames,size:{width:this.width||0,height:this.height||0},actors:Object.fromEntries(Object.entries(this.actors).map(([role,actor])=>[role,{id:actor.id,height:actor.height,position:actor.anchor.position.toArray(),facingY:actor.facing.rotation.y,currentClip:actor.currentClip,shield:actor.shield?{id:this.snapshot?.player?.equipment?.defense,visible:actor.shield.visible,position:actor.shield.position.toArray(),animations:0}:null,auraId:actor.auraId||null,auraColor:actor.auraColor===undefined?null:'#'+actor.auraColor.toString(16).padStart(6,'0'),auraMaterialCount:actor.auraMaterials?.length||0,hitOffset:actor.hitRoot.position.toArray(),attackOffset:actor.attackRoot.position.toArray(),fixedGroundWorld:actor.fixedGround?.getWorldPosition(new THREE.Vector3()).toArray()||null,meshCount:(()=>{let count=0;actor.model.traverse(node=>{if(node.isMesh)count++;});return count;})()}]))};}
+ getDiagnostics(){return {support:this.supportView?.getDiagnostics()||null,field:this.field?.id||null,trainingEntranceFixed:this.field?.region==='training'&&this.stageOptions?.presentation==='training-hall',trainingFrame:this.field?.region==='training'?this.trainingFrame||null:null,trainingPlacements:this.field?.region==='training'?this.trainingPlacements||{}:null,camera:{position:this.camera.position.toArray(),target:this.cameraAim?.toArray()||null,fov:this.camera.fov,near:this.camera.near},fieldScale:this.fieldScene?.scale.toArray()||null,fieldPosition:this.fieldScene?.position.toArray()||null,awakeningCutin:this.cutin?{...this.cutin}:null,awakeningPresentation:this.awakeningState?{...this.awakeningState}:null,fatigue:this.getFatigueDiagnostics(),hitParticles:this.getHitParticleDiagnostics(),ready:this.ready,loading:this.loading,active:this.active,error:this.lastError,contextLost:this.contextLost,time:this.time,renderFrames:this.renderFrames,size:{width:this.width||0,height:this.height||0},actors:Object.fromEntries(Object.entries(this.actors).map(([role,actor])=>[role,{id:actor.id,height:actor.height,position:actor.anchor.position.toArray(),facingY:actor.facing.rotation.y,currentClip:actor.currentClip,shield:actor.shield?{id:this.snapshot?.player?.equipment?.defense,visible:actor.shield.visible,position:actor.shield.position.toArray(),animations:0}:null,auraId:actor.auraId||null,auraColor:actor.auraColor===undefined?null:'#'+actor.auraColor.toString(16).padStart(6,'0'),auraMaterialCount:actor.auraMaterials?.length||0,hitOffset:actor.hitRoot.position.toArray(),attackOffset:actor.attackRoot.position.toArray(),fixedGroundWorld:actor.fixedGround?.getWorldPosition(new THREE.Vector3()).toArray()||null,meshCount:(()=>{let count=0;actor.model.traverse(node=>{if(node.isMesh)count++;});return count;})()}]))};}
  disposeObject(object){const geometries=new Set(),materials=new Set(),textures=new Set();object?.traverse(node=>{if(node.geometry)geometries.add(node.geometry);for(const material of Array.isArray(node.material)?node.material:node.material?[node.material]:[]){materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});for(const value of geometries)value.dispose();for(const value of materials)value.dispose();for(const value of textures)if(value!==this.shadowTexture)value.dispose();}
- destroy(){if(this.destroyed)return;this.destroyed=true;this.active=false;const resources=new THREE.Group();for(const record of this.actorCache.values()){record.hitParticles?.dispose();record.mixer.stopAllAction();resources.add(record.anchor);}for(const template of this.templateCache.values())resources.add(template.scene);this.disposeObject(resources);this.awakeningStage?.dispose();this.clearStage();this.shadowTexture?.dispose();for(const texture of this.auraTextureCache?.values()||[])texture.dispose();this.auraTextureCache?.clear();this.actorCache.clear();this.actorPromises.clear();this.templateCache.clear();this.templatePromises.clear();this.releaseRenderer();}
+ destroy(){if(this.destroyed)return;this.destroyed=true;this.active=false;this.supportView?.dispose();const resources=new THREE.Group();for(const record of this.actorCache.values()){record.hitParticles?.dispose();record.mixer.stopAllAction();resources.add(record.anchor);}for(const template of this.templateCache.values())resources.add(template.scene);this.disposeObject(resources);this.awakeningStage?.dispose();this.clearStage();this.shadowTexture?.dispose();for(const texture of this.auraTextureCache?.values()||[])texture.dispose();this.auraTextureCache?.clear();this.actorCache.clear();this.actorPromises.clear();this.templateCache.clear();this.templatePromises.clear();this.releaseRenderer();}
 }
