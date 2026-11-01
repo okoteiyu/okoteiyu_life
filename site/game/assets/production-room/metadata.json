@@ -1,0 +1,631 @@
+{
+  "schemaVersion": 1,
+  "revision": "R165",
+  "id": "production-room",
+  "title": "生産施設",
+  "floor": "b1",
+  "areaId": "production",
+  "units": "metres",
+  "dimensionsAreArtProductionValues": true,
+  "room": {
+    "width": 11.6,
+    "depth": 7.6,
+    "height": 3.8,
+    "bounds": {
+      "min": [
+        -5.8,
+        0,
+        -3.8
+      ],
+      "max": [
+        5.8,
+        3.8,
+        3.8
+      ]
+    }
+  },
+  "entrance": {
+    "center": [
+      0,
+      0,
+      -3.8
+    ],
+    "width": 1.65,
+    "height": 2.6,
+    "side": "north",
+    "heroStand": [
+      -0.3,
+      0,
+      -3.26
+    ],
+    "heroYaw": 0,
+    "camera": {
+      "position": [
+        0,
+        1.55,
+        -3.59
+      ],
+      "yaw": 3.141592653589793
+    }
+  },
+  "camera": {
+    "position": [
+      0,
+      9.5,
+      -12
+    ],
+    "target": [
+      0,
+      1.0,
+      0.1
+    ],
+    "fov": 62,
+    "near": 0.06,
+    "far": 85
+  },
+  "features": [
+    {
+      "id": "planter-1",
+      "node": "Interior.planter-1",
+      "label": "植物用プランター",
+      "role": "planter",
+      "position": [
+        -3.9,
+        0.65,
+        -1.3
+      ],
+      "size": [
+        1.65,
+        1.3,
+        1.45
+      ],
+      "yaw": 0,
+      "footprint": [
+        -4.725,
+        -2.025,
+        1.65,
+        1.45
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          -4.724999904632568,
+          0.04999999701976776,
+          -2.0250000953674316
+        ],
+        "max": [
+          -3.075000047683716,
+          1.1568000316619873,
+          -0.5749999284744263
+        ]
+      }
+    },
+    {
+      "id": "planter-2",
+      "node": "Interior.planter-2",
+      "label": "植物用プランター",
+      "role": "planter",
+      "position": [
+        -1.48,
+        0.65,
+        -1.3
+      ],
+      "size": [
+        1.65,
+        1.3,
+        1.45
+      ],
+      "yaw": 0,
+      "footprint": [
+        -2.3049999999999997,
+        -2.025,
+        1.65,
+        1.45
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          -2.305000066757202,
+          0.04999999701976776,
+          -2.0250000953674316
+        ],
+        "max": [
+          -0.6550000309944153,
+          1.1568000316619873,
+          -0.5749999284744263
+        ]
+      }
+    },
+    {
+      "id": "planter-3",
+      "node": "Interior.planter-3",
+      "label": "植物用プランター",
+      "role": "planter",
+      "position": [
+        -3.9,
+        0.65,
+        1.2
+      ],
+      "size": [
+        1.65,
+        1.3,
+        1.45
+      ],
+      "yaw": 0,
+      "footprint": [
+        -4.725,
+        0.475,
+        1.65,
+        1.45
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          -4.724999904632568,
+          0.04999999701976776,
+          0.4750000238418579
+        ],
+        "max": [
+          -3.075000047683716,
+          1.1568000316619873,
+          1.9250000715255737
+        ]
+      }
+    },
+    {
+      "id": "planter-4",
+      "node": "Interior.planter-4",
+      "label": "植物用プランター",
+      "role": "planter",
+      "position": [
+        -1.48,
+        0.65,
+        1.2
+      ],
+      "size": [
+        1.65,
+        1.3,
+        1.45
+      ],
+      "yaw": 0,
+      "footprint": [
+        -2.3049999999999997,
+        0.475,
+        1.65,
+        1.45
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          -2.305000066757202,
+          0.04999999701976776,
+          0.4750000238418579
+        ],
+        "max": [
+          -0.6550000309944153,
+          1.1568000316619873,
+          1.9250000715255737
+        ]
+      }
+    },
+    {
+      "id": "seedling-bench",
+      "node": "Interior.seedling-bench",
+      "label": "苗の作業台",
+      "role": "nursery",
+      "position": [
+        -3.05,
+        0.59,
+        3.1
+      ],
+      "size": [
+        4.0,
+        1.18,
+        0.82
+      ],
+      "yaw": 0,
+      "footprint": [
+        -5.05,
+        2.69,
+        4.0,
+        0.82
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          -5.050000190734863,
+          0.019999980926513672,
+          2.68999981880188
+        ],
+        "max": [
+          -1.0499999523162842,
+          1.1962999105453491,
+          3.509999990463257
+        ]
+      }
+    },
+    {
+      "id": "growing-supplies",
+      "node": "Interior.growing-supplies",
+      "label": "栽培用の棚",
+      "role": "rack",
+      "position": [
+        -5.12,
+        0.86,
+        1.18
+      ],
+      "size": [
+        0.76,
+        1.72,
+        2.25
+      ],
+      "yaw": 0,
+      "footprint": [
+        -5.5,
+        0.05499999999999994,
+        0.76,
+        2.25
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          -5.5,
+          0.0,
+          0.05499996244907379
+        ],
+        "max": [
+          -4.739999771118164,
+          1.7200000286102295,
+          2.305000066757202
+        ]
+      }
+    },
+    {
+      "id": "zone-divider",
+      "node": "Interior.zone-divider",
+      "label": "区画の仕切り",
+      "role": "partition",
+      "position": [
+        0.04,
+        0.65,
+        0.38
+      ],
+      "size": [
+        0.1,
+        1.3,
+        5.55
+      ],
+      "yaw": 0,
+      "footprint": [
+        -0.010000000000000002,
+        -2.395,
+        0.1,
+        5.55
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          -0.015000000596046448,
+          0.0,
+          -2.4050002098083496
+        ],
+        "max": [
+          0.0949999988079071,
+          1.3375000953674316,
+          3.1649999618530273
+        ]
+      }
+    },
+    {
+      "id": "bioreactor-1",
+      "node": "Interior.bioreactor-1",
+      "label": "液体バイオプラント",
+      "role": "reactor",
+      "position": [
+        2.0,
+        1.35,
+        -1.36
+      ],
+      "size": [
+        1.54,
+        2.7,
+        1.74
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        1.23,
+        -2.23,
+        1.54,
+        1.74
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          1.2299997806549072,
+          0.0,
+          -2.2300000190734863
+        ],
+        "max": [
+          2.7699999809265137,
+          2.6700000762939453,
+          -0.4899998903274536
+        ]
+      }
+    },
+    {
+      "id": "bioreactor-2",
+      "node": "Interior.bioreactor-2",
+      "label": "液体バイオプラント",
+      "role": "reactor",
+      "position": [
+        4.2,
+        1.35,
+        -1.36
+      ],
+      "size": [
+        1.54,
+        2.7,
+        1.74
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        3.43,
+        -2.23,
+        1.54,
+        1.74
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          3.430000066757202,
+          0.0,
+          -2.2300000190734863
+        ],
+        "max": [
+          4.970000267028809,
+          2.6700000762939453,
+          -0.4899998903274536
+        ]
+      }
+    },
+    {
+      "id": "bioreactor-3",
+      "node": "Interior.bioreactor-3",
+      "label": "液体バイオプラント",
+      "role": "reactor",
+      "position": [
+        2.0,
+        1.35,
+        1.12
+      ],
+      "size": [
+        1.54,
+        2.7,
+        1.74
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        1.23,
+        0.2500000000000001,
+        1.54,
+        1.74
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          1.2300000190734863,
+          0.0,
+          0.24999983608722687
+        ],
+        "max": [
+          2.7700002193450928,
+          2.6700000762939453,
+          1.9900001287460327
+        ]
+      }
+    },
+    {
+      "id": "bioreactor-4",
+      "node": "Interior.bioreactor-4",
+      "label": "液体バイオプラント",
+      "role": "reactor",
+      "position": [
+        4.2,
+        1.35,
+        1.12
+      ],
+      "size": [
+        1.54,
+        2.7,
+        1.74
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        3.43,
+        0.2500000000000001,
+        1.54,
+        1.74
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          3.429999589920044,
+          0.0,
+          0.24999995529651642
+        ],
+        "max": [
+          4.96999979019165,
+          2.6700000762939453,
+          1.9900001287460327
+        ]
+      }
+    },
+    {
+      "id": "plant-console",
+      "node": "Interior.plant-console",
+      "label": "液体プラントの操作卓",
+      "role": "console",
+      "position": [
+        3.0,
+        0.71,
+        3.13
+      ],
+      "size": [
+        3.92,
+        1.42,
+        0.7
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        1.04,
+        2.78,
+        3.92,
+        0.7
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          1.0399999618530273,
+          0.030000001192092896,
+          2.7799997329711914
+        ],
+        "max": [
+          4.960000038146973,
+          1.3949999809265137,
+          3.4800004959106445
+        ]
+      }
+    },
+    {
+      "id": "pump-unit",
+      "node": "Interior.pump-unit",
+      "label": "循環ポンプ",
+      "role": "pump",
+      "position": [
+        0.94,
+        0.405,
+        2.8
+      ],
+      "size": [
+        0.72,
+        0.81,
+        1.08
+      ],
+      "yaw": 0,
+      "footprint": [
+        0.58,
+        2.26,
+        0.72,
+        1.08
+      ],
+      "area": "main",
+      "actualBounds": {
+        "min": [
+          0.5799999833106995,
+          1.4901161193847656e-08,
+          2.259999990463257
+        ],
+        "max": [
+          1.2999999523162842,
+          0.8150001168251038,
+          3.3399999141693115
+        ]
+      }
+    }
+  ],
+  "hideFromEntranceCamera": [
+    "Interior.NorthShell",
+    "Interior.Ceiling"
+  ],
+  "reverseCamera": {
+    "position": [
+      0,
+      8.5,
+      11
+    ],
+    "target": [
+      0,
+      1,
+      0.1
+    ],
+    "fov": 62,
+    "near": 0.06,
+    "far": 85,
+    "hideNodes": [
+      "Interior.SouthShell",
+      "Interior.Ceiling"
+    ]
+  },
+  "background": "#e8eeea",
+  "lighting": {
+    "ambient": 2.1,
+    "sun": 2.2
+  },
+  "map": {
+    "width": 435,
+    "height": 285
+  },
+  "secondaryEntrances": [
+    {
+      "side": "west",
+      "center": [
+        -5.8,
+        0,
+        0
+      ],
+      "width": 1.18,
+      "height": 2.6
+    }
+  ],
+  "zones": [
+    {
+      "id": "planters",
+      "label": "植物エリア",
+      "bounds": [
+        -5.65,
+        -3.6,
+        5.48,
+        7.1
+      ]
+    },
+    {
+      "id": "biological",
+      "label": "液体プラント",
+      "bounds": [
+        0.22,
+        -3.6,
+        5.45,
+        7.1
+      ]
+    }
+  ],
+  "status": "complete",
+  "bounds": {
+    "min": [
+      -5.894999980926514,
+      -0.11999999731779099,
+      -3.8949999809265137
+    ],
+    "max": [
+      5.869999885559082,
+      3.869999885559082,
+      3.870000123977661
+    ]
+  },
+  "model": {
+    "url": "room.glb",
+    "bytes": 5040148,
+    "sha256": "9915bb89ae33eb12299b95e15abe8d0c7e86ab4f987dd0134b1f7696c3238966"
+  },
+  "animationCount": 0,
+  "meshBatchCount": 87,
+  "previews": [
+    {
+      "url": "preview.webp",
+      "width": 960,
+      "height": 640
+    }
+  ],
+  "source": "environments/interiors/source/build_interior.py",
+  "layoutSource": "environments/interiors/layouts/production-room.json"
+}

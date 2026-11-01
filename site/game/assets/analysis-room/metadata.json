@@ -458,12 +458,12 @@
         "min": [
           3.440000057220459,
           0.0,
-          -2.130000114440918
+          -2.0900001525878906
         ],
         "max": [
           6.200000286102295,
           2.680000066757202,
-          -1.5099999904632568
+          -1.5500000715255737
         ]
       }
     },
@@ -568,7 +568,7 @@
         "max": [
           -3.5749998092651367,
           2.140000104904175,
-          0.2800000309944153
+          0.2799999713897705
         ]
       }
     },
@@ -779,6 +779,7 @@
     }
   ],
   "positionSemantics": "feature.position is reserved footprint center/half-height, and each furniture group root is placed at that center. Actual geometry bounds are measured separately.",
+  "surfaceRevision": "R165",
   "status": "complete",
   "wallThickness": 0.12,
   "bounds": {
@@ -798,12 +799,13 @@
     "centralTableTopY": 0.78,
     "consoleTopY": 0.78,
     "chairSeatTopY": 0.49,
-    "bedMattressTopY": 0.475
+    "bedMattressTopY": 0.475,
+    "fileCabinetTopY": 0.86
   },
   "model": {
     "url": "room.glb",
-    "sha256": "b7a64fa2329368f11d20027c1d8b9477442842e9fa02a8b21cfbf6f9ff7baf60",
-    "bytes": 5981412
+    "sha256": "f56fd1c32346af5ee826aa0ee1344cb656528a64b3ddaa89055439cfd06a7740",
+    "bytes": 6086504
   },
   "bookCount": 120,
   "meshBatchCount": 126,
@@ -813,9 +815,7 @@
       "id": "entry",
       "url": "preview.webp",
       "width": 1024,
-      "height": 448,
-      "bytes": 52528,
-      "sha256": "35e1aaa00287a211d9ac4dd43a12e81655b2cd676ac8dea958424f3c3352b264"
+      "height": 448
     }
   ],
   "source": "environments/analysis_room/source/build_analysis_room.py",

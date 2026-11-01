@@ -7,7 +7,8 @@ import { GameRuntime } from './game-runtime.js';
 import {equippedSupportIds} from './equipment-rules.js';
 import { HouseUI } from './house-ui.js';
 import { TrainingHallUI } from './training-hall.js';
-import { AnalysisRoomUI } from './analysis-room.js';
+import { AnalysisRoomUI, InteriorRoomUI } from './analysis-room.js';
+import {INTERIOR_ROOMS,isInteriorScene,isBuildingVisitScene,interiorForDestination} from './interior-rules.js';
 import { PatrolUI } from './patrol-ui.js';
 import { isModalBlocked } from './modal-layer.js';
 import { NoticePopup } from './notice-popup.js';
@@ -24,7 +25,7 @@ export class SquareSceneView {
   this.observer = new ResizeObserver(() => { const box=this.surface.getBoundingClientRect();element.dispatchEvent(new CustomEvent('viewresize',{detail:{width:box.width,height:box.height,aspect:1,pixelRatio:window.devicePixelRatio||1}})); });
   this.observer.observe(this.surface);
  }
- clear() { houseUI?.deactivate();trainingHallUI?.deactivate();analysisRoomUI?.deactivate();const video=this.surface.querySelector('video');if(video)video.pause();this.surface.replaceChildren();this.surface.classList.remove('is-video');if(this.objectURL){URL.revokeObjectURL(this.objectURL);this.objectURL=null;} }
+ clear() { houseUI?.deactivate();trainingHallUI?.deactivate();analysisRoomUI?.deactivate();interiorUI?.deactivate();const video=this.surface.querySelector('video');if(video)video.pause();this.surface.replaceChildren();this.surface.classList.remove('is-video');if(this.objectURL){URL.revokeObjectURL(this.objectURL);this.objectURL=null;} }
  setDemo(dark=false) { this.clear();const scene=document.createElement('div');scene.className=`main-view__demo${dark?' is-dark':''}`;scene.setAttribute('role','img');scene.setAttribute('aria-label',dark?'暗い背景で枠の見え方を確認':'明るい背景で枠の見え方を確認');scene.innerHTML='<span class="demo-halo"></span><span class="demo-cloud"></span><span class="demo-cloud demo-cloud--right"></span><span class="demo-spark"></span><img class="demo-icon" src="assets/naruto-sticker.png" alt="">';this.surface.append(scene); }
  setHouse() { if(houseUI){this.clear();houseUI.show();return houseUI.container;}const image=this.setImage('assets/okoteiyu-house-workspace.png','研究中のおこていゆがいる、おこていゆハウスの一室');image.className='house-image';return image; }
  setImage(src,alt='メインビューの画像') { this.clear();const image=new Image();image.alt=alt;image.src=src;this.surface.append(image);return image; }
@@ -36,12 +37,12 @@ export class SquareSceneView {
 
 installPasswordViewportGuard();
 installBonusButtonLayout(document.querySelector('[data-home-choice="interfere"]'));
-let patrolUI=null,houseUI=null,trainingHallUI=null,analysisRoomUI=null,gameRuntime=null;
+let patrolUI=null,houseUI=null,trainingHallUI=null,analysisRoomUI=null,interiorUI=null,gameRuntime=null;
 const needsVisitorName=()=>!gameRuntime?.session.state.visitorName;
 const view=new SquareSceneView(document.querySelector('#mainView'));
 const areaMap=new AreaMap(document.querySelector('#areaMap'),{onOpenHouse:button=>buildingMap.open(button),onHouseUpdate:svg=>buildingMap.updateRoomMarkers(svg)});
-const canTravelBuilding=()=>Boolean(gameRuntime&&['house','training-hall','analysis-room'].includes(gameRuntime.scene)&&gameRuntime.isHouseReady()&&!needsVisitorName()&&!eventVisible&&!gameRuntime.session.state.pendingAngerEvent&&!gameRuntime.pendingCutin&&gameRuntime.session.state.location==='home');
-const buildingMap=new BuildingMapDialog({canOpen:canTravelBuilding,getRoomSvg:()=>areaMap.houseSvg,getCurrentArea:()=>gameRuntime?.scene==='analysis-room'?{floorId:'b1',areaId:'analysis'}:gameRuntime?.scene==='training-hall'?{floorId:'b2',areaId:'training'}:{floorId:'1f',areaId:'home'},canTravel:({floorId,areaId})=>canTravelBuilding()&&['1f:home','b2:training','b1:analysis'].includes(floorId+':'+areaId),onTravel:({floorId,areaId})=>floorId==='b1'&&areaId==='analysis'?gameRuntime.visitAnalysisRoom():floorId==='b2'&&areaId==='training'?gameRuntime.visitTrainingHall():gameRuntime.scene==='analysis-room'?gameRuntime.returnFromAnalysisRoom():gameRuntime.returnFromTrainingHall()});areaMap.showHouse();
+const canTravelBuilding=()=>Boolean(gameRuntime&&(gameRuntime.scene==='house'||isBuildingVisitScene(gameRuntime.scene))&&gameRuntime.isHouseReady()&&!needsVisitorName()&&!eventVisible&&!gameRuntime.session.state.pendingAngerEvent&&!gameRuntime.pendingCutin&&gameRuntime.session.state.location==='home');
+const buildingMap=new BuildingMapDialog({canOpen:canTravelBuilding,getRoomSvg:()=>areaMap.houseSvg,getCurrentArea:()=>{const room=INTERIOR_ROOMS[gameRuntime?.scene];return room?{floorId:room.floorId,areaId:room.areaId}:gameRuntime?.scene==='training-hall'?{floorId:'b2',areaId:'training'}:{floorId:'1f',areaId:'home'};},canTravel:destination=>canTravelBuilding()&&(Boolean(interiorForDestination(destination))||['1f:home','b2:training'].includes(destination.floorId+':'+destination.areaId)),onTravel:destination=>{const room=interiorForDestination(destination);if(room)return gameRuntime.visitInterior(room);if(destination.floorId==='b2'&&destination.areaId==='training')return gameRuntime.visitTrainingHall();return isInteriorScene(gameRuntime.scene)?gameRuntime.returnFromInteriorRoom():gameRuntime.returnFromTrainingHall();}});areaMap.showHouse();
 const events=new GameEvents({onMessage:payload=>presentMessage(payload)});
 const samples=[
  {speaker:'ナレーション',kind:'narration',text:'おこていゆは、焼いたベーコンをじっと見つめている。どうやら、研究の手が止まってしまったようだ。'},
@@ -129,7 +130,7 @@ const optionsUI=new OptionsDialog({
  onEquipAura:id=>gameRuntime?.equipAura(id)??false,
  onEquipItem:(kind,id)=>gameRuntime?.equipItem(kind,id)??false,
  onSelectMap:(id,tier='easy')=>{if(id==='training-hall')return gameRuntime?.visitTrainingHall()??false;if(id==='training')return gameRuntime?.requestTraining(tier)??false;if(id==='patrol')return gameRuntime?.requestPatrol()??false;if(id==='house'){if(!gameRuntime?.cancelPatrol())return false;view.setHouse();setLocation('おこていゆハウス');hideEvent();return true;}return false;},
- readState:({browser=false}={})=>({rank:document.querySelector('#rankValue').textContent,location:browser&&['training-hall','analysis-room'].includes(gameRuntime?.scene)?'おこていゆハウス':document.querySelector('#locationName').textContent,gauges:{experience:Number(document.querySelector('#experienceGauge').getAttribute('aria-valuenow'))/100},rankPoints:rankHint.getPoints(),...(gameRuntime?{prototype:gameRuntime.exportProgress({browser})}: {})}),
+ readState:({browser=false}={})=>({rank:document.querySelector('#rankValue').textContent,location:browser&&isBuildingVisitScene(gameRuntime?.scene)?'おこていゆハウス':document.querySelector('#locationName').textContent,gauges:{experience:Number(document.querySelector('#experienceGauge').getAttribute('aria-valuenow'))/100},rankPoints:rankHint.getPoints(),...(gameRuntime?{prototype:gameRuntime.exportProgress({browser})}: {})}),
  applyState:state=>{validatePatrolTransfer(state);gameRuntime?.importProgress(state.prototype);if(state.rankPoints!=null)setRankPoints(state.rankPoints);else setRank(state.rank);setLocation('おこていゆハウス');view.setHouse();gameRuntime?.sync();if(window.mainViewPreview?.browserSave?.initialized)window.mainViewPreview.browserSave.resetFailure();if(needsVisitorName()&&optionsUI.dialog.open)optionsUI.dialog.close();}
 
 });
@@ -201,14 +202,18 @@ trainingHallUI=new TrainingHallUI({view,homeElement:document.querySelector('#hom
 window.mainViewPreview.trainingHall=trainingHallUI;
 analysisRoomUI=new AnalysisRoomUI({view,homeElement:document.querySelector('#homeChoices'),readPlayer:()=>gameRuntime?.session.snapshot().player,isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),onMap:opener=>buildingMap.open(opener),onReturn:()=>gameRuntime?.returnFromAnalysisRoom(),onError:()=>toast('珍生物分析室の3D表示を再試行してください。')});
 window.mainViewPreview.analysisRoom=analysisRoomUI;
-gameRuntime=new GameRuntime({view,house:houseUI,patrol:patrolUI,trainingHall:trainingHallUI,analysisRoom:analysisRoomUI,homeElement:document.querySelector('#homeChoices'),
+interiorUI=new InteriorRoomUI({view,homeElement:document.querySelector('#homeChoices'),roomId:'player-room',readPlayer:()=>gameRuntime?.session.snapshot().player,isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),onMap:opener=>buildingMap.open(opener),onReturn:()=>gameRuntime?.returnFromInteriorRoom(),onError:()=>toast('お部屋の3D表示を再試行してください。')});
+window.mainViewPreview.interiors=interiorUI;
+const interiorRooms=Object.fromEntries(['player-room','warehouse','production-room'].map(id=>[id,interiorUI]));
+gameRuntime=new GameRuntime({view,house:houseUI,patrol:patrolUI,trainingHall:trainingHallUI,analysisRoom:analysisRoomUI,interiorRooms,homeElement:document.querySelector('#homeChoices'),
  isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),isModalPaused:()=>needsVisitorName()||isModalBlocked(),isMessageVisible:()=>eventVisible,
  showMessage:(payload,{record=true,showMessage=true}={})=>showMessage?showEvent(payload,{record}):events.dispatch(payload,{showMessage:false}),hideMessage:hideEvent,setLocation,setGauges,toast,readMessagePage:()=>({page:message.page,pages:message.pages.length}),advanceMessagePage:()=>message.advance()});
 window.mainViewPreview.game=gameRuntime;
 gameRuntime.onTrainingHallEntered=()=>areaMap.showTraining();
 gameRuntime.onAnalysisRoomEntered=()=>areaMap.showAnalysis();
+gameRuntime.onInteriorEntered=id=>areaMap.showInterior(id);
 gameRuntime.onBattleEvent=event=>areaMap.handleBattleEvent(event);
-const browserSave=new BrowserSave({readState:()=>optionsUI.readState({browser:true}),applyState:state=>optionsUI.applyState(state),canSave:()=>['house','training-hall','analysis-room'].includes(gameRuntime.scene)&&['home','patrol','training'].includes(gameRuntime.session.state.location)&&Boolean(houseUI.controller?.ready),onError:(text,error)=>{toast(text);if(browserSave.restoring)startupRestoreError=text+'\n'+(error?.message||'');}});
+const browserSave=new BrowserSave({readState:()=>optionsUI.readState({browser:true}),applyState:state=>optionsUI.applyState(state),canSave:()=>(gameRuntime.scene==='house'||isBuildingVisitScene(gameRuntime.scene))&&['home','patrol','training'].includes(gameRuntime.session.state.location)&&Boolean(houseUI.controller?.ready),onError:(text,error)=>{toast(text);if(browserSave.restoring)startupRestoreError=text+'\n'+(error?.message||'');}});
 gameRuntime.onProgressChange=()=>{browserSave.saveNow();optionsUI.refreshGameView();};
 window.addEventListener('pagehide',()=>browserSave.saveNow());document.addEventListener('visibilitychange',()=>{if(document.hidden)browserSave.saveNow();});
 window.mainViewPreview.browserSave=browserSave;

@@ -1,4 +1,5 @@
-// A schematic overview, not a survey or a new destination in the game.
+import {interiorMapDrawing} from './interior-map.js';
+// A schematic overview, not a survey. Warehouse contents share the 3D layout.
 export const OUTDOOR_MAP_VIEWBOX='0 0 2000 1120';
 
 const rect=(x,y,width,height,fill,extra='')=>`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="9" fill="${fill}" ${extra}/>`;
@@ -21,11 +22,8 @@ export function outdoorMapDrawing({selected=null}={}){
   '<path data-outdoor-path="warehouse-street" d="M910 960V660" fill="none" stroke="#d8d1bd" stroke-width="180"/>'+
   '<path d="m1522 866 18-18 18 18m-1316 0 18-18 18 18" fill="none" stroke="#aa9b78" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
   '<path data-outdoor-feature="warehouse-street-direction" d="m892 866 18-18 18 18" fill="none" stroke="#aa9b78" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
-  zone('warehouse',540,200,740,460,'#eee8d9')+
-  rect(565,224,690,412,'#f8f3e6','data-outdoor-feature="warehouse-interior" stroke="#cfbea1" stroke-width="3"')+
-  '<g data-outdoor-feature="warehouse-shelves" fill="#d4c8b1" stroke="#b4a17e" stroke-width="3"><rect x="1124" y="246" width="102" height="368" rx="5"/><path d="M1124 320h102m-102 74h102m-102 74h102m-102 74h102" fill="none"/></g>'+
-  '<g data-outdoor-feature="warehouse-crates" fill="#e1cfaa" stroke="#baa175" stroke-width="3"><rect x="711" y="240" width="82" height="56" rx="4"/><rect x="819" y="240" width="82" height="56" rx="4"/><path d="M752 240v56m108-56v56" fill="none"/></g>'+
-  text(835,485,'倉庫',82)+
+  rect(540,200,740,460,'#eee8d9',`data-building-zone="warehouse" data-map-marker-x="910" data-map-marker-y="420" data-map-marker-unit="2.5" stroke="${selected==='warehouse'?'#936843':'#ad9d7d'}" stroke-width="3"`)+
+  '<g transform="translate(540 200)" data-outdoor-feature="warehouse-interior">'+interiorMapDrawing('warehouse',{selected:selected==='warehouse'})+'</g>'+text(835,180,'倉庫',40)+
   '<path data-outdoor-feature="warehouse-entry-apron" d="M470 264H510L536 234H588V398H536L510 336H470Z" fill="#d8d1bd" stroke="#b7aa8b" stroke-width="3" stroke-linejoin="round"/>'+
   '<g data-outdoor-feature="warehouse-door" data-opening-y="234" data-opening-height="164" fill="none" stroke="#a18b66"><path d="M532 234h115m-115 164h115" stroke-width="4"/><path d="M565 316A82 82 0 0 0 647 234M565 316A82 82 0 0 1 647 398" stroke-width="3" stroke-dasharray="7 5"/></g>'+
   '<path data-outdoor-feature="warehouse-street-apron" d="M799 612H1021V664L1000 704H820L799 664Z" fill="#d8d1bd" stroke="#b7aa8b" stroke-width="3" stroke-linejoin="round"/>'+

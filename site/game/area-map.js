@@ -1,6 +1,8 @@
 import {trainingMapSvg} from './training-map.js';
 import {analysisMapSvg} from './analysis-map.js';
 import {BattleLog} from './battle-log.js';
+import {interiorMapSvg} from './interior-map.js';
+import {INTERIOR_ROOMS} from './interior-rules.js';
 
 const DEFAULT_BOUNDS={min:[-2.72,-.1,-5.72],max:[2.72,2.8,.15]};
 /** Project the actual Y-up room coordinates: rear at the top, entrance below. */
@@ -10,7 +12,7 @@ export function roomMapPoint(position,bounds=DEFAULT_BOUNDS){
 }
 export class AreaMap {
  constructor(element,{onOpenHouse=()=>{},onHouseUpdate=()=>{}}={}){
-  this.onHouseUpdate=onHouseUpdate;this.contentClick=event=>{if(['house','training','analysis'].includes(this.mode)){const button=event.target.closest('[data-house-map-open]');if(button)onOpenHouse(button);}};element.addEventListener('click',this.contentClick);
+  this.onHouseUpdate=onHouseUpdate;this.contentClick=event=>{if(['house','training','analysis','interior'].includes(this.mode)){const button=event.target.closest('[data-house-map-open]');if(button)onOpenHouse(button);}};element.addEventListener('click',this.contentClick);
   this.element=element;this.content=element.querySelector('#areaMapContent');this.title=element.querySelector('#areaMapTitle');this.hint=element.querySelector('#areaMapHint');this.mode=null;this.markerKey=null;
  }
  showHouse(life,metadata){
@@ -40,6 +42,10 @@ export class AreaMap {
   this.clearBattleLog();
   this.mode='analysis';this.element.dataset.area='analysis';this.title.textContent='珍生物分析室';this.hint.textContent='';
   this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="珍生物分析室の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+analysisMapSvg({compact:true,current:true})+'</button>';
+ }
+ showInterior(id){
+  const room=INTERIOR_ROOMS[id];if(!room||id==='analysis-room')return false;this.clearBattleLog();this.mode='interior';this.element.dataset.area='interior';this.title.textContent=room.title;this.hint.textContent='';
+  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="'+room.title+'の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+interiorMapSvg(id)+'</button>';return true;
  }
  handleBattleEvent(event){
   if(event?.type==='battle-start'){

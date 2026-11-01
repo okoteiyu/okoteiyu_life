@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "scope": "ゲーム本編で現在使用するハウス、分析室、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
-  "fileCount": 144,
-  "totalBytes": 112097839,
+  "scope": "ゲーム本編で現在使用するハウス、分析室、あなたの部屋、倉庫、生産施設、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
+  "fileCount": 150,
+  "totalBytes": 121964999,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1141,20 +1141,68 @@
       "sha256": "3a7e5886256a2b3d35427faaeb1b537c98e2fed68332765409610b1dc487587a"
     },
     {
-      "url": "assets/analysis-room/room.glb?v=b7a64fa2329368f11d20027c1d8b9477442842e9fa02a8b21cfbf6f9ff7baf60",
+      "url": "assets/analysis-room/room.glb?v=f56fd1c32346af5ee826aa0ee1344cb656528a64b3ddaa89055439cfd06a7740",
       "label": "珍生物分析室",
       "type": "binary",
-      "bytes": 5981412,
+      "bytes": 6086504,
       "priority": 2,
-      "sha256": "b7a64fa2329368f11d20027c1d8b9477442842e9fa02a8b21cfbf6f9ff7baf60"
+      "sha256": "f56fd1c32346af5ee826aa0ee1344cb656528a64b3ddaa89055439cfd06a7740"
     },
     {
       "url": "assets/analysis-room/metadata.json",
       "label": "分析室の設定",
       "type": "json",
-      "bytes": 15388,
+      "bytes": 15341,
       "priority": 2,
-      "sha256": "1d9172ebe02170cc193464e0aa7231220f82d59ab733727ae97f4ade82a5ab5c"
+      "sha256": "04d1c4526145a6f4f1f35be9c45a4a95aaf9dc3cc7af009dbf075e5aba57e604"
+    },
+    {
+      "url": "assets/player-room/room.glb?v=cfe7b7850fc1a242175856355dd4b5586a34c6b4eaf2323f7b6bbcc981eff587",
+      "label": "あなたの部屋",
+      "type": "binary",
+      "bytes": 2578868,
+      "priority": 2,
+      "sha256": "cfe7b7850fc1a242175856355dd4b5586a34c6b4eaf2323f7b6bbcc981eff587"
+    },
+    {
+      "url": "assets/player-room/metadata.json",
+      "label": "あなたの部屋の設定",
+      "type": "json",
+      "bytes": 13158,
+      "priority": 2,
+      "sha256": "f4bbf6f90be3f34c06e559365e5e4218ee6484b9d89996bdec5cf238b44ebd86"
+    },
+    {
+      "url": "assets/warehouse/room.glb?v=130278f3552aebd768e2beaaeadaa23bda6a88877dc79f7b1209b9672d9849ae",
+      "label": "倉庫",
+      "type": "binary",
+      "bytes": 2106968,
+      "priority": 2,
+      "sha256": "130278f3552aebd768e2beaaeadaa23bda6a88877dc79f7b1209b9672d9849ae"
+    },
+    {
+      "url": "assets/warehouse/metadata.json",
+      "label": "倉庫の設定",
+      "type": "json",
+      "bytes": 11602,
+      "priority": 2,
+      "sha256": "d165169289260c727498b31b37a04bf1a071453ec49122975e1a230983247c5f"
+    },
+    {
+      "url": "assets/production-room/room.glb?v=9915bb89ae33eb12299b95e15abe8d0c7e86ab4f987dd0134b1f7696c3238966",
+      "label": "生産施設",
+      "type": "binary",
+      "bytes": 5040148,
+      "priority": 2,
+      "sha256": "9915bb89ae33eb12299b95e15abe8d0c7e86ab4f987dd0134b1f7696c3238966"
+    },
+    {
+      "url": "assets/production-room/metadata.json",
+      "label": "生産施設の設定",
+      "type": "json",
+      "bytes": 11371,
+      "priority": 2,
+      "sha256": "8b6e7d8f629729f2b946f0a50c795d20effae958a12f4c6685bc08f59f519d71"
     }
   ]
 }

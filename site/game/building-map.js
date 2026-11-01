@@ -2,6 +2,7 @@ import {tryOpenModal,releaseModal,isModalBlocked} from './modal-layer.js';
 import {trainingMapDrawing,BASEMENT_MAP_VIEWBOX,basementCoreDrawing,basementFreightDrawing} from './training-map.js';
 import {outdoorMapDrawing,OUTDOOR_MAP_VIEWBOX} from './outdoor-map.js';
 import {analysisMapDrawing} from './analysis-map.js';
+import {interiorMapDrawing} from './interior-map.js';
 
 export const BUILDING_FLOORS=Object.freeze([
  {id:'b2',label:'B2',name:'地下の訓練場',areas:[
@@ -13,7 +14,7 @@ export const BUILDING_FLOORS=Object.freeze([
  {id:'b1',label:'B1',name:'研究と支援',areas:[
   {id:'research',name:'研究所',text:'おこていゆの研究を支える施設。'},
   {id:'analysis',name:'珍生物分析室',text:''},
-  {id:'production',name:'生産施設',text:'研究と支援のための生産エリア。'},
+  {id:'production',name:'生産施設',text:'植物を育てる区画と、液体を扱うバイオプラント。'},
   {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
   {id:'maintenance',name:'整備施設',text:'研究と支援を支える整備エリア。'}]},
  {id:'1f',label:'F1',name:'おこていゆの暮らし',areas:[
@@ -27,7 +28,7 @@ export const BUILDING_FLOORS=Object.freeze([
  {id:'outdoor',label:'屋外',name:'おこていゆハウス周辺',areas:[
   {id:'building',name:'おこていゆハウスの建物',mapOnly:true,text:'F1におこていゆ、F2にあなたが暮らす建物。'},
   {id:'entrance',name:'建物入口',mapOnly:true,text:''},
-  {id:'warehouse',name:'倉庫',mapOnly:true,text:''},
+  {id:'warehouse',name:'倉庫',text:'食材や資材、作業道具を保管する倉庫。'},
   {id:'freight',name:'大型搬入口・EV',mapOnly:true,text:'通常のエレベーターに収まらない、大きな珍生物を迎える設備。'}]}
 ]);
 const rect=(x,y,w,h,fill,extra='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" ${extra}/>`;
@@ -70,8 +71,8 @@ export function buildingFloorSvg(floorId,selected){
    rect(287,56,272,278,'#f1ead6','data-living-room="true" stroke="#c4b493" stroke-width="2"')+
    '<g data-living-contents="true" transform="translate(118 0)">'+
    (home?'<svg class="building-live-room" x="171" y="58" width="268" height="274" viewBox="7 7 226 248"></svg>':
-    rect(170,57,270,78,'#e6e8d9')+rect(182,137,47,48,'#e4d0ae')+stairs(185,139)+rect(324,73,101,55,'#c9d7cc','stroke="#abbcaf"')+rect(396,77,24,47,'#f8faf5')+rect(184,282,100,34,'#dccbad')+rect(202,208,115,48,'#d5c7b6')+rect(236,185,48,22,'#d5c7b6')+rect(355,232,64,62,'#e8ddc5'))+
-   text(305,home?171:164,home?'':'リビング',26)+'</g>'+
+    '<g transform="translate(169 56)">'+interiorMapDrawing('player-room',{livingOnly:true})+'</g>')+
+   '</g>'+
    rect(241,56,40,340,'#fffbf1','data-apartment-passage="wet"')+
    `<path d="M460 398V350H261V88M261 100H235M261 192H235" stroke="#c3cbae" stroke-width="2" stroke-dasharray="5 5" fill="none" aria-hidden="true"/>`+
    toiletRoom()+washBathRoom()+
@@ -97,9 +98,9 @@ export function buildingFloorSvg(floorId,selected){
     zone('research',selected,65,190,435,150,'#e1ead7')+
     rect(545,190,435,150,'#e8eee5','data-building-zone="analysis" data-map-marker-x="905" data-map-marker-y="90" data-map-marker-unit="1.25"')+
     '<g transform="translate(545 190)">'+analysisMapDrawing({selected:selected==='analysis'})+'</g>'+
-    zone('production',selected,65,410,435,285,'#eee1c6')+zone('maintenance',selected,545,410,435,285,'#e8dfd5')+
+    rect(65,410,435,285,'#eee1c6','data-building-zone="production" data-map-marker-x="282" data-map-marker-y="365" data-map-marker-unit="1.2"')+'<g transform="translate(65 410)">'+interiorMapDrawing('production-room',{selected:selected==='production'})+'</g>'+zone('maintenance',selected,545,410,435,285,'#e8dfd5')+
     '<path data-basement-access="room-doors" d="M260 340h44M260 410h44M740 410h44M65 254v32M65 536v32" fill="none" stroke="#e2d9c4" stroke-width="8"/>'+
-    text(282,282,'研究所',46)+text(658,175,'珍生物分析室',28)+text(282,562,'生産施設',46)+text(762,562,'整備施設',46)+
+    text(282,282,'研究所',46)+text(658,175,'珍生物分析室',28)+text(282,720,'生産施設',28)+text(762,562,'整備施設',46)+
     text(550,125,'研究・支援エリア',35)+basementCoreDrawing({selected})+basementFreightDrawing({selected});
   }else{
    drawing=trainingMapDrawing({selected});
