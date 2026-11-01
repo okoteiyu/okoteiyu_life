@@ -6,8 +6,26 @@ export function interiorMapPoint(id,position,{livingOnly=false,width,height}={})
  const layout=INTERIOR_LAYOUTS[id];if(!layout)throw new RangeError('部屋の地図が見つかりません。');const bounds=livingOnly?layout.living.bounds:layout.room.bounds,size=livingOnly?layout.living.map:layout.map;
  return {x:(position[0]-bounds.min[0])/(bounds.max[0]-bounds.min[0])*(width||size.width),y:(position[2]-bounds.min[2])/(bounds.max[2]-bounds.min[2])*(height||size.height)};
 }
+function loungeFurniture(f,p,q){
+ const w=q.x-p.x,d=q.y-p.y,kind=f.loungeKind||f.role,yaw=f.yaw||0,round=(x,y,ww,dd,color,r=4,extra='')=>`<rect x="${n(x)}" y="${n(y)}" width="${n(ww)}" height="${n(dd)}" rx="${n(Math.min(r,ww/2,dd/2))}" fill="${color}" ${extra}/>`;
+ const outline='stroke="#b89c65" stroke-width="1"';let body='';
+ if(kind==='rug')body=round(p.x,p.y,w,d,'#afc6c0',8,outline)+round(p.x+3,p.y+3,w-6,d-6,'none',6,'stroke="#e8d5a7" stroke-width="1"');
+ else if(f.role==='sofa'||kind==='armchair'){
+  const color=kind==='rose-sofa'?'#d9b9bd':kind==='sage-sofa'?'#b6cdbf':'#d2c4a6',vertical=Math.abs(Math.sin(yaw))>.5,back=vertical?round(Math.sin(yaw)>0?p.x+2:q.x-w*.24,p.y+2,w*.20,d-4,'#aabdb0',2):round(p.x+2,Math.cos(yaw)<0?q.y-d*.25:p.y+2,w-4,d*.20,'#aabdb0',2);
+  body=round(p.x,p.y,w,d,color,5,outline)+back+round(p.x+w*.18,p.y+d*.28,w*.64,d*.49,'#f3e9db',3);
+  if(f.role==='sofa'&&!vertical)body+=`<path d="M${n(p.x+w/3)} ${n(p.y+d*.28)}V${n(p.y+d*.77)}M${n(p.x+w*2/3)} ${n(p.y+d*.28)}V${n(p.y+d*.77)}" stroke="#c4b99e" stroke-width="1"/>`;
+ }else if(kind==='pouf')body=round(p.x,p.y,w,d,'#dbc8a6',Math.min(w,d)*.35,outline)+`<path d="M${n(p.x+w*.25)} ${n(p.y+d*.25)}L${n(p.x+w*.75)} ${n(p.y+d*.75)}M${n(p.x+w*.75)} ${n(p.y+d*.25)}L${n(p.x+w*.25)} ${n(p.y+d*.75)}" stroke="#f4e9d5"/>`;
+ else if(kind==='tea-table')body=`<ellipse cx="${n((p.x+q.x)/2)}" cy="${n((p.y+q.y)/2)}" rx="${n(w/2)}" ry="${n(d/2)}" fill="#ead8b8" ${outline}/><ellipse cx="${n((p.x+q.x)/2)}" cy="${n((p.y+q.y)/2)}" rx="${n(w*.40)}" ry="${n(d*.36)}" fill="#fff6e4"/>`+[.35,.62].map((at,i)=>`<circle cx="${n(p.x+w*at)}" cy="${n(p.y+d*(i ? .6 : .4))}" r="${n(Math.min(w,d)*.12)}" fill="${i?'#d8b7ab':'#a9c6be'}" stroke="#a6a98c" stroke-width=".6"/>`).join('');
+ else if(kind==='refreshments')body=round(p.x,p.y,w,d,'#d6c1a0',2,outline)+round(p.x+w*.07,p.y+d*.15,w*.86,d*.70,'#fff8e8',2)+[.24,.40,.56,.72].map(at=>`<circle cx="${n(p.x+w*at)}" cy="${n(p.y+d*.5)}" r="${n(d*.19)}" fill="#b3cec6" stroke="#8fa999" stroke-width=".7"/>`).join('');
+ else if(kind==='reading-shelf')body=round(p.x,p.y,w,d,'#c9b594',2,outline)+Array.from({length:12},(_,i)=>rect(p.x+2+i*(w-4)/12,p.y+2,(w-4)/12-1,d-4,['#a1b9a9','#d8bc9a','#bec3cf'][i%3])).join('');
+ else if(kind==='plant')body=round(p.x+w*.23,p.y+d*.25,w*.54,d*.54,'#cfbea1',3,outline)+[[-.17,-.10],[.16,-.05],[0,.17]].map(([x,y],i)=>`<ellipse cx="${n(p.x+w*(.5+x))}" cy="${n(p.y+d*(.5+y))}" rx="${n(w*.24)}" ry="${n(d*.20)}" fill="${i%2?'#a9c69a':'#8eaf86'}"/>`).join('');
+ else if(kind==='welcome-relief')body=round(p.x,p.y,w,d,'#d5bc83',1,outline);
+ else body=round(p.x,p.y,w,d,'#ded2bd',3,outline);
+ return `<g data-interior-feature="${f.id}" data-feature-role="${f.role}" data-model-node="${f.node}" data-world-footprint="${escape(JSON.stringify(f.footprint))}"><title>${escape(f.label)}</title>${body}</g>`;
+}
 function furniture(id,f,options){
  const [x,z,w,d]=f.footprint,p=interiorMapPoint(id,[x,0,z],options),q=interiorMapPoint(id,[x+w,0,z+d],options),ww=q.x-p.x,dd=q.y-p.y;
+ if(id==='guest-lounge')return loungeFurniture(f,p,q);
  const newRoom=id==='research-room'||id==='maintenance-room';
  const palette={loft:'#e3e6d8',stairs:'#dec9a4',bed:'#c2d3d5',bookcase:'#c7b28c',sofa:'#becfc7',desk:'#d8bf96',chair:'#afc5bc',rug:'#f7f5e9',plant:'#a8c995',fridge:'#c6d2cf',rack:'#c4b79d',tools:'#c3c6b0',crate:'#e1c598',cart:'#a4b4b0',planter:'#c2ce9b',nursery:'#c6d4b7',partition:'#a1b9ae',reactor:'#a3d8cf',console:'#bac8c2',controls:'#b6cac3',cabinet:'#becbc1',monitors:'#93b6ad',pump:'#9aaba9',kitchen:'#d7c7a7',toilet:'#f7faf1',basin:'#f5faf2',bath:'#d8e9e5'};
  let detail='';

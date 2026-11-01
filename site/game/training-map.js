@@ -1,6 +1,7 @@
+import {interiorMapDrawing} from './interior-map.js';
 // +Z points toward the right-hand entrance; +X is up on the floor plan.
 // Looking into the hall from that entrance, camera-left (-X) is map-down.
-// Rooms outside the existing hall are schematic; the guest lounge awaits 3D art.
+// The guest lounge shares its authored 3D layout; the management room remains schematic.
 const SCALE=28.8,ORIGIN={x:70,y:220},WORLD={minX:-5.36,minZ:-28.12,maxX:5.36,maxZ:3.46};
 export const BASEMENT_MAP_VIEWBOX='-240 55 1440 685';
 export const TRAINING_MAP_VIEWBOX=BASEMENT_MAP_VIEWBOX;
@@ -59,19 +60,10 @@ export function trainingMapDrawing({selected=null,compact=false,current=false}={
   feature('entrance',[0,0,3.22],'<path d="M3-44V44M-2-42V-4M-2 4V42" stroke="#9abeb6" stroke-width="4" fill="none"/>')+
   worldRect(0,-27.8,6.6,.14,'#b9c5bd','data-training-feature="freight-door" stroke="#899c8f" stroke-width="3"')+
   `<path d="M${freightTop.x-4} ${door.y}h8" stroke="#7b8c80" stroke-width="3"/>`;
- // An invited guest's lounge: soft seating, gold trim, refreshments and an open entry.
- drawing+=zone('guest-lounge',70,550,535,145,'#f8f0de',`stroke="${selected==='guest-lounge'?'#936843':'#b89b62'}" stroke-width="${selected==='guest-lounge'?5:2}"`)+
-  '<g data-guest-feature="gold-trim" fill="none" stroke="#d1b87a" stroke-width="2"><path d="M86 565H589V588M86 674V683H589V674"/><path d="m96 571 6-5 6 5-6 5Zm471 0 6-5 6 5-6 5Z"/></g>'+
-  rect(compact?220:184,552,compact?234:306,36,'#f8f0de','data-guest-label-backdrop="true"')+
-  text(337,581,compact?'待機エリア':'珍生物待機エリア',compact?40:34)+
-  '<g data-guest-feature="rug"><rect x="254" y="594" width="174" height="84" rx="16" fill="#657b7b" stroke="#c4a466" stroke-width="4"/><rect x="264" y="603" width="154" height="66" rx="11" fill="none" stroke="#e2d6ad" stroke-width="2"/></g>'+
-  '<g data-guest-feature="sofa"><rect x="103" y="602" width="115" height="64" rx="17" fill="#b88e9c" stroke="#a78a60" stroke-width="2"/><rect x="113" y="611" width="94" height="44" rx="12" fill="#ead4ce"/><path d="M144 612v42m31-42v42" fill="none" stroke="#c6a9a3" stroke-width="2"/><rect x="99" y="605" width="15" height="56" rx="7" fill="#c5a2ab"/><rect x="205" y="605" width="15" height="56" rx="7" fill="#c5a2ab"/></g>'+
-  '<g data-guest-feature="armchairs">'+[594,651].map(y=>`<rect x="465" y="${y}" width="60" height="29" rx="10" fill="#b6c5b8" stroke="#b59a64" stroke-width="2"/><rect x="476" y="${y+5}" width="38" height="19" rx="6" fill="#e4ebe0"/>`).join('')+'</g>'+
-  '<g data-guest-feature="tea-table"><ellipse cx="341" cy="636" rx="38" ry="21" fill="#e8d6b4" stroke="#b7975a" stroke-width="3"/><ellipse cx="341" cy="636" rx="29" ry="14" fill="#fff8e7"/><circle cx="332" cy="634" r="4" fill="#b7cfc8" stroke="#9eaf99"/><circle cx="349" cy="641" r="4" fill="#d5b8a3"/></g>'+
-  '<g data-guest-feature="refreshments">'+rect(550,650,32,25,'#d1b57f','stroke="#ad9059" stroke-width="2"')+'<circle cx="559" cy="658" r="4" fill="#fffbeb"/><circle cx="572" cy="658" r="4" fill="#fffbeb"/><path d="M555 671h23" stroke="#fff8e5" stroke-width="2"/></g>'+
-  '<g data-guest-feature="plants">'+[[568,608],[91,662]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="12" fill="#b6cdb1"/><path d="M${x} ${y+8}v-15m0 12-7-7m7 3 7-7" stroke="#7e9e7c" stroke-width="2" fill="none"/>`).join('')+'</g>'+
-  '<path data-training-access="guest-open-entry" d="M605 600v56" fill="none" stroke="#e2d9c4" stroke-width="8"/><path d="M598 595h10m-10 66h10" stroke="#b59a64" stroke-width="3"/>'+
-  '<path data-training-access="guest-freight-entry" d="M70 564v32" fill="none" stroke="#e2d9c4" stroke-width="8"/><path d="M65 561h10m-10 38h10" stroke="#b59a64" stroke-width="3"/>';
+ // Invited guests enter through the same east/west openings as the shared 3D layout.
+ drawing+=zone('guest-lounge',70,550,535,145,'#f8f0de','data-map-marker-x="-90" data-map-marker-y="620" data-map-marker-unit=".9"')+
+  '<g transform="translate(70 550)">'+interiorMapDrawing('guest-lounge',{selected:selected==='guest-lounge'})+'</g>'+
+  text(337,728,compact?'待機エリア':'珍生物待機エリア',compact?26:24);
  // The management room stays map-only, beside the lower wall of the hall.
  drawing+=zone('control',650,550,250,145,'#e4ece5',`stroke="${selected==='control'?'#936843':'#a2b7a7'}" stroke-width="${selected==='control'?5:2}"`)+
   '<path data-training-access="control-door" d="M900 618v32" stroke="#e2d9c4" stroke-width="8"/><path d="M900 618h-30M900 648a30 30 0 0 1-30-30" fill="none" stroke="#9ba995" stroke-width="2"/>'+

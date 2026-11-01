@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
-  "fileCount": 154,
-  "totalBytes": 141359346,
+  "fileCount": 156,
+  "totalBytes": 147553308,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1142,7 +1142,7 @@
     },
     {
       "url": "assets/analysis-room/room.glb?v=31b3a78473c1df129d30b232d8bbbfaf314c75080a1319200a154e834ddc2ef8",
-      "label": "珍生物分析室",
+      "label": "コンピュータ室",
       "type": "binary",
       "bytes": 8197248,
       "priority": 2,
@@ -1150,27 +1150,27 @@
     },
     {
       "url": "assets/analysis-room/metadata.json",
-      "label": "分析室の設定",
+      "label": "コンピュータ室の設定",
       "type": "json",
       "bytes": 15878,
       "priority": 2,
       "sha256": "cd91df7d689817b838ab9fa21e691c1a407d9f5e453d146dc1f314ad1cc7ab9d"
     },
     {
-      "url": "assets/player-room/room.glb?v=cfe7b7850fc1a242175856355dd4b5586a34c6b4eaf2323f7b6bbcc981eff587",
+      "url": "assets/player-room/room.glb?v=ab1f6ed1ac05abfd12e9bfe37f433037a5e10986b04ed4646630cf384521c280",
       "label": "あなたの部屋",
       "type": "binary",
-      "bytes": 2578868,
+      "bytes": 2578872,
       "priority": 2,
-      "sha256": "cfe7b7850fc1a242175856355dd4b5586a34c6b4eaf2323f7b6bbcc981eff587"
+      "sha256": "ab1f6ed1ac05abfd12e9bfe37f433037a5e10986b04ed4646630cf384521c280"
     },
     {
       "url": "assets/player-room/metadata.json",
       "label": "あなたの部屋の設定",
       "type": "json",
-      "bytes": 13158,
+      "bytes": 14651,
       "priority": 2,
-      "sha256": "f4bbf6f90be3f34c06e559365e5e4218ee6484b9d89996bdec5cf238b44ebd86"
+      "sha256": "af54d02512d6769de819909cc8e459f646810a8482f9801d79cf63aa2cfe1876"
     },
     {
       "url": "assets/warehouse/room.glb?v=93cbf4c0298beb538d7b2f530e31fdb5e8f3fb1e146b034acd8410871cbc45e2",
@@ -1235,6 +1235,22 @@
       "bytes": 11166,
       "priority": 2,
       "sha256": "0d793d7d90e079a811d7fe0ec622350a975a85036f0f4adbeab896055aba6102"
+    },
+    {
+      "url": "assets/guest-lounge/room.glb?v=0b513ad47c1fcbb4ceb41980b75ddae44f5b5d237c048193b57853c5e52f4b25",
+      "label": "珍生物待機エリア",
+      "type": "binary",
+      "bytes": 6173784,
+      "priority": 2,
+      "sha256": "0b513ad47c1fcbb4ceb41980b75ddae44f5b5d237c048193b57853c5e52f4b25"
+    },
+    {
+      "url": "assets/guest-lounge/metadata.json",
+      "label": "珍生物待機エリアの設定",
+      "type": "json",
+      "bytes": 18681,
+      "priority": 2,
+      "sha256": "f447ea22a6ecc07abf6d234bd2746b27925f62b49624cdf56293f8391767865f"
     }
   ]
 }

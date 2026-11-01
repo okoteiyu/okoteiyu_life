@@ -1,0 +1,950 @@
+{
+  "schemaVersion": 1,
+  "revision": "R171",
+  "id": "guest-lounge",
+  "title": "珍生物待機エリア",
+  "floor": "b2",
+  "areaId": "guest-lounge",
+  "units": "metres",
+  "dimensionsAreArtProductionValues": true,
+  "architecturalDimensionsConfirmed": false,
+  "guestCapacityUndecided": true,
+  "purpose": "Invited guests relax freely in a warm lounge; not a confinement facility.",
+  "room": {
+    "width": 21.4,
+    "depth": 5.8,
+    "height": 3.8,
+    "bounds": {
+      "min": [
+        -10.7,
+        0,
+        -2.9
+      ],
+      "max": [
+        10.7,
+        3.8,
+        2.9
+      ]
+    }
+  },
+  "entrance": {
+    "center": [
+      10.7,
+      0,
+      0.22
+    ],
+    "width": 2.24,
+    "height": 3.15,
+    "side": "east",
+    "heroStand": [
+      9.95,
+      0,
+      0.22
+    ],
+    "heroYaw": -1.5707963267948966,
+    "camera": {
+      "position": [
+        10.46,
+        1.55,
+        0.22
+      ],
+      "yaw": -1.5707963267948966
+    }
+  },
+  "secondaryEntrances": [
+    {
+      "side": "west",
+      "center": [
+        -10.7,
+        0,
+        -1.7
+      ],
+      "width": 1.28,
+      "height": 3.15
+    }
+  ],
+  "camera": {
+    "position": [
+      0,
+      11.5,
+      12.8
+    ],
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "fov": 72,
+    "near": 0.06,
+    "far": 100
+  },
+  "reverseCamera": {
+    "position": [
+      0,
+      10.8,
+      -12.5
+    ],
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "fov": 72,
+    "near": 0.06,
+    "far": 100,
+    "hideNodes": [
+      "Interior.NorthShell",
+      "Interior.Ceiling"
+    ]
+  },
+  "hideFromEntranceCamera": [
+    "Interior.SouthShell",
+    "Interior.Ceiling"
+  ],
+  "background": "#ece9df",
+  "lighting": {
+    "ambient": 2.0,
+    "sun": 2.1
+  },
+  "map": {
+    "width": 535,
+    "height": 145
+  },
+  "appearance": [
+    "soft_sofas",
+    "armchairs",
+    "woven_rugs",
+    "tea_tables",
+    "refreshment_counter",
+    "plants",
+    "brass_trim",
+    "warm_indirect_lighting"
+  ],
+  "features": [
+    {
+      "id": "rug-west",
+      "node": "Interior.rug-west",
+      "label": "織り模様のラグ",
+      "role": "rug",
+      "position": [
+        -4.8,
+        0.01,
+        -0.25
+      ],
+      "size": [
+        4.3,
+        0.02,
+        3.6
+      ],
+      "yaw": 0,
+      "footprint": [
+        -6.950000286102295,
+        -2.049999952316284,
+        4.300000190734863,
+        3.5999999046325684
+      ],
+      "area": "lounge",
+      "loungeKind": "rug",
+      "actualBounds": {
+        "min": [
+          -6.950000286102295,
+          0.0,
+          -2.049999952316284
+        ],
+        "max": [
+          -2.6500000953674316,
+          0.02500000037252903,
+          1.5499999523162842
+        ]
+      }
+    },
+    {
+      "id": "sofa-west",
+      "node": "Interior.sofa-west",
+      "label": "柔らかなソファ",
+      "role": "sofa",
+      "position": [
+        -4.8,
+        0.56,
+        -1.94
+      ],
+      "size": [
+        3.5,
+        1.12,
+        1.1
+      ],
+      "yaw": 0,
+      "footprint": [
+        -6.550000190734863,
+        -2.4699997901916504,
+        3.5,
+        1.0949997901916504
+      ],
+      "area": "lounge",
+      "loungeKind": "rose-sofa",
+      "actualBounds": {
+        "min": [
+          -6.550000190734863,
+          -1.4901161193847656e-08,
+          -2.4699997901916504
+        ],
+        "max": [
+          -3.0500001907348633,
+          1.1200000047683716,
+          -1.375
+        ]
+      }
+    },
+    {
+      "id": "tea-table-west",
+      "node": "Interior.tea-table-west",
+      "label": "ティーテーブル",
+      "role": "desk",
+      "position": [
+        -4.8,
+        0.245,
+        -0.14
+      ],
+      "size": [
+        1.65,
+        0.49,
+        0.8
+      ],
+      "yaw": 0,
+      "footprint": [
+        -5.625,
+        -0.5400000214576721,
+        1.6499998569488525,
+        0.800000011920929
+      ],
+      "area": "lounge",
+      "loungeKind": "tea-table",
+      "actualBounds": {
+        "min": [
+          -5.625,
+          0.0,
+          -0.5400000214576721
+        ],
+        "max": [
+          -3.9750001430511475,
+          0.6269999742507935,
+          0.25999999046325684
+        ]
+      }
+    },
+    {
+      "id": "armchair-west-1",
+      "node": "Interior.armchair-west-1",
+      "label": "アームチェア",
+      "role": "chair",
+      "position": [
+        -5.92,
+        0.54,
+        1.96
+      ],
+      "size": [
+        1.08,
+        1.08,
+        1.16
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        -6.460000038146973,
+        1.3799998760223389,
+        1.0799999237060547,
+        1.130000114440918
+      ],
+      "area": "lounge",
+      "loungeKind": "armchair",
+      "actualBounds": {
+        "min": [
+          -6.460000038146973,
+          0.0,
+          1.3799998760223389
+        ],
+        "max": [
+          -5.380000114440918,
+          1.0750000476837158,
+          2.509999990463257
+        ]
+      }
+    },
+    {
+      "id": "armchair-west-2",
+      "node": "Interior.armchair-west-2",
+      "label": "アームチェア",
+      "role": "chair",
+      "position": [
+        -3.6799999999999997,
+        0.54,
+        1.96
+      ],
+      "size": [
+        1.08,
+        1.08,
+        1.16
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        -4.220000267028809,
+        1.3799998760223389,
+        1.080000400543213,
+        1.130000352859497
+      ],
+      "area": "lounge",
+      "loungeKind": "armchair",
+      "actualBounds": {
+        "min": [
+          -4.220000267028809,
+          0.0,
+          1.3799998760223389
+        ],
+        "max": [
+          -3.1399998664855957,
+          1.0750000476837158,
+          2.510000228881836
+        ]
+      }
+    },
+    {
+      "id": "rug-east",
+      "node": "Interior.rug-east",
+      "label": "織り模様のラグ",
+      "role": "rug",
+      "position": [
+        4.8,
+        0.01,
+        -0.25
+      ],
+      "size": [
+        4.3,
+        0.02,
+        3.6
+      ],
+      "yaw": 0,
+      "footprint": [
+        2.6500000953674316,
+        -2.049999952316284,
+        4.300000190734863,
+        3.5999999046325684
+      ],
+      "area": "lounge",
+      "loungeKind": "rug",
+      "actualBounds": {
+        "min": [
+          2.6500000953674316,
+          0.0,
+          -2.049999952316284
+        ],
+        "max": [
+          6.950000286102295,
+          0.02500000037252903,
+          1.5499999523162842
+        ]
+      }
+    },
+    {
+      "id": "sofa-east",
+      "node": "Interior.sofa-east",
+      "label": "柔らかなソファ",
+      "role": "sofa",
+      "position": [
+        4.8,
+        0.56,
+        -1.94
+      ],
+      "size": [
+        3.5,
+        1.12,
+        1.1
+      ],
+      "yaw": 0,
+      "footprint": [
+        3.0500001907348633,
+        -2.4699997901916504,
+        3.5,
+        1.0949997901916504
+      ],
+      "area": "lounge",
+      "loungeKind": "sage-sofa",
+      "actualBounds": {
+        "min": [
+          3.0500001907348633,
+          -1.4901161193847656e-08,
+          -2.4699997901916504
+        ],
+        "max": [
+          6.550000190734863,
+          1.1200000047683716,
+          -1.375
+        ]
+      }
+    },
+    {
+      "id": "tea-table-east",
+      "node": "Interior.tea-table-east",
+      "label": "ティーテーブル",
+      "role": "desk",
+      "position": [
+        4.8,
+        0.245,
+        -0.14
+      ],
+      "size": [
+        1.65,
+        0.49,
+        0.8
+      ],
+      "yaw": 0,
+      "footprint": [
+        3.9750001430511475,
+        -0.5400000214576721,
+        1.6499998569488525,
+        0.800000011920929
+      ],
+      "area": "lounge",
+      "loungeKind": "tea-table",
+      "actualBounds": {
+        "min": [
+          3.9750001430511475,
+          0.0,
+          -0.5400000214576721
+        ],
+        "max": [
+          5.625,
+          0.6269999742507935,
+          0.25999999046325684
+        ]
+      }
+    },
+    {
+      "id": "armchair-east-1",
+      "node": "Interior.armchair-east-1",
+      "label": "アームチェア",
+      "role": "chair",
+      "position": [
+        3.6799999999999997,
+        0.54,
+        1.96
+      ],
+      "size": [
+        1.08,
+        1.08,
+        1.16
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        3.1399996280670166,
+        1.3799998760223389,
+        1.0800001621246338,
+        1.130000114440918
+      ],
+      "area": "lounge",
+      "loungeKind": "armchair",
+      "actualBounds": {
+        "min": [
+          3.1399996280670166,
+          0.0,
+          1.3799998760223389
+        ],
+        "max": [
+          4.21999979019165,
+          1.0750000476837158,
+          2.509999990463257
+        ]
+      }
+    },
+    {
+      "id": "armchair-east-2",
+      "node": "Interior.armchair-east-2",
+      "label": "アームチェア",
+      "role": "chair",
+      "position": [
+        5.92,
+        0.54,
+        1.96
+      ],
+      "size": [
+        1.08,
+        1.08,
+        1.16
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        5.380000114440918,
+        1.3799998760223389,
+        1.0799999237060547,
+        1.130000352859497
+      ],
+      "area": "lounge",
+      "loungeKind": "armchair",
+      "actualBounds": {
+        "min": [
+          5.380000114440918,
+          0.0,
+          1.3799998760223389
+        ],
+        "max": [
+          6.460000038146973,
+          1.0750000476837158,
+          2.510000228881836
+        ]
+      }
+    },
+    {
+      "id": "refreshments",
+      "node": "Interior.refreshments",
+      "label": "飲み物の台",
+      "role": "desk",
+      "position": [
+        8.28,
+        0.72,
+        2.45
+      ],
+      "size": [
+        3.35,
+        1.44,
+        0.7
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        6.604999542236328,
+        2.0909998416900635,
+        3.3500003814697266,
+        0.7090003490447998
+      ],
+      "area": "lounge",
+      "loungeKind": "refreshments",
+      "actualBounds": {
+        "min": [
+          6.604999542236328,
+          0.0,
+          2.0909998416900635
+        ],
+        "max": [
+          9.954999923706055,
+          1.440000057220459,
+          2.8000001907348633
+        ]
+      }
+    },
+    {
+      "id": "reading-shelf",
+      "node": "Interior.reading-shelf",
+      "label": "読み物の棚",
+      "role": "bookcase",
+      "position": [
+        -7.95,
+        0.86,
+        2.43
+      ],
+      "size": [
+        2.9,
+        1.72,
+        0.68
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        -9.380001068115234,
+        2.0900001525878906,
+        2.8600010871887207,
+        0.679999828338623
+      ],
+      "area": "lounge",
+      "loungeKind": "reading-shelf",
+      "actualBounds": {
+        "min": [
+          -9.380001068115234,
+          0.0,
+          2.0900001525878906
+        ],
+        "max": [
+          -6.519999980926514,
+          1.7200000286102295,
+          2.7699999809265137
+        ]
+      }
+    },
+    {
+      "id": "central-bench",
+      "node": "Interior.central-bench",
+      "label": "ゆったりしたベンチ",
+      "role": "sofa",
+      "position": [
+        0,
+        0.38,
+        -2.15
+      ],
+      "size": [
+        3.0,
+        0.76,
+        0.95
+      ],
+      "yaw": 0,
+      "footprint": [
+        -1.5,
+        -2.625,
+        3.0,
+        0.9499999284744263
+      ],
+      "area": "lounge",
+      "loungeKind": "bench",
+      "actualBounds": {
+        "min": [
+          -1.5,
+          0.0,
+          -2.625
+        ],
+        "max": [
+          1.5,
+          0.800000011920929,
+          -1.6750000715255737
+        ]
+      }
+    },
+    {
+      "id": "pouf-west",
+      "node": "Interior.pouf-west",
+      "label": "丸いクッション席",
+      "role": "chair",
+      "position": [
+        -0.95,
+        0.245,
+        1.98
+      ],
+      "size": [
+        0.92,
+        0.49,
+        0.92
+      ],
+      "yaw": 0,
+      "footprint": [
+        -1.4099997282028198,
+        1.5200002193450928,
+        0.9199996590614319,
+        0.9199995994567871
+      ],
+      "area": "lounge",
+      "loungeKind": "pouf",
+      "actualBounds": {
+        "min": [
+          -1.4099997282028198,
+          3.725290298461914e-09,
+          1.5200002193450928
+        ],
+        "max": [
+          -0.49000006914138794,
+          0.5199999809265137,
+          2.43999981880188
+        ]
+      }
+    },
+    {
+      "id": "pouf-east",
+      "node": "Interior.pouf-east",
+      "label": "丸いクッション席",
+      "role": "chair",
+      "position": [
+        0.95,
+        0.245,
+        1.98
+      ],
+      "size": [
+        0.92,
+        0.49,
+        0.92
+      ],
+      "yaw": 0,
+      "footprint": [
+        0.4900002181529999,
+        1.5200002193450928,
+        0.9199996292591095,
+        0.9199995994567871
+      ],
+      "area": "lounge",
+      "loungeKind": "pouf",
+      "actualBounds": {
+        "min": [
+          0.4900002181529999,
+          3.725290298461914e-09,
+          1.5200002193450928
+        ],
+        "max": [
+          1.4099998474121094,
+          0.5199999809265137,
+          2.43999981880188
+        ]
+      }
+    },
+    {
+      "id": "welcome-seat",
+      "node": "Interior.welcome-seat",
+      "label": "壁際のくつろぎ席",
+      "role": "sofa",
+      "position": [
+        -10.05,
+        0.29,
+        0.76
+      ],
+      "size": [
+        0.7,
+        0.58,
+        2.0
+      ],
+      "yaw": 1.5707963267948966,
+      "footprint": [
+        -10.40000057220459,
+        -0.24000006914138794,
+        0.7000007629394531,
+        2.0000000596046448
+      ],
+      "area": "lounge",
+      "loungeKind": "welcome-seat",
+      "actualBounds": {
+        "min": [
+          -10.40000057220459,
+          0.0,
+          -0.24000006914138794
+        ],
+        "max": [
+          -9.699999809265137,
+          0.48000001907348633,
+          1.7599999904632568
+        ]
+      }
+    },
+    {
+      "id": "plant-northwest",
+      "node": "Interior.plant-northwest",
+      "label": "観葉植物",
+      "role": "plant",
+      "position": [
+        -8.5,
+        0.825,
+        -2.24
+      ],
+      "size": [
+        0.7,
+        1.65,
+        0.7
+      ],
+      "yaw": 0,
+      "footprint": [
+        -8.814903259277344,
+        -2.5537917613983154,
+        0.6299028396606445,
+        0.6013902425765991
+      ],
+      "area": "lounge",
+      "loungeKind": "plant",
+      "actualBounds": {
+        "min": [
+          -8.814903259277344,
+          0.0,
+          -2.5537917613983154
+        ],
+        "max": [
+          -8.1850004196167,
+          1.5112624168395996,
+          -1.9524015188217163
+        ]
+      }
+    },
+    {
+      "id": "plant-northeast",
+      "node": "Interior.plant-northeast",
+      "label": "観葉植物",
+      "role": "plant",
+      "position": [
+        8.35,
+        0.825,
+        -2.23
+      ],
+      "size": [
+        0.7,
+        1.65,
+        0.7
+      ],
+      "yaw": 0,
+      "footprint": [
+        8.035096168518066,
+        -2.5437917709350586,
+        0.6299037933349609,
+        0.6013901233673096
+      ],
+      "area": "lounge",
+      "loungeKind": "plant",
+      "actualBounds": {
+        "min": [
+          8.035096168518066,
+          0.0,
+          -2.5437917709350586
+        ],
+        "max": [
+          8.664999961853027,
+          1.5112624168395996,
+          -1.942401647567749
+        ]
+      }
+    },
+    {
+      "id": "plant-southwest",
+      "node": "Interior.plant-southwest",
+      "label": "観葉植物",
+      "role": "plant",
+      "position": [
+        -10.0,
+        0.825,
+        2.35
+      ],
+      "size": [
+        0.7,
+        1.65,
+        0.7
+      ],
+      "yaw": 0,
+      "footprint": [
+        -10.314903259277344,
+        2.036207675933838,
+        0.6299037933349609,
+        0.601391077041626
+      ],
+      "area": "lounge",
+      "loungeKind": "plant",
+      "actualBounds": {
+        "min": [
+          -10.314903259277344,
+          0.0,
+          2.036207675933838
+        ],
+        "max": [
+          -9.684999465942383,
+          1.5112627744674683,
+          2.637598752975464
+        ]
+      }
+    },
+    {
+      "id": "plant-south-center",
+      "node": "Interior.plant-south-center",
+      "label": "観葉植物",
+      "role": "plant",
+      "position": [
+        2.14,
+        0.825,
+        2.42
+      ],
+      "size": [
+        0.7,
+        1.65,
+        0.7
+      ],
+      "yaw": 0,
+      "footprint": [
+        1.825096607208252,
+        2.106207847595215,
+        0.6299033164978027,
+        0.6013906002044678
+      ],
+      "area": "lounge",
+      "loungeKind": "plant",
+      "actualBounds": {
+        "min": [
+          1.825096607208252,
+          0.0,
+          2.106207847595215
+        ],
+        "max": [
+          2.4549999237060547,
+          1.5112628936767578,
+          2.7075984477996826
+        ]
+      }
+    },
+    {
+      "id": "welcome-relief",
+      "node": "Interior.welcome-relief",
+      "label": "光のある壁飾り",
+      "role": "partition",
+      "position": [
+        -10.6,
+        1.5,
+        0.76
+      ],
+      "size": [
+        0.09,
+        3.0,
+        2.0
+      ],
+      "yaw": 1.5707963267948966,
+      "footprint": [
+        -10.632500648498535,
+        -0.252500057220459,
+        0.1255016326904297,
+        2.0250000953674316
+      ],
+      "area": "lounge",
+      "loungeKind": "welcome-relief",
+      "actualBounds": {
+        "min": [
+          -10.632500648498535,
+          0.690000057220459,
+          -0.252500057220459
+        ],
+        "max": [
+          -10.506999015808105,
+          2.9700000286102295,
+          1.7725000381469727
+        ]
+      }
+    }
+  ],
+  "status": "complete",
+  "sourceRevision": "R171",
+  "surfaceRevision": "R171",
+  "pbrSurfaceSets": [
+    "oak",
+    "plaster",
+    "stone",
+    "rose",
+    "sage",
+    "rug",
+    "linen",
+    "brass",
+    "bronze",
+    "walnut"
+  ],
+  "pbrMaterialCount": 10,
+  "textureImagesEmbedded": true,
+  "bounds": {
+    "min": [
+      -10.800000190734863,
+      -0.11999999731779099,
+      -2.9700000286102295
+    ],
+    "max": [
+      10.800000190734863,
+      3.870000123977661,
+      2.9700000286102295
+    ]
+  },
+  "model": {
+    "url": "room.glb",
+    "bytes": 6173784,
+    "sha256": "0b513ad47c1fcbb4ceb41980b75ddae44f5b5d237c048193b57853c5e52f4b25"
+  },
+  "animationCount": 0,
+  "meshBatchCount": 116,
+  "previews": [
+    {
+      "id": "overview",
+      "url": "preview.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 35650,
+      "sha256": "649408e8cacf6f66cc19f6cf88014d76f08fb7e89bfc64d306d98035a3b17668"
+    }
+  ],
+  "source": "environments/interiors/source/build_guest_lounge.py",
+  "layoutSource": "environments/interiors/layouts/guest-lounge.json"
+}

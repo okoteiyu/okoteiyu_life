@@ -200,7 +200,7 @@ for(const {action,button} of homeActionButtons){
 }
 trainingHallUI=new TrainingHallUI({view,homeElement:document.querySelector('#homeChoices'),readPlayer:()=>gameRuntime?.session.snapshot().player,isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),onTrain:opener=>optionsUI.open('trainings',opener),readTrainingCourses:()=>optionsUI.trainingCourseChoices(),onSelectTraining:(tier,opener)=>optionsUI.openTrainingConfirmation(tier,opener),onReturn:()=>gameRuntime?.returnFromTrainingHall(),onError:()=>toast('訓練所の3D表示を再試行してください。')});
 window.mainViewPreview.trainingHall=trainingHallUI;
-analysisRoomUI=new AnalysisRoomUI({view,homeElement:document.querySelector('#homeChoices'),readPlayer:()=>gameRuntime?.session.snapshot().player,isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),onMap:opener=>buildingMap.open(opener),onReturn:()=>gameRuntime?.returnFromAnalysisRoom(),onError:()=>toast('珍生物分析室の3D表示を再試行してください。')});
+analysisRoomUI=new AnalysisRoomUI({view,homeElement:document.querySelector('#homeChoices'),readPlayer:()=>gameRuntime?.session.snapshot().player,isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),onMap:opener=>buildingMap.open(opener),onReturn:()=>gameRuntime?.returnFromAnalysisRoom(),onError:()=>toast('コンピュータ室の3D表示を再試行してください。')});
 window.mainViewPreview.analysisRoom=analysisRoomUI;
 interiorUI=new InteriorRoomUI({view,homeElement:document.querySelector('#homeChoices'),roomId:'player-room',readPlayer:()=>gameRuntime?.session.snapshot().player,isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),onMap:opener=>buildingMap.open(opener),onReturn:()=>gameRuntime?.returnFromInteriorRoom(),onError:()=>toast('お部屋の3D表示を再試行してください。')});
 window.mainViewPreview.interiors=interiorUI;

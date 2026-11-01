@@ -74,5 +74,5 @@ export function analysisMapDrawing({layout=ANALYSIS_ROOM_LAYOUT,selected=false,c
  return `<g data-analysis-plan="entrance-bottom" data-compact="${compact}" font-family="system-ui, sans-serif">${drawing}</g>`;
 }
 export function analysisMapSvg({layout=ANALYSIS_ROOM_LAYOUT,compact=true,current=true}={}){
- return `<svg class="room-map" viewBox="${ANALYSIS_MAP_VIEWBOX}" role="img" aria-label="入口が下側の珍生物分析室。中央に6脚の椅子と作業テーブル。奥にモニターと操作卓、右奥に書棚、左奥に仕切られた仮眠スペース、手前にホワイトボードと書類棚。${current?'おこていゆは入口付近で待っています。':''}">${analysisMapDrawing({layout,compact,current})}</svg>`;
+ return `<svg class="room-map" viewBox="${ANALYSIS_MAP_VIEWBOX}" role="img" aria-label="入口が下側のコンピュータ室。中央に6脚の椅子と作業テーブル。奥にモニターと操作卓、右奥に書棚、左奥に仕切られた仮眠スペース、手前にホワイトボードと書類棚。${current?'おこていゆは入口付近で待っています。':''}">${analysisMapDrawing({layout,compact,current})}</svg>`;
 }

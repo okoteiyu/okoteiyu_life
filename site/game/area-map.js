@@ -40,8 +40,8 @@ export class AreaMap {
  }
  showAnalysis(){
   this.clearBattleLog();
-  this.mode='analysis';this.element.dataset.area='analysis';this.title.textContent='珍生物分析室';this.hint.textContent='';
-  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="珍生物分析室の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+analysisMapSvg({compact:true,current:true})+'</button>';
+  this.mode='analysis';this.element.dataset.area='analysis';this.title.textContent='コンピュータ室';this.hint.textContent='';
+  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="コンピュータ室の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+analysisMapSvg({compact:true,current:true})+'</button>';
  }
  showInterior(id){
   const room=INTERIOR_ROOMS[id];if(!room||id==='analysis-room')return false;this.clearBattleLog();this.mode='interior';this.element.dataset.area='interior';this.title.textContent=room.title;this.hint.textContent='';

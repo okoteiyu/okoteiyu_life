@@ -33,7 +33,7 @@ export class GameRuntime {
   if(this.destroyed)return null;
   if(this.scene==='battle'&&this.session.snapshotBattle())return {key:'battle:'+this.battlePresentationSerial,scene:'battle',title:'戦闘に復帰します',message:'戦闘の状態を保って、続きを再開します。'};
   if(this.scene==='scene-cutin')return {key:'scene:'+this.battlePresentationSerial+':'+this.sceneCutin.kind,scene:'scene-cutin',title:'ゲームに復帰します',message:['win','loss'].includes(this.sceneCutin.kind)?'戦闘の結果表示から再開します。':'出発の場面から再開します。'};
-  if(this.scene==='analysis-room')return {key:'analysis:'+this.analysisVisitSerial,scene:'analysis-room',title:'ゲームに復帰します',message:'珍生物分析室の表示を再開します。'};
+  if(this.scene==='analysis-room')return {key:'analysis:'+this.analysisVisitSerial,scene:'analysis-room',title:'ゲームに復帰します',message:'コンピュータ室の表示を再開します。'};
   if(isInteriorScene(this.scene))return {key:'interior:'+this.scene+':'+this.interiorVisitSerial,scene:'interior-room',roomId:this.scene,title:'ゲームに復帰します',message:INTERIOR_ROOMS[this.scene].title+'の表示を再開します。'};
   if(this.scene==='cutin')return {key:'anger:'+this.angerPlayer.completionCount,scene:'cutin',title:'ゲームに復帰します',message:'おこていゆの場面から、続きを再開します。'};
   return null;

@@ -3,6 +3,7 @@ import {trainingMapDrawing,BASEMENT_MAP_VIEWBOX,basementCoreDrawing,basementFrei
 import {outdoorMapDrawing,OUTDOOR_MAP_VIEWBOX} from './outdoor-map.js';
 import {analysisMapDrawing} from './analysis-map.js';
 import {interiorMapDrawing} from './interior-map.js';
+import {INTERIOR_LAYOUTS} from './interior-layouts.js';
 
 export const BUILDING_FLOORS=Object.freeze([
  {id:'b2',label:'B2',name:'地下の訓練場',areas:[
@@ -13,7 +14,7 @@ export const BUILDING_FLOORS=Object.freeze([
   {id:'core',name:'階段・エレベーター',text:''}]},
  {id:'b1',label:'B1',name:'研究と支援',areas:[
   {id:'research',name:'研究所',text:'おこていゆの研究を支える施設。'},
-  {id:'analysis',name:'珍生物分析室',text:''},
+  {id:'analysis',name:'コンピュータ室',text:''},
   {id:'production',name:'生産施設',text:'植物を育てる区画と、液体を扱うバイオプラント。'},
   {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
   {id:'maintenance',name:'整備施設',text:'研究と支援を支える整備エリア。'}]},
@@ -60,6 +61,16 @@ function washBathRoom(){
   rect(181,248,16,35,'#e1eeec','stroke="#c7dad6" stroke-width="1"')+text(202,322,'浴室',22)+'</g>';
 }
 
+/** Kitchen art coordinates are shared with the F2 authored model. */
+function apartmentKitchenDrawing(){
+ const a=INTERIOR_LAYOUTS['player-room'].apartmentPlan,[x,y,w,h]=a.kitchenCounter,sink=a.kitchenFixtures.sink,stove=a.kitchenFixtures.stove;
+ return rect(x,y,w,h,'#e5d6b9','data-apartment-kitchen="true" data-kitchen-counter="true" data-kitchen-layout="wall-southwest" stroke="#c8b493" stroke-width="1.5"')+
+  rect(...sink,'#faf6ec','data-kitchen-fixture="sink" stroke="#c8b99f" stroke-width="1"')+
+  rect(...stove,'#f8f3e7','data-kitchen-fixture="stove" stroke="#c8b99f" stroke-width="1"')+
+  `<g fill="none" stroke="#ab987b" stroke-width="1.2"><circle cx="${stove[0]+6}" cy="${stove[1]+6}" r="2.5"/><circle cx="${stove[0]+stove[2]-6}" cy="${stove[1]+stove[3]-6}" r="2.5"/></g>`+
+  text(260,400,'台所',21);
+}
+
 /** A schematic, not a finalized architectural plan or a game destination picker. */
 export function buildingFloorSvg(floorId,selected){
  const floor=BUILDING_FLOORS.find(f=>f.id===floorId)||BUILDING_FLOORS.find(f=>f.id==='1f');
@@ -73,14 +84,11 @@ export function buildingFloorSvg(floorId,selected){
    (home?'<svg class="building-live-room" x="171" y="58" width="268" height="274" viewBox="7 7 226 248"></svg>':
     '<g transform="translate(169 56)">'+interiorMapDrawing('player-room',{livingOnly:true})+'</g>')+
    '</g>'+
-   rect(241,56,40,340,'#fffbf1','data-apartment-passage="wet"')+
-   `<path d="M460 398V350H261V88M261 100H235M261 192H235" stroke="#c3cbae" stroke-width="2" stroke-dasharray="5 5" fill="none" aria-hidden="true"/>`+
+   rect(...INTERIOR_LAYOUTS['player-room'].apartmentPlan.wetPassageRect,'#fffbf1','data-apartment-passage="wet"')+
+   rect(...INTERIOR_LAYOUTS['player-room'].apartmentPlan.entryPassageRect,'#fffbf1','data-apartment-passage="entry-crossing"')+
+   `<path data-apartment-route="entry-living-wet" d="M460 398V359H261V88M426 334V359M261 100H235M261 192H235" stroke="#c3cbae" stroke-width="2" stroke-dasharray="5 5" fill="none" aria-hidden="true"/>`+
    toiletRoom()+washBathRoom()+
-   rect(287,365,138,31,'#e5d6b9','data-apartment-kitchen="true" data-kitchen-counter="true" stroke="#c8b493" stroke-width="1.5"')+
-   rect(296,371,34,18,'#faf6ec','data-kitchen-fixture="sink" stroke="#c8b99f" stroke-width="1"')+
-   rect(397,371,20,18,'#f8f3e7','data-kitchen-fixture="stove" stroke="#c8b99f" stroke-width="1"')+
-   '<g fill="none" stroke="#ab987b" stroke-width="1.2"><circle cx="403" cy="377" r="2.5"/><circle cx="411" cy="384" r="2.5"/></g>'+
-   text(363,387,'台所',21)+text(514,378,'玄関',23)+
+   apartmentKitchenDrawing()+text(514,378,'玄関',23)+
    rect(402,331,48,8,'#faf2e1')+`<path data-door="living" d="M405 338h42m-42 4h20" stroke="#b09774" stroke-width="2"/>`+
    zone('hall',selected,119,430,486,75,'#eee6d5')+
    (home?zone('entrance',selected,119,430,126,75,'#e8dbc2')+text(182,475,'入口',24):'')+
@@ -102,7 +110,7 @@ export function buildingFloorSvg(floorId,selected){
     rect(65,410,435,285,'#eee1c6','data-building-zone="production" data-map-marker-x="282" data-map-marker-y="365" data-map-marker-unit="1.2"')+'<g transform="translate(65 410)">'+interiorMapDrawing('production-room',{selected:selected==='production'})+'</g>'+
     rect(545,410,435,285,'#e8dfd5','data-building-zone="maintenance" data-map-marker-x="762" data-map-marker-y="345" data-map-marker-unit="1"')+'<g transform="translate(545 410)">'+interiorMapDrawing('maintenance-room',{selected:selected==='maintenance'})+'</g>'+
     '<path data-basement-access="room-doors" d="M260 410h44M65 536v32" fill="none" stroke="#e2d9c4" stroke-width="8"/>'+
-    text(400,175,'研究所',28)+text(658,175,'珍生物分析室',28)+text(282,720,'生産施設',28)+text(762,720,'整備施設',28)+
+    text(400,175,'研究所',28)+text(658,175,'コンピュータ室',28)+text(282,720,'生産施設',28)+text(762,720,'整備施設',28)+
     text(550,125,'研究・支援エリア',35)+basementCoreDrawing({selected})+basementFreightDrawing({selected});
   }else{
    drawing=trainingMapDrawing({selected});
@@ -214,12 +222,13 @@ export class BuildingMapDialog{
    target.append(svgNode('rect',{x,y,width:w,height:h,rx:8,'class':'building-map-region__hit','vector-effect':'non-scaling-stroke'}));
    if(available){
     const cx=Number(rect.getAttribute('data-map-marker-x')??x+w/2),cy=Number(rect.getAttribute('data-map-marker-y')??y+24*unit),markerUnit=Number(rect.getAttribute('data-map-marker-unit')??unit),badge=svgNode('g',{transform:'translate('+cx+' '+cy+') scale('+markerUnit+')','class':'building-map-region__badge','aria-hidden':'true'});
+    if(this.floorId==='b2'&&area.id==='guest-lounge')badge.style.pointerEvents='auto';
     badge.append(svgNode('path',{d:'M0-20c-12 0-20 8-20 19 0 14 20 30 20 30S20 13 20-1C20-12 12-20 0-20Z',fill:'#6e8652',stroke:'#fffdf2','stroke-width':2}));
     badge.append(svgNode('path',{d:'M-7 3 7-9M-5-9H7V3',fill:'none',stroke:'#fffdf2','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'}));
     badge.append(svgNode('rect',{x:-92,y:32,width:184,height:40,rx:18,fill:'#fffdf2',stroke:'#99ac78','stroke-width':2}));
     const label=svgNode('text',{x:0,y:60,'font-size':24,'font-weight':600,'text-anchor':'middle',fill:'#5e7447'});label.textContent='タップで移動';badge.append(label);target.append(badge);
    }else if(here){
-    const anchored=this.floorId==='b1'&&rect.hasAttribute('data-map-marker-y'),tagUnit=anchored?Number(rect.getAttribute('data-map-marker-unit')??unit):unit,cx=anchored?Number(rect.getAttribute('data-map-marker-x')??x+w/2):x+w/2,cy=anchored?Number(rect.getAttribute('data-map-marker-y'))+52*tagUnit:Math.max(svg.viewBox.baseVal.y+18*unit,y-18*unit);
+    const anchored=(this.floorId==='b1'||this.floorId==='b2'&&area.id==='guest-lounge')&&rect.hasAttribute('data-map-marker-y'),tagUnit=anchored?Number(rect.getAttribute('data-map-marker-unit')??unit):unit,cx=anchored?Number(rect.getAttribute('data-map-marker-x')??x+w/2):x+w/2,cy=anchored?Number(rect.getAttribute('data-map-marker-y'))+52*tagUnit:Math.max(svg.viewBox.baseVal.y+18*unit,y-18*unit);
     const tag=svgNode('g',{'class':'building-map-region__badge','aria-hidden':'true'});tag.append(svgNode('rect',{x:cx-64*tagUnit,y:cy-16*tagUnit,width:128*tagUnit,height:32*tagUnit,rx:14*tagUnit,fill:'#8c7451',stroke:'#fffdf2','stroke-width':tagUnit}));
     const label=svgNode('text',{x:cx,y:cy+7*tagUnit,'font-size':21*tagUnit,'text-anchor':'middle',fill:'#fffdf2'});label.textContent='● 現在地';tag.append(label);target.append(tag);
    }
