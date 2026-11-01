@@ -207,6 +207,7 @@ gameRuntime=new GameRuntime({view,house:houseUI,patrol:patrolUI,trainingHall:tra
 window.mainViewPreview.game=gameRuntime;
 gameRuntime.onTrainingHallEntered=()=>areaMap.showTraining();
 gameRuntime.onAnalysisRoomEntered=()=>areaMap.showAnalysis();
+gameRuntime.onBattleEvent=event=>areaMap.handleBattleEvent(event);
 const browserSave=new BrowserSave({readState:()=>optionsUI.readState({browser:true}),applyState:state=>optionsUI.applyState(state),canSave:()=>['house','training-hall','analysis-room'].includes(gameRuntime.scene)&&['home','patrol','training'].includes(gameRuntime.session.state.location)&&Boolean(houseUI.controller?.ready),onError:(text,error)=>{toast(text);if(browserSave.restoring)startupRestoreError=text+'\n'+(error?.message||'');}});
 gameRuntime.onProgressChange=()=>{browserSave.saveNow();optionsUI.refreshGameView();};
 window.addEventListener('pagehide',()=>browserSave.saveNow());document.addEventListener('visibilitychange',()=>{if(document.hidden)browserSave.saveNow();});

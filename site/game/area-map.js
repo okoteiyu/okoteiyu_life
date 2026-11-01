@@ -1,5 +1,6 @@
 import {trainingMapSvg} from './training-map.js';
 import {analysisMapSvg} from './analysis-map.js';
+import {BattleLog} from './battle-log.js';
 
 const DEFAULT_BOUNDS={min:[-2.72,-.1,-5.72],max:[2.72,2.8,.15]};
 /** Project the actual Y-up room coordinates: rear at the top, entrance below. */
@@ -14,6 +15,7 @@ export class AreaMap {
  }
  showHouse(life,metadata){
   if(this.mode!=='house'){
+   this.clearBattleLog();
    this.mode='house';this.element.dataset.area='house';this.title.textContent='おこていゆハウス';this.hint.textContent='';this.bounds=metadata?.roomBounds||DEFAULT_BOUNDS;
    this.buildHouse();this.markerKey=null;
   }
@@ -26,16 +28,26 @@ export class AreaMap {
   this.onHouseUpdate(this.content.querySelector('svg'));
  }
  showPatrol(map){
+  this.clearBattleLog();
   this.mode='patrol';this.element.dataset.area='patrol';this.title.textContent='道中マップ';this.hint.textContent='タップで拡大';this.content.replaceChildren(map);
  }
  showTraining(){
+  this.clearBattleLog();
   this.mode='training';this.element.dataset.area='training';this.title.textContent='訓練所';this.hint.textContent='';
   this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="訓練所の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+trainingMapSvg()+'</button>';
  }
  showAnalysis(){
+  this.clearBattleLog();
   this.mode='analysis';this.element.dataset.area='analysis';this.title.textContent='珍生物分析室';this.hint.textContent='';
   this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="珍生物分析室の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+analysisMapSvg({compact:true,current:true})+'</button>';
  }
+ handleBattleEvent(event){
+  if(event?.type==='battle-start'){
+   this.clearBattleLog();this.mode='battle';this.element.dataset.area='battle';this.title.textContent='行動ログ';this.hint.textContent='';this.battleLog=new BattleLog(this.content,event.battle);
+  }
+  return this.mode==='battle'?this.battleLog?.appendEvent(event)??false:false;
+ }
+ clearBattleLog(){this.battleLog?.destroy();this.battleLog=null;}
  buildHouse(){
   const point=(x,z)=>roomMapPoint([x,0,z],this.bounds);
   const rect=(x1,z1,x2,z2,fill,stroke='#baac94',radius=3)=>{const a=point(x1,z1),b=point(x2,z2);return `<rect x="${a.x}" y="${a.y}" width="${b.x-a.x}" height="${b.y-a.y}" rx="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="1.1"/>`;};

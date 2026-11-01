@@ -18,5 +18,18 @@
 .area-map .patrol-map:hover:not(:disabled){background:#fffdf24d;}
 .area-map .patrol-map:focus-visible{outline:2px solid #9b7a50;outline-offset:-2px;}
 .area-map .patrol-map:disabled{cursor:default;}
+.area-map[data-area="battle"]{background:#f8f3e7;}
+.area-map[data-area="battle"] .area-map__header{padding:7px 8px;background:#eee5d2;border-color:#c5b99f;}
+.area-map[data-area="battle"] .area-map__header h2{font-size:12px;letter-spacing:.04em;color:#695a43;}
+.area-map[data-area="battle"] .area-map__header h2::before{content:'';display:inline-block;inline-size:9px;block-size:9px;margin-inline-end:6px;border-block:1px solid #a38f6a;background:repeating-linear-gradient(0deg,transparent 0 2px,#a38f6a 2px 3px);}
+.area-map[data-area="battle"] .area-map__content{display:block;padding:0;background:#fffcf4;}
+.battle-log{block-size:100%;min-block-size:0;overflow:auto;overflow-anchor:none;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;scrollbar-color:#b7a582 #f5efdf;background:#fffcf4;}
+.battle-log:focus-visible{outline:2px solid #9b7a50;outline-offset:-2px;}
+.battle-log__entries{list-style:none;margin:0;padding:0;}
+.battle-log__entry{--log-color:#796b55;box-sizing:border-box;margin:0;padding:6px 8px;border-block-end:1px solid #e2d9c7;border-inline-start:3px solid var(--log-color);background:#fffcf4;}
+.battle-log__entry[data-kind="player"]{--log-color:#47657b;}.battle-log__entry[data-kind="enemy"]{--log-color:#985355;}.battle-log__entry[data-kind="support"]{--log-color:#56776e;}.battle-log__entry[data-kind="recovery"]{--log-color:#557645;}.battle-log__entry[data-kind="state"]{--log-color:#986f2c;}.battle-log__entry[data-kind="call"]{--log-color:#7b6385;}
+.battle-log__meta{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:11px;line-height:16px;color:#78674d;font-variant-numeric:tabular-nums;}
+.battle-log__meta>span{color:var(--log-color);font-weight:600;}
+.battle-log__entry p{margin:3px 0 0;color:#5d5142;font-size:12px;line-height:1.5;overflow-wrap:anywhere;}
 @media(max-height:540px){.area-map__header{padding:4px;}.area-map__header h2{overflow:hidden;text-overflow:ellipsis;font-size:7.5px;}.area-map__header span{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;font-size:5.5px;}.area-map__content{padding:3px;}}
 @media(max-height:340px){.area-map__header{padding:2px 3px;}.area-map__header h2{overflow:hidden;text-overflow:ellipsis;font-size:6.5px;}.area-map__header span{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;display:none;}.area-map__content{padding:2px;}}

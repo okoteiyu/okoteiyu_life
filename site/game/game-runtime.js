@@ -154,7 +154,7 @@ export class GameRuntime {
   else if(event.type==='super-start')this.log('growth','スーパーおこていゆ状態！ 攻撃力・気・行動速度が'+event.multiplier+'倍。');
   else if(event.type==='battle-call')this.log('action',event.technique==='auto'?'かけごえをやめて、そっと見守る。':(TECHNIQUES[event.technique]?.name||'技')+'のかけごえを送った。');
   else if(event.type==='aura-equipped')this.log('action',event.speciesId?this.session.player.auras[event.speciesId].name+'を纏った。':'オーラを外した。');
-  if(this.scene==='battle')this.battleUI.handleEvent(event);
+  if(this.scene==='battle'){this.onBattleEvent?.(event);this.battleUI.handleEvent(event);}
  }
  onEncounter(enemy,stage){if(this.scene!=='patrol'||!enemy)return false;this.pendingEncounter={enemy,stage};return true;}
  onMessageClosed(){this.sync();}
