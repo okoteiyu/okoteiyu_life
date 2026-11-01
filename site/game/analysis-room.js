@@ -33,7 +33,7 @@ export class AnalysisRoomView extends BattleView{
    if(!this.canLookAround()){this.cancelLookPointers();return;}
    event.preventDefault();if(!this.lookDrag||this.lookDrag.id!==event.pointerId)return;
    const box=this.canvas.getBoundingClientRect(),previous=this.lookDrag;
-   this.rotateEntrance(-(event.clientX-previous.x)/Math.max(100,box.width)*Math.PI,(event.clientY-previous.y)/Math.max(100,box.height)*Math.PI);
+   this.rotateEntrance((event.clientX-previous.x)/Math.max(100,box.width)*Math.PI,-(event.clientY-previous.y)/Math.max(100,box.height)*Math.PI);
    this.lookDrag={id:event.pointerId,x:event.clientX,y:event.clientY};
   });
   const release=event=>{this.lookPointers.delete(event.pointerId);this.lookDrag=null;try{this.canvas.releasePointerCapture(event.pointerId);}catch{}};
