@@ -1,0 +1,823 @@
+{
+  "schemaVersion": 1,
+  "revision": "R159",
+  "units": "metres",
+  "coordinateSystem": {
+    "right": "+X",
+    "up": "+Y",
+    "front": "+Z",
+    "back": "-Z"
+  },
+  "room": {
+    "width": 12.8,
+    "depth": 4.4,
+    "height": 3.1,
+    "bounds": {
+      "min": [
+        -6.4,
+        0,
+        -2.2
+      ],
+      "max": [
+        6.4,
+        3.1,
+        2.2
+      ]
+    },
+    "floorNode": "Analysis.Floor"
+  },
+  "entrance": {
+    "center": [
+      0,
+      0,
+      2.2
+    ],
+    "width": 1.7,
+    "height": 2.45,
+    "side": "front",
+    "doorNode": "Analysis.FrontDoorFrame",
+    "heroStand": [
+      0,
+      0,
+      1.82
+    ],
+    "heroYaw": 3.141592653589793
+  },
+  "camera": {
+    "position": [
+      0,
+      6.3,
+      10.2
+    ],
+    "target": [
+      0,
+      1.15,
+      -0.15
+    ],
+    "fov": 76,
+    "near": 0.03,
+    "far": 60
+  },
+  "hideFromEntranceCamera": [
+    "Analysis.FrontShell",
+    "Analysis.Ceiling"
+  ],
+  "reverseCamera": {
+    "position": [
+      0,
+      4.5,
+      -7.8
+    ],
+    "target": [
+      0,
+      1.15,
+      0.25
+    ],
+    "fov": 76,
+    "near": 0.03,
+    "far": 60,
+    "hideNodes": [
+      "Analysis.BackShell",
+      "Analysis.Ceiling"
+    ]
+  },
+  "features": [
+    {
+      "id": "central-table",
+      "node": "Analysis.CentralTable",
+      "label": "中央の大型作業テーブル",
+      "role": "desk",
+      "position": [
+        0,
+        0.39,
+        0.08
+      ],
+      "size": [
+        6.4,
+        0.78,
+        1.06
+      ],
+      "yaw": 0,
+      "footprint": [
+        -3.2,
+        -0.45,
+        6.4,
+        1.06
+      ],
+      "actualBounds": {
+        "min": [
+          -3.200000047683716,
+          0.0,
+          -0.44999998807907104
+        ],
+        "max": [
+          3.200000047683716,
+          1.1649999618530273,
+          0.60999995470047
+        ]
+      }
+    },
+    {
+      "id": "chair-1",
+      "node": "Analysis.Chair.01",
+      "label": "椅子1",
+      "role": "chair",
+      "position": [
+        -2.1,
+        0.45,
+        -0.87
+      ],
+      "size": [
+        0.66,
+        0.9,
+        0.62
+      ],
+      "yaw": 0,
+      "footprint": [
+        -2.43,
+        -1.18,
+        0.66,
+        0.62
+      ],
+      "actualBounds": {
+        "min": [
+          -2.4189000129699707,
+          7.450580596923828e-09,
+          -1.1649999618530273
+        ],
+        "max": [
+          -1.7811002731323242,
+          0.8949999809265137,
+          -0.6200000047683716
+        ]
+      }
+    },
+    {
+      "id": "chair-2",
+      "node": "Analysis.Chair.02",
+      "label": "椅子2",
+      "role": "chair",
+      "position": [
+        0,
+        0.45,
+        -0.87
+      ],
+      "size": [
+        0.66,
+        0.9,
+        0.62
+      ],
+      "yaw": 0,
+      "footprint": [
+        -0.33,
+        -1.18,
+        0.66,
+        0.62
+      ],
+      "actualBounds": {
+        "min": [
+          -0.3189000189304352,
+          7.450580596923828e-09,
+          -1.1649999618530273
+        ],
+        "max": [
+          0.3188999891281128,
+          0.8949999809265137,
+          -0.6200000047683716
+        ]
+      }
+    },
+    {
+      "id": "chair-3",
+      "node": "Analysis.Chair.03",
+      "label": "椅子3",
+      "role": "chair",
+      "position": [
+        2.1,
+        0.45,
+        -0.87
+      ],
+      "size": [
+        0.66,
+        0.9,
+        0.62
+      ],
+      "yaw": 0,
+      "footprint": [
+        1.77,
+        -1.18,
+        0.66,
+        0.62
+      ],
+      "actualBounds": {
+        "min": [
+          1.7811000347137451,
+          7.450580596923828e-09,
+          -1.1649999618530273
+        ],
+        "max": [
+          2.4189000129699707,
+          0.8949999809265137,
+          -0.6200000047683716
+        ]
+      }
+    },
+    {
+      "id": "chair-4",
+      "node": "Analysis.Chair.04",
+      "label": "椅子4",
+      "role": "chair",
+      "position": [
+        -2.1,
+        0.45,
+        1.03
+      ],
+      "size": [
+        0.66,
+        0.9,
+        0.62
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        -2.43,
+        0.72,
+        0.66,
+        0.62
+      ],
+      "actualBounds": {
+        "min": [
+          -2.4188997745513916,
+          7.450580596923828e-09,
+          0.7799999117851257
+        ],
+        "max": [
+          -1.7811000347137451,
+          0.8949999809265137,
+          1.3250000476837158
+        ]
+      }
+    },
+    {
+      "id": "chair-5",
+      "node": "Analysis.Chair.05",
+      "label": "椅子5",
+      "role": "chair",
+      "position": [
+        0,
+        0.45,
+        1.03
+      ],
+      "size": [
+        0.66,
+        0.9,
+        0.62
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        -0.33,
+        0.72,
+        0.66,
+        0.62
+      ],
+      "actualBounds": {
+        "min": [
+          -0.3188999593257904,
+          7.450580596923828e-09,
+          0.7799999117851257
+        ],
+        "max": [
+          0.3189000189304352,
+          0.8949999809265137,
+          1.3250000476837158
+        ]
+      }
+    },
+    {
+      "id": "chair-6",
+      "node": "Analysis.Chair.06",
+      "label": "椅子6",
+      "role": "chair",
+      "position": [
+        2.1,
+        0.45,
+        1.03
+      ],
+      "size": [
+        0.66,
+        0.9,
+        0.62
+      ],
+      "yaw": 3.141592653589793,
+      "footprint": [
+        1.77,
+        0.72,
+        0.66,
+        0.62
+      ],
+      "actualBounds": {
+        "min": [
+          1.7811001539230347,
+          7.450580596923828e-09,
+          0.7799999117851257
+        ],
+        "max": [
+          2.4189000129699707,
+          0.8949999809265137,
+          1.3250000476837158
+        ]
+      }
+    },
+    {
+      "id": "back-console",
+      "node": "Analysis.BackConsole",
+      "label": "奥の操作卓・PC",
+      "role": "console",
+      "position": [
+        0,
+        0.39,
+        -1.86
+      ],
+      "size": [
+        6.2,
+        0.78,
+        0.58
+      ],
+      "yaw": 0,
+      "footprint": [
+        -3.1,
+        -2.15,
+        6.2,
+        0.58
+      ],
+      "actualBounds": {
+        "min": [
+          -3.0999999046325684,
+          -7.450580596923828e-09,
+          -2.140000104904175
+        ],
+        "max": [
+          3.0999999046325684,
+          0.7800000309944153,
+          -1.5800000429153442
+        ]
+      }
+    },
+    {
+      "id": "monitor-bank",
+      "node": "Analysis.BackMonitors",
+      "label": "多面モニター",
+      "role": "monitors",
+      "position": [
+        0,
+        1.64,
+        -2.055
+      ],
+      "size": [
+        6.12,
+        1.48,
+        0.11
+      ],
+      "yaw": 0,
+      "footprint": [
+        -3.06,
+        -2.1100000000000003,
+        6.12,
+        0.11
+      ],
+      "actualBounds": {
+        "min": [
+          -3.06000018119812,
+          0.7791309356689453,
+          -2.1075000762939453
+        ],
+        "max": [
+          3.06000018119812,
+          2.4175000190734863,
+          -2.000499963760376
+        ]
+      }
+    },
+    {
+      "id": "button-bank",
+      "node": "Analysis.BackControls",
+      "label": "ボタン・操作パネル",
+      "role": "controls",
+      "position": [
+        0,
+        0.83,
+        -1.67
+      ],
+      "size": [
+        5.55,
+        0.1,
+        0.27
+      ],
+      "yaw": 0,
+      "footprint": [
+        -2.775,
+        -1.805,
+        5.55,
+        0.27
+      ],
+      "actualBounds": {
+        "min": [
+          -2.734999895095825,
+          0.7774999737739563,
+          -1.7949999570846558
+        ],
+        "max": [
+          2.734999895095825,
+          0.8870000243186951,
+          -1.5449999570846558
+        ]
+      }
+    },
+    {
+      "id": "bookcase",
+      "node": "Analysis.Bookcase",
+      "label": "大型書棚",
+      "role": "bookcase",
+      "position": [
+        4.82,
+        1.34,
+        -1.82
+      ],
+      "size": [
+        2.76,
+        2.68,
+        0.62
+      ],
+      "yaw": 0,
+      "footprint": [
+        3.4400000000000004,
+        -2.13,
+        2.76,
+        0.62
+      ],
+      "actualBounds": {
+        "min": [
+          3.440000057220459,
+          0.0,
+          -2.130000114440918
+        ],
+        "max": [
+          6.200000286102295,
+          2.680000066757202,
+          -1.5099999904632568
+        ]
+      }
+    },
+    {
+      "id": "nap-bed",
+      "node": "Analysis.NapBed",
+      "label": "仮眠用ベッド",
+      "role": "bed",
+      "position": [
+        -4.95,
+        0.325,
+        -0.94
+      ],
+      "size": [
+        1.32,
+        0.65,
+        1.95
+      ],
+      "yaw": 0,
+      "footprint": [
+        -5.61,
+        -1.915,
+        1.32,
+        1.95
+      ],
+      "actualBounds": {
+        "min": [
+          -5.599999904632568,
+          -1.4901161193847656e-08,
+          -1.9049999713897705
+        ],
+        "max": [
+          -4.299999713897705,
+          0.5799999833106995,
+          0.02499997615814209
+        ]
+      }
+    },
+    {
+      "id": "nap-nightstand",
+      "node": "Analysis.NapNightstand",
+      "label": "サイドテーブル",
+      "role": "nightstand",
+      "position": [
+        -3.99,
+        0.24,
+        -1.54
+      ],
+      "size": [
+        0.42,
+        0.48,
+        0.42
+      ],
+      "yaw": 0,
+      "footprint": [
+        -4.2,
+        -1.75,
+        0.42,
+        0.42
+      ],
+      "actualBounds": {
+        "min": [
+          -4.199999809265137,
+          -3.725290298461914e-09,
+          -1.75
+        ],
+        "max": [
+          -3.7799999713897705,
+          0.48249995708465576,
+          -1.3299999237060547
+        ]
+      }
+    },
+    {
+      "id": "nap-partition-right",
+      "node": "Analysis.NapPartition.Right",
+      "label": "仮眠スペースの仕切り",
+      "role": "partition",
+      "position": [
+        -3.62,
+        1.07,
+        -0.91
+      ],
+      "size": [
+        0.09,
+        2.14,
+        2.38
+      ],
+      "yaw": 0,
+      "footprint": [
+        -3.665,
+        -2.1,
+        0.09,
+        2.38
+      ],
+      "actualBounds": {
+        "min": [
+          -3.6649999618530273,
+          0.0,
+          -2.1000001430511475
+        ],
+        "max": [
+          -3.5749998092651367,
+          2.140000104904175,
+          0.2800000309944153
+        ]
+      }
+    },
+    {
+      "id": "nap-partition-front",
+      "node": "Analysis.NapPartition.Front",
+      "label": "仮眠スペースの仕切り",
+      "role": "partition",
+      "position": [
+        -5.325,
+        1.07,
+        0.28
+      ],
+      "size": [
+        1.65,
+        2.14,
+        0.09
+      ],
+      "yaw": 0,
+      "footprint": [
+        -6.15,
+        0.23500000000000004,
+        1.65,
+        0.09
+      ],
+      "actualBounds": {
+        "min": [
+          -6.150000095367432,
+          0.0,
+          0.23499999940395355
+        ],
+        "max": [
+          -4.5,
+          2.140000104904175,
+          0.32499998807907104
+        ]
+      }
+    },
+    {
+      "id": "front-whiteboard",
+      "node": "Analysis.FrontWhiteboard",
+      "label": "大型ホワイトボード",
+      "role": "whiteboard",
+      "position": [
+        -3.75,
+        1.6,
+        2.065
+      ],
+      "size": [
+        3.75,
+        1.32,
+        0.11
+      ],
+      "yaw": 0,
+      "footprint": [
+        -5.625,
+        2.01,
+        3.75,
+        0.11
+      ],
+      "actualBounds": {
+        "min": [
+          -5.625,
+          0.9424999952316284,
+          2.009999990463257
+        ],
+        "max": [
+          -1.875,
+          2.255000114440918,
+          2.120000123977661
+        ]
+      }
+    },
+    {
+      "id": "front-cabinet",
+      "node": "Analysis.FrontCabinet",
+      "label": "書類キャビネット",
+      "role": "cabinet",
+      "position": [
+        4.27,
+        0.43,
+        1.87
+      ],
+      "size": [
+        3.62,
+        0.86,
+        0.48
+      ],
+      "yaw": 0,
+      "footprint": [
+        2.4599999999999995,
+        1.6300000000000001,
+        3.62,
+        0.48
+      ],
+      "actualBounds": {
+        "min": [
+          2.4600000381469727,
+          0.0,
+          1.6299999952316284
+        ],
+        "max": [
+          6.079999923706055,
+          0.8600000143051147,
+          2.109999895095825
+        ]
+      }
+    },
+    {
+      "id": "front-pinboard",
+      "node": "Analysis.FrontPinboard",
+      "label": "研究資料ボード",
+      "role": "pinboard",
+      "position": [
+        4.27,
+        1.79,
+        2.065
+      ],
+      "size": [
+        2.95,
+        0.92,
+        0.1
+      ],
+      "yaw": 0,
+      "footprint": [
+        2.7949999999999995,
+        2.015,
+        2.95,
+        0.1
+      ],
+      "actualBounds": {
+        "min": [
+          2.7950000762939453,
+          1.3299999237060547,
+          2.056999921798706
+        ],
+        "max": [
+          5.744999885559082,
+          2.25,
+          2.112499952316284
+        ]
+      }
+    }
+  ],
+  "footprintSemantics": "Authored reserved furniture footprints; final actual geometry bounds supplied separately. All parts lie inside each reserved footprint.",
+  "napEntry": {
+    "frontZ": 0.28,
+    "openingX": [
+      -4.5,
+      -3.62
+    ]
+  },
+  "monitorCount": 10,
+  "computerCount": 6,
+  "buttonPanelCount": 5,
+  "chairCount": 6,
+  "bookCountTarget": 120,
+  "notes": [
+    "No research abilities or numerical game rules are defined by this visual model.",
+    "Front equipment exists in the closed model; the entrance overview uses a cutaway front shell."
+  ],
+  "views": [
+    {
+      "id": "entry",
+      "label": "入口から見る",
+      "camera": {
+        "position": [
+          0,
+          6.3,
+          10.2
+        ],
+        "target": [
+          0,
+          1.15,
+          -0.15
+        ],
+        "fov": 76,
+        "near": 0.03,
+        "far": 60
+      },
+      "hideNodes": [
+        "Analysis.FrontShell",
+        "Analysis.Ceiling"
+      ]
+    },
+    {
+      "id": "front-wall",
+      "label": "入口側を見る",
+      "camera": {
+        "position": [
+          0,
+          4.5,
+          -7.8
+        ],
+        "target": [
+          0,
+          1.15,
+          0.25
+        ],
+        "fov": 76,
+        "near": 0.03,
+        "far": 60
+      },
+      "hideNodes": [
+        "Analysis.BackShell",
+        "Analysis.Ceiling"
+      ]
+    }
+  ],
+  "positionSemantics": "feature.position is reserved footprint center/half-height, and each furniture group root is placed at that center. Actual geometry bounds are measured separately.",
+  "status": "complete",
+  "wallThickness": 0.12,
+  "bounds": {
+    "min": [
+      -6.480000019073486,
+      -0.11999999731779099,
+      -2.2799999713897705
+    ],
+    "max": [
+      6.480000019073486,
+      3.1600000858306885,
+      2.2799999713897705
+    ]
+  },
+  "surfaces": {
+    "floorTopY": 0,
+    "centralTableTopY": 0.78,
+    "consoleTopY": 0.78,
+    "chairSeatTopY": 0.49,
+    "bedMattressTopY": 0.475
+  },
+  "model": {
+    "url": "room.glb",
+    "sha256": "b7a64fa2329368f11d20027c1d8b9477442842e9fa02a8b21cfbf6f9ff7baf60",
+    "bytes": 5981412
+  },
+  "bookCount": 120,
+  "meshBatchCount": 126,
+  "animationCount": 0,
+  "previews": [
+    {
+      "id": "entry",
+      "url": "preview.webp",
+      "width": 1024,
+      "height": 448,
+      "bytes": 52528,
+      "sha256": "35e1aaa00287a211d9ac4dd43a12e81655b2cd676ac8dea958424f3c3352b264"
+    }
+  ],
+  "source": "environments/analysis_room/source/build_analysis_room.py",
+  "layoutSource": "environments/analysis_room/layout.json"
+}

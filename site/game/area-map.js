@@ -1,4 +1,5 @@
 import {trainingMapSvg} from './training-map.js';
+import {analysisMapSvg} from './analysis-map.js';
 
 const DEFAULT_BOUNDS={min:[-2.72,-.1,-5.72],max:[2.72,2.8,.15]};
 /** Project the actual Y-up room coordinates: rear at the top, entrance below. */
@@ -8,7 +9,7 @@ export function roomMapPoint(position,bounds=DEFAULT_BOUNDS){
 }
 export class AreaMap {
  constructor(element,{onOpenHouse=()=>{},onHouseUpdate=()=>{}}={}){
-  this.onHouseUpdate=onHouseUpdate;this.contentClick=event=>{if(['house','training'].includes(this.mode)){const button=event.target.closest('[data-house-map-open]');if(button)onOpenHouse(button);}};element.addEventListener('click',this.contentClick);
+  this.onHouseUpdate=onHouseUpdate;this.contentClick=event=>{if(['house','training','analysis'].includes(this.mode)){const button=event.target.closest('[data-house-map-open]');if(button)onOpenHouse(button);}};element.addEventListener('click',this.contentClick);
   this.element=element;this.content=element.querySelector('#areaMapContent');this.title=element.querySelector('#areaMapTitle');this.hint=element.querySelector('#areaMapHint');this.mode=null;this.markerKey=null;
  }
  showHouse(life,metadata){
@@ -30,6 +31,10 @@ export class AreaMap {
  showTraining(){
   this.mode='training';this.element.dataset.area='training';this.title.textContent='訓練所';this.hint.textContent='';
   this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="訓練所の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+trainingMapSvg()+'</button>';
+ }
+ showAnalysis(){
+  this.mode='analysis';this.element.dataset.area='analysis';this.title.textContent='珍生物分析室';this.hint.textContent='';
+  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="珍生物分析室の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+analysisMapSvg({compact:true,current:true})+'</button>';
  }
  buildHouse(){
   const point=(x,z)=>roomMapPoint([x,0,z],this.bounds);

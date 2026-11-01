@@ -39,9 +39,7 @@ export function outdoorMapDrawing({selected=null}={}){
   text(1640,589,'F1・F2',54)+
   rect(1790,694,84,66,'#e6eadc','data-outdoor-feature="passenger-ev" stroke="#a5b294" stroke-width="3"')+text(1832,742,'EV',48)+
   zone('entrance',1390,650,300,130,'#e4ead5')+
-  text(1540,710,'建物入口',54)+
-  '<g data-outdoor-feature="security-lock" fill="none" stroke="#8b936b" stroke-width="4"><path d="M1420 748v-9a10 10 0 0 1 20 0v9"/><rect x="1415" y="748" width="30" height="24" rx="4"/><path d="M1430 757v7"/></g>'+
-  text(1560,766,'ロック',50)+
+  text(1540,730,'建物入口',54)+
   '<path data-outdoor-feature="front-door" d="M1490 780h100" stroke="#9ab7a8" stroke-width="8"/>'+
   // One area: the outdoor loading entrance is the freight lift itself.
   zone('freight',110,350,300,430,'#dce4d4')+

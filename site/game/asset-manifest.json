@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "scope": "ゲーム本編で現在使用するハウス、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
-  "fileCount": 142,
-  "totalBytes": 106101039,
+  "scope": "ゲーム本編で現在使用するハウス、分析室、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
+  "fileCount": 144,
+  "totalBytes": 112097839,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1139,6 +1139,22 @@
       "bytes": 5048,
       "priority": 3,
       "sha256": "3a7e5886256a2b3d35427faaeb1b537c98e2fed68332765409610b1dc487587a"
+    },
+    {
+      "url": "assets/analysis-room/room.glb?v=b7a64fa2329368f11d20027c1d8b9477442842e9fa02a8b21cfbf6f9ff7baf60",
+      "label": "珍生物分析室",
+      "type": "binary",
+      "bytes": 5981412,
+      "priority": 2,
+      "sha256": "b7a64fa2329368f11d20027c1d8b9477442842e9fa02a8b21cfbf6f9ff7baf60"
+    },
+    {
+      "url": "assets/analysis-room/metadata.json",
+      "label": "分析室の設定",
+      "type": "json",
+      "bytes": 15388,
+      "priority": 2,
+      "sha256": "1d9172ebe02170cc193464e0aa7231220f82d59ab733727ae97f4ade82a5ab5c"
     }
   ]
 }

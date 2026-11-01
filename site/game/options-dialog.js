@@ -119,7 +119,7 @@ export class OptionsDialog {
   const scroll=this.body.scrollTop,active=document.activeElement,data=this.body.contains(active)&&active?.dataset&&Object.keys(active.dataset).length?{...active.dataset}:null;this.render(this.route);this.body.scrollTop=scroll;
   if(data){const focus=[...this.body.querySelectorAll('button')].find(b=>Object.entries(data).every(([k,v])=>b.dataset[k]===v));focus?.focus({preventScroll:true});}
  }
- canSelectMap(snapshot=this.readGame()){return !snapshot||(['home','patrol','training-hall'].includes(snapshot.location)&&!snapshot.pendingAngerEvent&&!['scene-cutin','cutin','battle'].includes(snapshot.scene));}
+ canSelectMap(snapshot=this.readGame()){return !snapshot||(['home','patrol','training-hall','analysis-room'].includes(snapshot.location)&&!snapshot.pendingAngerEvent&&!['scene-cutin','cutin','battle'].includes(snapshot.scene));}
  canRequestPatrol(snapshot=this.readGame()){return snapshot?.scene==='house'&&!snapshot.messageVisible&&Boolean(snapshot.homeCommands?.patrol);}
  canRequestTraining(snapshot=this.readGame(),tier='easy'){return ['house','training-hall'].includes(snapshot?.scene)&&!snapshot.messageVisible&&Boolean(snapshot.homeCommands?.trainings?.[tier]??(tier==='easy'&&snapshot.homeCommands?.training));}
  render(id){
@@ -136,7 +136,7 @@ export class OptionsDialog {
   }else if(id==='maps'){
    const snapshot=this.readGame(),allowed=this.canSelectMap(snapshot);
    const patrolAllowed=this.canRequestPatrol(snapshot);
-   const patrolDetail=snapshot?.scene==='training-hall'?'パトロールは、おこていゆハウスから出発します。':snapshot?.location==='patrol'?'いま、道中をパトロールしています。':snapshot?.homeCommands?.patrolAvailable===false?'今の条件で出会える珍生物はいません。':!patrolAllowed?'ひと息つくのを、もう少し待ちましょう。':'パトロールに出かける';
+   const patrolDetail=['training-hall','analysis-room'].includes(snapshot?.scene)?'パトロールは、おこていゆハウスから出発します。':snapshot?.location==='patrol'?'いま、道中をパトロールしています。':snapshot?.homeCommands?.patrolAvailable===false?'今の条件で出会える珍生物はいません。':!patrolAllowed?'ひと息つくのを、もう少し待ちましょう。':'パトロールに出かける';
    const inHall=snapshot?.scene==='training-hall',hallAllowed=Boolean(snapshot?.canVisitTrainingHall&&!snapshot?.messageVisible);
    this.body.innerHTML='<button class="map-card" type="button" data-map="patrol"'+(patrolAllowed?'':' disabled')+'><span class="map-card__icon">'+icon('map')+'</span><span class="map-card__copy"><small class="map-card__eyebrow">PATROL</small><strong class="map-card__name">パトロールに出る</strong><span class="map-card__description">'+patrolDetail+'</span><span class="map-card__description">強敵も登場します。準備を万全に。</span></span><span class="map-card__arrow" aria-hidden="true">›</span></button>'+'<button class="map-card" type="button" '+(inHall?'data-panel="trainings"':'data-map="training-hall"')+((inHall&&allowed)||hallAllowed?'':' disabled')+'><span class="map-card__icon">'+icon('shield')+'</span><span class="map-card__copy"><small class="map-card__eyebrow">B2 · TRAINING</small><strong class="map-card__name">'+(inHall?'難易度を一覧で選ぶ':'訓練所へ移動')+'</strong><span class="map-card__description">'+(inHall?'自動で選ばれた珍生物を招待して訓練します。':'地下2階へ。移動は消費なし。訓練では珍生物を自動で選んで招待します。')+'</span></span><span class="map-card__arrow" aria-hidden="true">›</span></button>'+(allowed?'':'<p class="option-note" id="mapRestriction">戦闘中とカットイン中は、マップを移動できません。</p>');
   }else if(id==='confirm-patrol-return'){

@@ -1,6 +1,7 @@
 import {tryOpenModal,releaseModal,isModalBlocked} from './modal-layer.js';
 import {trainingMapDrawing,BASEMENT_MAP_VIEWBOX,basementCoreDrawing,basementFreightDrawing} from './training-map.js';
 import {outdoorMapDrawing,OUTDOOR_MAP_VIEWBOX} from './outdoor-map.js';
+import {analysisMapDrawing} from './analysis-map.js';
 
 export const BUILDING_FLOORS=Object.freeze([
  {id:'b2',label:'B2',name:'地下の訓練場',areas:[
@@ -11,21 +12,21 @@ export const BUILDING_FLOORS=Object.freeze([
   {id:'core',name:'階段・エレベーター',text:'各階をつなぐ階段とエレベーター。'}]},
  {id:'b1',label:'B1',name:'研究と支援',areas:[
   {id:'research',name:'研究所',text:'おこていゆの研究を支える施設。'},
-  {id:'analysis',name:'珍生物分析室',text:'珍生物について調べる施設。'},
+  {id:'analysis',name:'珍生物分析室',text:'珍生物を調べる分析室。研究机やモニター、資料棚、仮眠スペースがあります。'},
   {id:'production',name:'生産施設',text:'研究と支援のための生産エリア。'},
   {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'屋外の搬入口と、研究・生産施設の奥をつなぐ大型EV。'},
   {id:'maintenance',name:'整備施設',text:'研究と支援を支える整備エリア。'}]},
  {id:'1f',label:'F1',name:'おこていゆの暮らし',areas:[
   {id:'home',name:'おこていゆの部屋',text:'ホーム画面。おこていゆが暮らす部屋。'},
   {id:'hall',name:'共用廊下',text:'部屋と入口、階段をつなぐ共用廊下。'},
-  {id:'entrance',name:'建物の入り口',text:'セキュリティロックのある建物の入口。'},
+  {id:'entrance',name:'建物の入り口',text:'建物の入口。'},
   {id:'core',name:'階段・エレベーター',text:'各階をつなぐ階段とエレベーター。'}]},
  {id:'2f',label:'F2',name:'あなたの暮らし',areas:[
   {id:'player',name:'あなたの部屋',text:'あなたが暮らす、おこていゆと同じ間取りの1K。'},
   {id:'core',name:'階段・エレベーター',text:'各階をつなぐ階段とエレベーター。'}]},
  {id:'outdoor',label:'屋外',name:'おこていゆハウス周辺',areas:[
   {id:'building',name:'おこていゆハウスの建物',mapOnly:true,text:'F1におこていゆ、F2にあなたが暮らす建物。'},
-  {id:'entrance',name:'建物入口',mapOnly:true,text:'セキュリティ付きの、通常の建物入口。'},
+  {id:'entrance',name:'建物入口',mapOnly:true,text:'通常の建物入口。'},
   {id:'warehouse',name:'倉庫',mapOnly:true,text:'空き地の北側にある倉庫。左側は大型EVへ、南側は住宅街の道へつながっています。'},
   {id:'freight',name:'大型搬入口・EV',mapOnly:true,text:'大きな珍生物が出入りする、搬入口と一体の大型EV。'}]}
 ]);
@@ -81,7 +82,7 @@ export function buildingFloorSvg(floorId,selected){
    text(363,387,'台所',21)+text(514,378,'玄関',23)+
    rect(402,331,48,8,'#faf2e1')+`<path data-door="living" d="M405 338h42m-42 4h20" stroke="#b09774" stroke-width="2"/>`+
    zone('hall',selected,119,430,486,75,'#eee6d5')+
-   (home?zone('entrance',selected,119,430,126,75,'#e8dbc2')+text(182,461,'入口',24)+text(182,486,'ロック',19)+`<rect x="157" y="436" width="12" height="10" rx="2" fill="#a38051"/><path d="M159 437v-5a4 4 0 0 1 8 0v5" stroke="#a38051" fill="none" stroke-width="2"/>`:'')+
+   (home?zone('entrance',selected,119,430,126,75,'#e8dbc2')+text(182,475,'入口',24):'')+
    text(362,475,home?'共用廊下':'共用通路',23)+zone('core',selected,481,430,124,75,'#d4dfd0')+stairs(492,443)+rect(549,442,44,49,'#f5f7ed','stroke="#a7b59c" stroke-width="2"')+text(571,474,'EV',18)+
    rect(440,409,40,26,'#faf2e1','data-apartment-entry="true"')+
    `<path data-door="apartment" d="M442 412v-36M478 412A36 36 0 0 0 442 376" fill="none" stroke="#b09774" stroke-width="2"/>`;
@@ -93,10 +94,12 @@ export function buildingFloorSvg(floorId,selected){
   if(floor.id==='b1'){
    drawing+='<path data-basement-access="freight" d="M10 374H42V270H65M42 374V552H65" fill="none" stroke="#e2d9c4" stroke-width="24" stroke-linejoin="round"/>'+
     '<path data-basement-access="core" d="M282 340V410M762 340V410M42 374H1102" fill="none" stroke="#e2d9c4" stroke-width="44" stroke-linejoin="round"/>'+
-    zone('research',selected,65,190,435,150,'#e1ead7')+zone('analysis',selected,545,190,435,150,'#dfecea')+
+    zone('research',selected,65,190,435,150,'#e1ead7')+
+    rect(545,190,435,150,'#e8eee5','data-building-zone="analysis" data-map-marker-x="905" data-map-marker-y="90" data-map-marker-unit="1.25"')+
+    '<g transform="translate(545 190)">'+analysisMapDrawing({selected:selected==='analysis'})+'</g>'+
     zone('production',selected,65,410,435,285,'#eee1c6')+zone('maintenance',selected,545,410,435,285,'#e8dfd5')+
-    '<path data-basement-access="room-doors" d="M260 340h44M740 340h44M260 410h44M740 410h44M65 254v32M65 536v32" fill="none" stroke="#e2d9c4" stroke-width="8"/>'+
-    text(282,282,'研究所',46)+text(762,282,'珍生物分析室',46)+text(282,562,'生産施設',46)+text(762,562,'整備施設',46)+
+    '<path data-basement-access="room-doors" d="M260 340h44M260 410h44M740 410h44M65 254v32M65 536v32" fill="none" stroke="#e2d9c4" stroke-width="8"/>'+
+    text(282,282,'研究所',46)+text(658,175,'珍生物分析室',28)+text(282,562,'生産施設',46)+text(762,562,'整備施設',46)+
     text(550,125,'研究・支援エリア',35)+basementCoreDrawing({selected})+basementFreightDrawing({selected});
   }else{
    drawing=trainingMapDrawing({selected});

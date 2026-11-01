@@ -1,0 +1,84 @@
+import * as THREE from './vendor/three/three.module.js';
+import {BattleView} from './battle-view.js';
+import {loadAssetJson,loadGLTFAsset} from './asset-store.js';
+import {equippedSupportIds} from './equipment-rules.js';
+import {isModalBlocked} from './modal-layer.js';
+import {setPaintedText,releasePaintedLabels} from './painted-label.js';
+
+const number=(value,fallback=0)=>Number.isFinite(Number(value))?Number(value):fallback;
+function visitingSnapshot(player={}){
+ const support=equippedSupportIds(player.equipment||{}).includes('moai_kun')?['moai_kun']:[],helper=support.length?{id:'moai_kun',phase:'idle',guardUsed:false}:null,hp=Math.max(1,number(player.stats?.hp,1));
+ return {phase:'visiting',time:0,enemies:[],targetId:null,super:{active:false},supports:helper?[helper]:[],support:helper,player:{...player,id:'player',speciesId:'okoteiyu',name:'おこていゆ',hp,maxHp:hp,action:null,superActive:false,auraId:null,equipment:{support,defense:null}}};
+}
+
+/** A visit-only room. Approved character assets provide idle presentation;
+ * no battle, research, reward or home simulation is advanced here. */
+export class AnalysisRoomView extends BattleView{
+ async load(snapshot,stage={},{presentationState}={}){
+  const generation=this.fieldGeneration=(this.fieldGeneration||0)+1;this.loading=true;this.ready=false;this.lastError=null;this.snapshot=snapshot;this.stageOptions={...stage,presentation:'analysis-room'};this.time=number(snapshot.time);this.cutin=null;this.presentationId=stage.presentationId??null;this.cameraMode=presentationState?.analysisRoom?.cameraMode==='front'?'front':'overview';this.supportView.setVisible(false);if(this.canvas)this.canvas.style.visibility='hidden';this.onStatus('珍生物分析室を準備しています…');
+  try{
+   this.createRenderer();
+   const [manifest,metadata]=await Promise.all([this.manifest?Promise.resolve(this.manifest):loadAssetJson(new URL('manifest.json',this.baseUrl)),loadAssetJson(new URL('./assets/analysis-room/metadata.json',import.meta.url))]);this.manifest=manifest;
+   const definition=metadata.model;if(!definition?.url)throw new Error('珍生物分析室のモデル設定が見つかりません。');
+   const modelUrl=new URL(definition.url,new URL('./assets/analysis-room/',import.meta.url));if(definition.sha256)modelUrl.searchParams.set('v',definition.sha256);
+   const [gltf,player]=await Promise.all([loadGLTFAsset(this.loader,modelUrl.href),this.loadActor('okoteiyu','player'),this.supportView.prepare(snapshot.player.equipment.support)]);
+   if(this.destroyed||generation!==this.fieldGeneration){this.disposeObject(gltf.scene);return false;}
+   for(const actor of this.actorCache.values())actor.anchor.visible=false;
+   this.clearStage();this.metadata=metadata;this.fieldScene=gltf.scene;this.fieldScene.name='AnalysisRoom.Environment';this.stage.add(this.fieldScene);
+   this.applyRoomView();
+   this.actors={player};player.anchor.visible=true;player.anchor.position.fromArray(metadata.entrance?.heroStand||metadata.entry?.position||[0,0,1.82]);player.facing.rotation.y=number(metadata.entrance?.heroYaw??metadata.entry?.yaw,Math.PI);player.hitAt=player.superAt=-Infinity;player.hitRoot.position.set(0,0,0);player.fatigueRoot.position.set(0,0,0);player.attackRoot.position.set(0,0,0);player.mixer.stopAllAction();for(const shield of player.shields?.values()||[])shield.visible=false;
+   this.supportView.activate(snapshot.player.equipment.support,{baseTime:this.time});this.scene.background=new THREE.Color(metadata.background||'#e8efed');this.scene.fog=null;
+   this.hemi.intensity=number(metadata.lighting?.ambient,2.1);this.sun.intensity=number(metadata.lighting?.sun,2.3);this.sun.position.set(-3,6,4);
+   this.loading=false;this.ready=true;this.updatePose();this.resize();this.render();this.onStatus('');return true;
+  }catch(error){if(this.destroyed||generation!==this.fieldGeneration)return false;this.loading=false;this.ready=false;this.lastError=error?.message||String(error);this.onStatus('');this.onError(error);return false;}
+ }
+ capturePresentationState(){return {version:1,presentationId:this.presentationId,analysisRoom:{cameraMode:this.cameraMode||'overview'}};}
+ applyRoomView(){
+  if(!this.fieldScene||!this.metadata)return;
+  const overview=this.metadata.hideFromEntranceCamera||[],front=this.metadata.reverseCamera?.hideNodes||[],hidden=new Set(this.cameraMode==='front'?front:overview);
+  for(const name of new Set([...overview,...front])){const node=this.fieldScene.getObjectByName(name)||this.fieldScene.getObjectByName(THREE.PropertyBinding.sanitizeNodeName(name));if(node)node.visible=!hidden.has(name);}
+ }
+ setCameraMode(mode){
+  if(!['overview','front'].includes(mode)||!this.ready||!this.active||this.loading||this.contextLost||this.destroyed||this.isPresentationPaused?.()||document.hidden||isModalBlocked()||mode==='front'&&!this.metadata?.reverseCamera)return false;
+  this.cameraMode=mode;this.applyRoomView();this.fitCamera();this.render();return true;
+ }
+ targetSelectionAvailable(){return false;}
+ canOrbitCamera(){return false;}
+ fitCamera(){
+  if(!this.ready||!this.metadata||!this.width||!this.height)return;
+  const camera=(this.cameraMode==='front'?this.metadata.reverseCamera:this.metadata.camera)||{},position=camera.position||[0,5,7],target=camera.target||[0,.9,-.4];this.cameraAim=new THREE.Vector3().fromArray(target);this.camera.position.fromArray(position);this.camera.lookAt(this.cameraAim);this.camera.clearViewOffset();this.camera.zoom=1;this.camera.fov=number(camera.fov,80);this.camera.near=number(camera.near,.03);this.camera.far=number(camera.far,80);this.camera.aspect=this.width/this.height;this.camera.updateProjectionMatrix();this.camera.updateMatrixWorld(true);
+ }
+ updatePose(){
+  if(!this.ready||!this.snapshot)return;this.sampleActor(this.actors.player,this.snapshot.player,'player');this.supportView.sample({...this.snapshot,phase:'analysis-room'},this.actors,this.time,{enabled:this.active,camera:this.camera});this.scene.updateMatrixWorld(true);
+ }
+ advance(dt){if(!this.ready||!this.active||this.contextLost||this.loading||this.destroyed||this.isPresentationPaused?.()||document.hidden||isModalBlocked())return;this.time+=Math.max(0,number(dt));this.snapshot.time=this.time;this.updatePose();this.render();}
+ render(){if(!this.ready||!this.active||this.contextLost||this.destroyed||!this.renderer)return;this.renderer.render(this.scene,this.camera);this.canvas.dataset.presentation='analysis-room';this.canvas.setAttribute('aria-label',this.cameraMode==='front'?'珍生物分析室の手前の壁を見る視点。入口と、ホワイトボードや資料ボード。':'入口側から見渡す珍生物分析室。中央のテーブル、奥のモニター、右奥の本棚と左奥の仮眠スペース。');this.canvas.style.visibility='visible';this.renderFrames++;}
+ getDiagnostics(){return {ready:this.ready,loading:this.loading,active:this.active,contextLost:this.contextLost,error:this.lastError,renderFrames:this.renderFrames,time:this.time,cameraMode:this.cameraMode||'overview',metadata:this.metadata||null,size:{width:this.width||0,height:this.height||0},camera:{position:this.camera.position.toArray(),target:this.cameraAim?.toArray()||null,fov:this.camera.fov},player:this.actors.player?{position:this.actors.player.anchor.position.toArray(),height:this.actors.player.height,currentClip:this.actors.player.currentClip}:null,support:this.supportView.getDiagnostics()};}
+}
+
+export class AnalysisRoomUI{
+ constructor({view,homeElement,readPlayer=()=>({}),isPaused=()=>false,onMap=()=>false,onReturn=()=>false,onError=()=>{}}={}){
+  Object.assign(this,{view,homeElement,readPlayer,isPaused,onMap,onReturn,onError});this.active=false;this.loading=false;this.failed=false;this.generation=0;
+  this.container=document.createElement('div');this.container.id='analysisRoomScene';this.container.className='analysis-room-scene';
+  this.status=document.createElement('div');this.status.className='analysis-room-status';this.status.setAttribute('role','status');this.status.hidden=true;this.status.innerHTML='<span></span><button type="button" hidden>もう一度読み込む</button>';this.container.append(this.status);this.status.querySelector('button').addEventListener('click',()=>{if(!this.isPaused()&&!isModalBlocked())this.show();});
+  this.badge=document.createElement('div');this.badge.className='analysis-room-badge';this.badge.hidden=true;this.badge.innerHTML='<span>B1</span><strong>珍生物分析室</strong>';view.element.append(this.badge);
+  this.cameraButton=document.createElement('button');this.cameraButton.type='button';this.cameraButton.className='analysis-room-camera';this.cameraButton.hidden=true;this.cameraButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="2.5"/></svg><span></span>';view.element.append(this.cameraButton);this.cameraButton.addEventListener('click',()=>{if(!this.blocked()&&this.controller.setCameraMode(this.controller.cameraMode==='front'?'overview':'front'))this.updateControls();});
+  this.panel=document.createElement('section');this.panel.id='analysisRoomChoices';this.panel.className='lower-right analysis-room-actions';this.panel.hidden=true;this.panel.setAttribute('aria-label','珍生物分析室での移動');this.panel.innerHTML='<nav aria-label="珍生物分析室の選択肢"><button type="button" data-analysis-map><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2ZM9 3v16M15 5v16"/></svg><span>建物マップを開く</span><b aria-hidden="true">›</b></button><button type="button" data-analysis-home><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M6 9v12h12V9M10 21v-7h4v7"/></svg><span>おこていゆハウスへ戻る</span><b aria-hidden="true">›</b></button></nav>';homeElement.after(this.panel);this.mapButton=this.panel.querySelector('[data-analysis-map]');this.returnButton=this.panel.querySelector('[data-analysis-home]');this.mapButton.addEventListener('click',()=>{if(!this.blocked())this.onMap(this.mapButton);});this.returnButton.addEventListener('click',()=>{if(this.active&&!this.isPaused()&&!isModalBlocked())this.onReturn(this.returnButton);});
+ }
+ get ready(){return Boolean(this.active&&this.controller?.ready&&!this.controller.contextLost&&!this.loading&&!this.failed);}
+ blocked(){return !this.ready||this.isPaused()||isModalBlocked()||document.hidden;}
+ async show(){
+  this.view.clear();this.active=true;this.loading=true;this.failed=false;const generation=++this.generation;this.snapshot=visitingSnapshot(this.readPlayer());this.container.classList.add('is-loading');this.view.surface.append(this.container);this.homeElement.hidden=true;this.panel.hidden=false;this.badge.hidden=true;this.status.hidden=false;this.status.querySelector('span').textContent='珍生物分析室を準備しています…';this.status.querySelector('button').hidden=true;this.updateControls();
+  this.controller??=new AnalysisRoomView({container:this.container,isPresentationPaused:()=>this.isPaused(),onStatus:text=>{if(this.active){this.status.querySelector('span').textContent=text?'珍生物分析室を準備しています…':'';this.status.hidden=!text;}},onError:error=>{if(this.active)this.showError(error);}});
+  const ready=await this.controller.load(this.snapshot,{presentation:'analysis-room'});if(!this.active||generation!==this.generation)return false;this.loading=false;this.failed=!ready;if(ready){this.controller.setActive(true);this.container.classList.remove('is-loading');this.status.hidden=true;}this.updateControls();return ready;
+ }
+ updateControls(){this.panel.hidden=!this.active;this.badge.hidden=!this.ready;this.cameraButton.hidden=!this.ready;this.cameraButton.disabled=this.blocked();const mode=this.controller?.cameraMode==='front'?'手前の壁':'全体';setPaintedText(this.cameraButton.querySelector('span'),mode,{background:'#f6ecd9',align:'center'});this.cameraButton.setAttribute('aria-label','視点を切り替える。現在：'+mode+'。');this.mapButton.disabled=!this.ready||document.hidden;this.mapButton.setAttribute('aria-disabled',String(this.blocked()));this.returnButton.disabled=!this.active||document.hidden;this.returnButton.setAttribute('aria-disabled',String(!this.active||this.isPaused()||isModalBlocked()));}
+ advance(dt){if(!this.active)return;this.updateControls();if(!this.blocked())this.controller.advance(dt);}
+ async recoverAfterInterruption(){
+  if(!this.active||!this.controller)return false;const generation=this.generation;this.loading=true;this.container.classList.add('is-loading');this.status.hidden=false;this.status.querySelector('span').textContent='珍生物分析室の表示を復旧しています…';this.updateControls();const ready=await this.controller.recoverAfterInterruption(this.snapshot,{presentation:'analysis-room'});if(!this.active||generation!==this.generation)return false;this.loading=false;this.failed=!ready;if(ready){this.controller.setActive(true);this.container.classList.remove('is-loading');this.status.hidden=true;}this.updateControls();return ready;
+ }
+ showError(error){this.loading=false;this.failed=true;this.status.hidden=false;this.status.querySelector('span').textContent='珍生物分析室を表示できませんでした。通信環境を確認して、もう一度お試しください。';this.status.querySelector('button').hidden=false;this.badge.hidden=true;this.updateControls();this.onError(error);}
+ deactivate(){this.active=false;this.generation++;this.controller?.setActive(false);this.controller?.cancelPendingLoad();this.loading=false;this.panel.hidden=true;this.badge.hidden=true;this.cameraButton.hidden=true;this.status.hidden=true;this.container.remove();}
+ getDiagnostics(){return {active:this.active,ready:this.ready,loading:this.loading,failed:this.failed,generation:this.generation,view:this.controller?.getDiagnostics()||null};}
+ destroy(){this.deactivate();this.controller?.destroy();this.panel.remove();this.badge.remove();releasePaintedLabels(this.cameraButton);this.cameraButton.remove();this.container.replaceChildren();}
+}
