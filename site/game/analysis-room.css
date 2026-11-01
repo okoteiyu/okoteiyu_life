@@ -1,7 +1,8 @@
 .analysis-room-scene{position:absolute;inset:0;overflow:hidden;background:#e8efed;}
 .analysis-room-scene.is-loading{background:#18211e;}
 .analysis-room-scene.is-loading canvas{visibility:hidden!important;}
-.analysis-room-scene canvas{display:block;inline-size:100%;block-size:100%;touch-action:manipulation;}
+.analysis-room-scene canvas{display:block;inline-size:100%;block-size:100%;touch-action:none;outline-offset:-3px;}
+.analysis-room-scene canvas[data-camera-mode="entrance"]{cursor:grab;}.analysis-room-scene canvas[data-camera-mode="entrance"]:active{cursor:grabbing;}.analysis-room-scene canvas:focus-visible{outline:2px solid #899d5c;}
 .analysis-room-status{position:absolute;z-index:3;inset-inline:10%;top:40%;padding:13px 12px;border:1px solid #c5b99d;border-radius:13px 5px;background:#fffdf1f2;color:#76664f;font-size:13px;line-height:1.7;text-align:center;box-shadow:0 4px 12px #4654481a;}
 .analysis-room-status button{display:block;margin:9px auto 0;padding:7px 12px;border:1px solid #b9c596;border-radius:9px 4px;background:#edf3dc;color:#62754b;font:inherit;cursor:pointer;touch-action:manipulation;}
 .analysis-room-badge{position:absolute;z-index:1;top:12px;right:12px;display:flex;align-items:center;gap:7px;max-inline-size:calc(100% - 24px);padding:6px 9px;border:1px solid #c7b38b;border-radius:10px 4px;background:#fff9e8e8;color:#6d674c;box-shadow:0 2px 6px #1f302313;pointer-events:none;line-height:1.4;}
