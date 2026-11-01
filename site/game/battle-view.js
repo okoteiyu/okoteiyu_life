@@ -90,13 +90,14 @@ export class BattleView{
    this.actors=Object.fromEntries(records.map((record,index)=>[states[index].id||(index?'enemy':'player'),record]));
    const player=this.actors.player,enemies=records.slice(1);
    for(const record of records){record.anchor.visible=true;record.hitAt=-Infinity;record.superAt=-Infinity;record.currentClip=null;record.currentActionId=null;record.fatigueRoot.position.set(0,0,0);if(record.fatigueEffects)record.fatigueEffects.root.visible=false;record.mixer.stopAllAction();}
-   const maxHeight=Math.max(...records.map(record=>record.height));this.separation=Math.max(1.05,maxHeight*1.05,...enemies.map(record=>record.forwardExtent?record.forwardExtent+player.height*.7+Math.max(.35,maxHeight*.22):0));
+   const fieldRegion=stage.encounterType==='training'?'training':stage.coordinate?getBattleRegionAt(stage.coordinate):stage.region||'residential',fieldTime=stage.timeOfDay==='night'?'night':'day';
+   const smallSoloOutdoor=fieldRegion!=='training'&&enemies.length===1&&enemies[0].height<=.8;
+   const maxHeight=Math.max(...records.map(record=>record.height));this.separation=Math.max(smallSoloOutdoor?1.8:1.05,maxHeight*1.05,...enemies.map(record=>record.forwardExtent?record.forwardExtent+player.height*.7+Math.max(.35,maxHeight*.22):0));
    const offset=Math.max(.22,maxHeight*.22);player.anchor.position.set(-offset,0,this.separation/2);
    const widths=enemies.map(enemy=>Math.max(.45,enemy.height*.9,(enemy.halfWidth??enemy.fitRadius??0)*2)),gap=.18,total=widths.reduce((sum,width)=>sum+width,0)+gap*(enemies.length-1);let cursor=offset-total/2;
    for(let index=0;index<enemies.length;index++){const enemy=enemies[index];enemy.anchor.position.set(cursor+widths[index]/2,0,-this.separation/2);cursor+=widths[index]+gap;enemy.facing.rotation.y=Math.atan2(player.anchor.position.x-enemy.anchor.position.x,player.anchor.position.z-enemy.anchor.position.z);}
    this.cameraAim=new THREE.Vector3(0,maxHeight*.5,-this.separation*.05);
    this.fieldManifest??=await loadAssetJson(new URL('fields.json',this.baseUrl));
-   const fieldRegion=stage.encounterType==='training'?'training':stage.coordinate?getBattleRegionAt(stage.coordinate):stage.region||'residential',fieldTime=stage.timeOfDay==='night'?'night':'day';
    const field=this.fieldManifest.models.find(m=>m.id===fieldRegion+'_'+fieldTime);if(!field)throw new Error('戦闘フィールドが見つかりません。');
    const fieldUrl=new URL(field.url,this.baseUrl);fieldUrl.searchParams.set('v',field.sha256);
    const fieldGLTF=await loadGLTFAsset(this.loader,fieldUrl.href);if(this.destroyed||generation!==this.fieldGeneration){this.disposeObject(fieldGLTF.scene);return false;}
