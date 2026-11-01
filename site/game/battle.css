@@ -53,6 +53,8 @@
 .battle-hp--enemy[aria-disabled="false"]{pointer-events:auto;cursor:pointer;touch-action:manipulation;}
 .battle-hp--enemy[role="button"]:focus-visible{outline:2px solid #c57b55;outline-offset:2px;}
 .battle-scene[data-targeting-enabled="true"] .battle-webgl{cursor:crosshair;}
+.battle-scene[data-camera-enabled="true"] .battle-webgl{touch-action:none;cursor:grab;}
+.battle-scene[data-camera-dragging="true"] .battle-webgl{cursor:grabbing;}
 .battle-lockon{position:absolute;z-index:1;pointer-events:none;filter:drop-shadow(0 1px 2px #663d2d55);}
 .battle-lockon svg{display:block;inline-size:100%;block-size:100%;overflow:visible;fill:none;}
 .battle-lockon path{vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;}

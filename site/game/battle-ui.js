@@ -33,14 +33,45 @@ export class BattleUI{
  get resultReady(){return Boolean(this.ended&&this.ready&&this.controller?.presentationReadyForResult);}
  blocked(){return !this.active||this.isPaused()||isModalBlocked()||Boolean(this.controller?.cutin);}
  activateTarget(id){if(this.blocked()||!this.ready||this.ended||document.hidden||!opponents(this.snapshot).some(enemy=>(enemy.id||'enemy')===id&&enemy.hp>0))return false;const result=this.onTarget(id);return result!==false&&result?.ok!==false;}
+ cameraInputAvailable(){return Boolean(this.ready&&!this.blocked()&&!this.ended&&!document.hidden&&this.snapshot?.phase==='active'&&this.stage?.presentation!=='training-hall'&&this.controller?.stageOptions?.presentation!=='training-hall'&&typeof this.controller?.orbitCamera==='function'&&(this.controller.canOrbitCamera?.()??true));}
+ resetTargetInput({clearPointers=false}={}){
+  const gesture=this.targetGesture;this.targetGesture=null;this.pendingTargetTap=null;this.container.dataset.cameraDragging='false';
+  if(gesture?.dragged)this.suppressTargetClickUntil=performance.now()+500;
+  if(clearPointers)this.targetPointers?.clear();
+  try{if(gesture?.canvas.hasPointerCapture?.(gesture.id))gesture.canvas.releasePointerCapture(gesture.id);}catch{}
+ }
  installTargetInput(){
-  this.targetInputCleanups=[];const listen=(element,type,callback)=>{element.addEventListener(type,callback);this.targetInputCleanups.push(()=>element.removeEventListener(type,callback));};
-  listen(this.container,'pointerdown',event=>{this.pendingTargetTap=null;if(event.target!==this.controller?.canvas||this.blocked()||!this.ready||this.ended||document.hidden||event.button!==0||event.isPrimary===false||this.targetGesture){this.targetGesture=null;return;}this.targetGesture={id:event.pointerId,x:event.clientX,y:event.clientY,at:performance.now(),dragged:false};});
-  listen(this.container,'pointermove',event=>{if(this.targetGesture?.id===event.pointerId&&Math.hypot(event.clientX-this.targetGesture.x,event.clientY-this.targetGesture.y)>8)this.targetGesture.dragged=true;});
-  listen(this.container,'pointerup',event=>{const gesture=this.targetGesture;this.targetGesture=null;if(!gesture||gesture.id!==event.pointerId||gesture.dragged||Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)>8||performance.now()-gesture.at>650)return;this.pendingTargetTap={x:event.clientX,y:event.clientY,at:performance.now()};});
-  listen(this.container,'pointercancel',()=>{this.targetGesture=null;this.pendingTargetTap=null;});
-  listen(this.container,'pointerleave',event=>{if(this.targetGesture?.id===event.pointerId){this.targetGesture=null;this.pendingTargetTap=null;}});
-  listen(this.container,'click',event=>{if(event.target!==this.controller?.canvas)return;const tap=this.pendingTargetTap;this.pendingTargetTap=null;if(!tap||performance.now()-tap.at>500||this.blocked()||!this.ready||this.ended||document.hidden)return;const id=this.controller.pickBattleTarget(tap.x,tap.y);if(id)this.activateTarget(id);});
+  this.targetPointers=new Set();this.targetInputCleanups=[];const listen=(element,type,callback,options)=>{element.addEventListener(type,callback,options);this.targetInputCleanups.push(()=>element.removeEventListener(type,callback,options));};
+  // A second contact cancels the whole gesture, even if it lands on a HUD or dialog.
+  listen(document,'pointerdown',event=>{if(event.button!==0)return;this.targetPointers.add(event.pointerId);if(this.targetPointers.size>1)this.resetTargetInput();},true);
+  listen(document,'pointerup',event=>this.targetPointers.delete(event.pointerId),true);
+  listen(document,'pointercancel',event=>{this.targetPointers.delete(event.pointerId);if(this.targetGesture?.id===event.pointerId)this.resetTargetInput();},true);
+  listen(window,'blur',()=>this.resetTargetInput({clearPointers:true}));
+  listen(document,'visibilitychange',()=>{if(document.hidden)this.resetTargetInput({clearPointers:true});});
+  listen(this.container,'pointerdown',event=>{
+   if(event.target!==this.controller?.canvas)return;this.pendingTargetTap=null;
+   if(!this.cameraInputAvailable()||event.button!==0||event.isPrimary===false||this.targetPointers.size>1||this.targetGesture){this.resetTargetInput();return;}
+   this.suppressTargetClickUntil=0;this.targetGesture={id:event.pointerId,canvas:event.target,x:event.clientX,y:event.clientY,lastX:event.clientX,lastY:event.clientY,at:performance.now(),dragged:false};
+   try{event.target.setPointerCapture(event.pointerId);}catch{}
+  });
+  listen(this.container,'pointermove',event=>{
+   const gesture=this.targetGesture;if(!gesture||gesture.id!==event.pointerId)return;
+   const bounds=gesture.canvas.getBoundingClientRect();
+   if(!this.cameraInputAvailable()||event.isPrimary===false||this.targetPointers.size>1||event.buttons===0&&event.pointerType!=='touch'||event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom){this.resetTargetInput();return;}
+   if(!gesture.dragged&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<=8)return;
+   gesture.dragged=true;this.container.dataset.cameraDragging='true';event.preventDefault();
+   const moved=this.controller.orbitCamera(event.clientX-gesture.lastX,event.clientY-gesture.lastY);gesture.lastX=event.clientX;gesture.lastY=event.clientY;if(moved===false)this.resetTargetInput();
+  });
+  listen(this.container,'pointerup',event=>{
+   const gesture=this.targetGesture;if(!gesture||gesture.id!==event.pointerId)return;
+   const tapped=this.cameraInputAvailable()&&!gesture.dragged&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<=8&&performance.now()-gesture.at<=650;
+   if(Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)>8)gesture.dragged=true;
+   this.resetTargetInput();if(tapped)this.pendingTargetTap={x:event.clientX,y:event.clientY,at:performance.now()};
+  });
+  listen(this.container,'pointercancel',()=>this.resetTargetInput());
+  listen(this.container,'pointerleave',event=>{if(this.targetGesture?.id===event.pointerId)this.resetTargetInput();});
+  listen(this.container,'lostpointercapture',event=>{if(this.targetGesture?.id===event.pointerId)this.resetTargetInput();});
+  listen(this.container,'click',event=>{if(event.target!==this.controller?.canvas)return;if(performance.now()<this.suppressTargetClickUntil){this.pendingTargetTap=null;event.preventDefault();event.stopPropagation();return;}const tap=this.pendingTargetTap;this.pendingTargetTap=null;if(!tap||performance.now()-tap.at>500||!this.cameraInputAvailable())return;const id=this.controller.pickBattleTarget(tap.x,tap.y);if(id)this.activateTarget(id);});
   const activateCard=event=>{const card=event.target.closest?.('.battle-hp--enemy[data-battle-actor]');if(!card||!this.hud.contains(card))return;if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;if(event.type==='keydown')event.preventDefault();this.activateTarget(card.dataset.battleActor);};
   listen(this.hud,'click',activateCard);listen(this.hud,'keydown',activateCard);
  }
@@ -50,7 +81,7 @@ export class BattleUI{
   if(this.announcedTarget!==target.id){this.announcedTarget=target.id;this.targetAnnouncement.textContent=target.name+'をロックオン';}
  }
  async start(snapshot,stage={}, {presentationState=null}={}){
-  this.container.classList.add('is-loading');this.controller?.setActive(false);this.targetMarker.hidden=true;this.targetGesture=null;this.pendingTargetTap=null;this.announcedTarget=null;this.targetAnnouncement.textContent='';
+  this.resetTargetInput({clearPointers:true});this.container.classList.add('is-loading');this.controller?.setActive(false);this.targetMarker.hidden=true;this.announcedTarget=null;this.targetAnnouncement.textContent='';
   this.view.clear();this.active=true;this.loading=true;this.failed=false;this.snapshot=snapshot;this.stage=stage;const generation=++this.generation;
   this.view.surface.append(this.container);this.panel.hidden=false;this.hud.hidden=true;this.status.hidden=false;this.status.querySelector('span').textContent='戦闘のモデルを読み込んでいます…';this.status.querySelector('button').hidden=true;this.panel.querySelector('.battle-call-status').textContent='おこていゆは、そっと身構える。';this.updateControls();
   this.controller??=new BattleView({container:this.container,isPresentationPaused:()=>this.isPaused(),onTargetFrame:target=>this.paintTarget(target),getContentInsets:()=>{const surface=this.view.surface.getBoundingClientRect(),hud=this.hud.getBoundingClientRect();return {top:this.hud.hidden?surface.height*.14:hud.bottom-surface.top+8,bottom:12};},onStatus:text=>{this.status.querySelector('span').textContent=text;this.status.hidden=!this.active||!text;},onError:error=>this.showError(error)});
@@ -74,6 +105,7 @@ export class BattleUI{
    if(role!=='player'){const enabled=this.ready&&!this.blocked()&&!this.ended&&!document.hidden&&hp>0;box.setAttribute('role','button');box.tabIndex=enabled?0:-1;box.setAttribute('aria-disabled',String(!enabled));box.setAttribute('aria-pressed',String(snapshot.targetId===role&&hp>0));box.setAttribute('aria-label',(state.name||'珍生物')+(snapshot.targetId===role&&hp>0?'。ロックオン中':'をロックオン'));}
    box.dataset.category=state.category||'';box.dataset.hp=String(hp);box.dataset.maxHp=String(max);setPaintedText(box.querySelector('strong'),(role!=='player'&&enemies.length>1?(enemies.indexOf(state)+1)+'. ':'')+(state.name||(role==='player'?'おこていゆ':'珍生物')),{background:'#f8f4e9',lines:2});setPaintedText(box.querySelector('header>span'),'Lv.'+number(state.level,1),{background:'#f8f4e9'});setPaintedText(box.querySelector('.battle-hp__value'),format(hp)+' / '+format(max),{background:'#f8f4e9'});const stateLabel=superActive?'スーパーおこていゆ状態':hp<=0?'疲労':role!=='player'&&snapshot.targetId===role?'対象':'HP';setPaintedText(box.querySelector('small'),(role!=='player'&&CREATURE_CATEGORIES[state.category]?CREATURE_CATEGORIES[state.category].label+' · ':'')+stateLabel,{background:'#f8f4e9',lines:3});box.dataset.targeted=String(role!=='player'&&snapshot.targetId===role&&hp>0);box.classList.toggle('is-fatigued',hp<=0);const meter=box.querySelector('[role="progressbar"]');meter.setAttribute('aria-valuenow',String(Math.round(ratio*100)));meter.setAttribute('aria-label',(state.name||'珍生物')+'のHP '+format(hp)+' / '+format(max));meter.querySelector('i').style.width=ratio*100+'%';box.classList.toggle('is-low',ratio<=.25);box.classList.toggle('is-super',superActive);
   }
+  const cameraEnabled=this.cameraInputAvailable();this.container.dataset.cameraEnabled=String(cameraEnabled);if(!cameraEnabled&&(this.targetGesture||this.pendingTargetTap))this.resetTargetInput();
   this.container.dataset.targetingEnabled=String(this.ready&&!this.blocked()&&!this.ended&&!document.hidden);this.paintTarget(this.controller?.getLockOnTarget()||null);
  }
  showError(error){this.failed=true;this.loading=false;this.status.hidden=!this.active;this.status.querySelector('span').textContent='戦闘の3D表示を読み込めませんでした。もう一度お試しください。';this.status.querySelector('button').hidden=false;this.hud.hidden=true;this.updateControls();this.onError(error);}
@@ -82,6 +114,7 @@ export class BattleUI{
  recoverAfterInterruption(){
   if(this.recoveryPromise)return this.recoveryPromise;
   if(!this.active||!this.controller)return Promise.resolve(false);
+  this.resetTargetInput({clearPointers:true});
   const generation=this.generation,presentationState=this.controller.capturePresentationState();
   this.loading=true;this.failed=false;this.container.classList.add('is-loading');this.hud.hidden=true;this.updateControls();
   this.recoveryPromise=(async()=>{
@@ -95,7 +128,7 @@ export class BattleUI{
   })().finally(()=>{this.recoveryPromise=null;});
   return this.recoveryPromise;
  }
- deactivate(){this.active=false;this.generation++;this.controller?.setActive(false);this.targetMarker.hidden=true;this.targetGesture=null;this.pendingTargetTap=null;this.panel.hidden=true;this.hud.hidden=true;this.status.hidden=true;this.container.remove();}
+ deactivate(){this.resetTargetInput({clearPointers:true});this.active=false;this.generation++;this.controller?.setActive(false);this.targetMarker.hidden=true;this.panel.hidden=true;this.hud.hidden=true;this.status.hidden=true;this.container.remove();}
  getDiagnostics(){return {active:this.active,ready:this.ready,loading:this.loading,failed:this.failed,ended:this.ended,resultReady:this.resultReady,lockOn:{visible:!this.targetMarker.hidden,targetId:this.targetMarker.hidden?null:this.targetMarker.dataset.targetId},visibleCalls:[...this.panel.querySelectorAll('[data-battle-call]')].filter(button=>!button.disabled).map(button=>button.dataset.battleCall),view:this.controller?.getDiagnostics()||null};}
  destroy(){this.deactivate();for(const stop of this.targetInputCleanups)stop();this.controller?.destroy();this.panel.remove();this.hud.remove();}
 }
