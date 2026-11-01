@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "scope": "ゲーム本編で現在使用するハウス、分析室、あなたの部屋、倉庫、生産施設、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
-  "fileCount": 150,
-  "totalBytes": 121964999,
+  "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
+  "fileCount": 154,
+  "totalBytes": 135047193,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1203,6 +1203,38 @@
       "bytes": 11371,
       "priority": 2,
       "sha256": "8b6e7d8f629729f2b946f0a50c795d20effae958a12f4c6685bc08f59f519d71"
+    },
+    {
+      "url": "assets/research-room/room.glb?v=9f4b4639b25613317d081126657c24f26c91067b6c33ef3d9206974cbedbdf12",
+      "label": "研究所",
+      "type": "binary",
+      "bytes": 5469148,
+      "priority": 2,
+      "sha256": "9f4b4639b25613317d081126657c24f26c91067b6c33ef3d9206974cbedbdf12"
+    },
+    {
+      "url": "assets/research-room/metadata.json",
+      "label": "研究所の設定",
+      "type": "json",
+      "bytes": 10536,
+      "priority": 2,
+      "sha256": "c9c120f67e8c9ac5c4cd1173e9066573e9d3f82fe56eac77af0e397d22fb702e"
+    },
+    {
+      "url": "assets/maintenance-room/room.glb?v=81b9d3315698f7d8b5819a966e89a0185ff6b0e66a8bb7cecdcabc9be2ad1cd0",
+      "label": "整備施設",
+      "type": "binary",
+      "bytes": 7591344,
+      "priority": 2,
+      "sha256": "81b9d3315698f7d8b5819a966e89a0185ff6b0e66a8bb7cecdcabc9be2ad1cd0"
+    },
+    {
+      "url": "assets/maintenance-room/metadata.json",
+      "label": "整備施設の設定",
+      "type": "json",
+      "bytes": 11166,
+      "priority": 2,
+      "sha256": "0d793d7d90e079a811d7fe0ec622350a975a85036f0f4adbeab896055aba6102"
     }
   ]
 }

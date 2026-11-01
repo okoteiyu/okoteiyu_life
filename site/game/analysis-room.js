@@ -142,5 +142,5 @@ export class AnalysisRoomUI{
  destroy(){this.deactivate();this.controller?.destroy();this.panel.remove();this.badge.remove();releasePaintedLabels(this.cameraButton);this.cameraButton.remove();this.container.replaceChildren();}
 }
 
-// The three new interiors share one UI/controller to bound WebGL contexts.
+// Additional interiors share one UI/controller to bound WebGL contexts.
 export {AnalysisRoomUI as InteriorRoomUI};

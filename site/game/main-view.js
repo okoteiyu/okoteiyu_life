@@ -204,7 +204,7 @@ analysisRoomUI=new AnalysisRoomUI({view,homeElement:document.querySelector('#hom
 window.mainViewPreview.analysisRoom=analysisRoomUI;
 interiorUI=new InteriorRoomUI({view,homeElement:document.querySelector('#homeChoices'),roomId:'player-room',readPlayer:()=>gameRuntime?.session.snapshot().player,isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),onMap:opener=>buildingMap.open(opener),onReturn:()=>gameRuntime?.returnFromInteriorRoom(),onError:()=>toast('お部屋の3D表示を再試行してください。')});
 window.mainViewPreview.interiors=interiorUI;
-const interiorRooms=Object.fromEntries(['player-room','warehouse','production-room'].map(id=>[id,interiorUI]));
+const interiorRooms=Object.fromEntries(Object.keys(INTERIOR_ROOMS).filter(id=>id!=='analysis-room').map(id=>[id,interiorUI]));
 gameRuntime=new GameRuntime({view,house:houseUI,patrol:patrolUI,trainingHall:trainingHallUI,analysisRoom:analysisRoomUI,interiorRooms,homeElement:document.querySelector('#homeChoices'),
  isPaused:()=>needsVisitorName()||eventVisible||isModalBlocked(),isModalPaused:()=>needsVisitorName()||isModalBlocked(),isMessageVisible:()=>eventVisible,
  showMessage:(payload,{record=true,showMessage=true}={})=>showMessage?showEvent(payload,{record}):events.dispatch(payload,{showMessage:false}),hideMessage:hideEvent,setLocation,setGauges,toast,readMessagePage:()=>({page:message.page,pages:message.pages.length}),advanceMessagePage:()=>message.advance()});

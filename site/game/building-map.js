@@ -95,12 +95,14 @@ export function buildingFloorSvg(floorId,selected){
   if(floor.id==='b1'){
    drawing+='<path data-basement-access="freight" d="M10 374H42V270H65M42 374V552H65" fill="none" stroke="#e2d9c4" stroke-width="24" stroke-linejoin="round"/>'+
     '<path data-basement-access="core" d="M282 340V410M762 340V410M42 374H1102" fill="none" stroke="#e2d9c4" stroke-width="44" stroke-linejoin="round"/>'+
-    zone('research',selected,65,190,435,150,'#e1ead7')+
+    rect(65,190,435,150,'#e1ead7','data-building-zone="research" data-map-marker-x="180" data-map-marker-y="90" data-map-marker-unit="1.2"')+
+    '<g transform="translate(65 190)">'+interiorMapDrawing('research-room',{selected:selected==='research'})+'</g>'+
     rect(545,190,435,150,'#e8eee5','data-building-zone="analysis" data-map-marker-x="905" data-map-marker-y="90" data-map-marker-unit="1.25"')+
     '<g transform="translate(545 190)">'+analysisMapDrawing({selected:selected==='analysis'})+'</g>'+
-    rect(65,410,435,285,'#eee1c6','data-building-zone="production" data-map-marker-x="282" data-map-marker-y="365" data-map-marker-unit="1.2"')+'<g transform="translate(65 410)">'+interiorMapDrawing('production-room',{selected:selected==='production'})+'</g>'+zone('maintenance',selected,545,410,435,285,'#e8dfd5')+
-    '<path data-basement-access="room-doors" d="M260 340h44M260 410h44M740 410h44M65 254v32M65 536v32" fill="none" stroke="#e2d9c4" stroke-width="8"/>'+
-    text(282,282,'研究所',46)+text(658,175,'珍生物分析室',28)+text(282,720,'生産施設',28)+text(762,562,'整備施設',46)+
+    rect(65,410,435,285,'#eee1c6','data-building-zone="production" data-map-marker-x="282" data-map-marker-y="365" data-map-marker-unit="1.2"')+'<g transform="translate(65 410)">'+interiorMapDrawing('production-room',{selected:selected==='production'})+'</g>'+
+    rect(545,410,435,285,'#e8dfd5','data-building-zone="maintenance" data-map-marker-x="762" data-map-marker-y="345" data-map-marker-unit="1"')+'<g transform="translate(545 410)">'+interiorMapDrawing('maintenance-room',{selected:selected==='maintenance'})+'</g>'+
+    '<path data-basement-access="room-doors" d="M260 410h44M65 536v32" fill="none" stroke="#e2d9c4" stroke-width="8"/>'+
+    text(400,175,'研究所',28)+text(658,175,'珍生物分析室',28)+text(282,720,'生産施設',28)+text(762,720,'整備施設',28)+
     text(550,125,'研究・支援エリア',35)+basementCoreDrawing({selected})+basementFreightDrawing({selected});
   }else{
    drawing=trainingMapDrawing({selected});
@@ -217,8 +219,9 @@ export class BuildingMapDialog{
     badge.append(svgNode('rect',{x:-92,y:32,width:184,height:40,rx:18,fill:'#fffdf2',stroke:'#99ac78','stroke-width':2}));
     const label=svgNode('text',{x:0,y:60,'font-size':24,'font-weight':600,'text-anchor':'middle',fill:'#5e7447'});label.textContent='タップで移動';badge.append(label);target.append(badge);
    }else if(here){
-    const tag=svgNode('g',{'class':'building-map-region__badge','aria-hidden':'true'}),cy=Math.max(svg.viewBox.baseVal.y+18*unit,y-18*unit);tag.append(svgNode('rect',{x:x+w/2-64*unit,y:cy-16*unit,width:128*unit,height:32*unit,rx:14*unit,fill:'#8c7451',stroke:'#fffdf2','stroke-width':unit}));
-    const label=svgNode('text',{x:x+w/2,y:cy+7*unit,'font-size':21*unit,'text-anchor':'middle',fill:'#fffdf2'});label.textContent='● 現在地';tag.append(label);target.append(tag);
+    const anchored=this.floorId==='b1'&&rect.hasAttribute('data-map-marker-y'),tagUnit=anchored?Number(rect.getAttribute('data-map-marker-unit')??unit):unit,cx=anchored?Number(rect.getAttribute('data-map-marker-x')??x+w/2):x+w/2,cy=anchored?Number(rect.getAttribute('data-map-marker-y'))+52*tagUnit:Math.max(svg.viewBox.baseVal.y+18*unit,y-18*unit);
+    const tag=svgNode('g',{'class':'building-map-region__badge','aria-hidden':'true'});tag.append(svgNode('rect',{x:cx-64*tagUnit,y:cy-16*tagUnit,width:128*tagUnit,height:32*tagUnit,rx:14*tagUnit,fill:'#8c7451',stroke:'#fffdf2','stroke-width':tagUnit}));
+    const label=svgNode('text',{x:cx,y:cy+7*tagUnit,'font-size':21*tagUnit,'text-anchor':'middle',fill:'#fffdf2'});label.textContent='● 現在地';tag.append(label);target.append(tag);
    }
    overlay.append(target);
   }
