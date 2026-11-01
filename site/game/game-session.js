@@ -267,7 +267,24 @@ export class GameSession{
  }
  actorIds(){const b=this.state.battle;return b?['player',...b.enemies.map(enemy=>enemy.id)]:[];}
  combatant(id){const b=this.state.battle;return id==='player'?b?.player:b?.enemies.find(enemy=>enemy.id===id);}
- selectTarget(){const b=this.state.battle;if(!b)return null;const target=b.enemies.find(enemy=>enemy.hp>0)||null;b.targetId=target?.id||null;b.enemy=target||b.enemies[0];return target;}
+ selectTarget(){
+  const b=this.state.battle;if(!b)return null;
+  const previous=b.targetId,target=b.enemies.find(enemy=>enemy.id===previous&&enemy.hp>0)||b.enemies.find(enemy=>enemy.hp>0)||null;
+  b.targetId=target?.id||null;b.enemy=target||b.enemies[0];
+  if(b.player.action&&b.player.action.technique!=='super_awaken'&&!(this.combatant(b.player.action.targetId)?.hp>0))b.player.action.targetId=b.targetId;
+  if(previous!==b.targetId)this.emit('battle-target',{actor:'player',target:b.targetId,previousTargetId:previous,source:'automatic',time:b.time});
+  return target;
+ }
+ requestBattleTarget(id){
+  const b=this.state.battle;if(!b||b.phase!=='active'||b.player.hp<=0)return {ok:false,reason:'not-battling'};
+  if(this.isSuperAwakening())return {ok:false,reason:'awakening'};
+  const target=b.enemies.find(enemy=>enemy.id===id);if(!target)return {ok:false,reason:'unknown-target'};
+  if(target.hp<=0)return {ok:false,reason:'target-fatigued'};
+  const previous=b.targetId;b.targetId=target.id;b.enemy=target;
+  if(b.player.action)b.player.action.targetId=target.id;
+  const changed=previous!==target.id;if(changed)this.emit('battle-target',{actor:'player',target:target.id,previousTargetId:previous,source:'tap',time:b.time});
+  return {ok:true,targetId:target.id,changed};
+ }
  nextInterval(actorId){
   const b=this.state.battle,actor=this.combatant(actorId);if(!b||!actor)return Infinity;
   const slowest=Math.min(...this.actorIds().map(id=>this.combatant(id).stats.speed));

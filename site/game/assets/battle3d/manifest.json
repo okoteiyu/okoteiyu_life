@@ -276,8 +276,8 @@
       "id": "punim",
       "name": "プニム",
       "url": "punim.glb",
-      "sha256": "eb03fdf9d32aaf422c83c95711b7632962160c3d1d8a73128a948f7ba17bf5b4",
-      "bytes": 481976,
+      "sha256": "d2cb191114a9b4d8688deb73e9c0e767c0b89aeac3138a5d6a23323e7f92c9c4",
+      "bytes": 470640,
       "height_m": 0.25,
       "height_status": "confirmed",
       "bounds_native_m": [

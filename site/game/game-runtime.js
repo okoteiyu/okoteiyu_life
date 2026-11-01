@@ -17,7 +17,7 @@ export class GameRuntime {
   this.isPaused=()=>Boolean(this.recovery?.blocked)||Boolean(isPaused?.());this.isModalPaused=()=>Boolean(this.recovery?.blocked)||Boolean(isModalPaused?.());this.destroyed=false;this.frameEpoch=0;
   this.scene='house';this.messageLocked=false;this.manualClock=false;this.pendingEncounter=null;this.pendingCutin=false;this.resultDelay=null;this.messages=[];this.lastAngerResult=null;this.battlePresentationSerial=0;
   this.session=new GameSession({onEvent:event=>this.onSessionEvent(event)});
-  this.battleUI=new BattleUI({view,homeElement,isPaused:()=>this.isPaused()||document.hidden,onCall:id=>this.requestBattleAction(id),onReturn:()=>this.returnHomeAfterBattle(),onError:()=>this.toast('3Dの読み込みを再試行してください。戦闘の時計は停止しています。')});
+  this.battleUI=new BattleUI({view,homeElement,isPaused:()=>this.isPaused()||document.hidden,onCall:id=>this.requestBattleAction(id),onTarget:id=>this.requestBattleTarget(id),onReturn:()=>this.returnHomeAfterBattle(),onError:()=>this.toast('3Dの読み込みを再試行してください。戦闘の時計は停止しています。')});
   this.angerPlayer=new AngerCutinPlayer({view,prepareSource:(url,{signal})=>loadAssetBuffer(url,{signal}),isPaused:()=>this.isModalPaused()||document.hidden,
    onUtterance:payload=>{this.messageLocked=true;this.say({...payload,type:'anger'});},
    onComplete:result=>this.finishCutin(result),onError:()=>this.hideMessage(),
@@ -185,6 +185,10 @@ export class GameRuntime {
   const snapshot=this.session.startBattle(enemy,{kind:stage.encounterType==='training'?'training':'patrol'});this.resultDelay=null;this.battleUI.start(snapshot,{...stage,presentationId:'battle-'+(++this.battlePresentationSerial)});this.sync();return snapshot;
  }
  requestBattleAction(id){if(this.scene!=='battle'||this.isPaused()||document.hidden||!this.battleUI.ready)return {ok:false,reason:'paused'};const result=this.session.requestBattleAction(id);this.battleUI.setSnapshot(this.session.snapshotBattle());return result;}
+ requestBattleTarget(id){
+  if(this.scene!=='battle'||this.isPaused()||document.hidden||!this.battleUI.ready||this.battleUI.blocked?.()||this.session.isSuperAwakening())return {ok:false,reason:'paused'};
+  const result=this.session.requestBattleTarget(id);if(result.ok)this.battleUI.setSnapshot(this.session.snapshotBattle());return result;
+ }
  startSceneCutin(kind){
   if(['win','loss'].includes(kind)&&(this.scene!=='battle'||!this.battleUI.resultReady))return false;
   this.messageLocked=true;this.hideMessage();this.scene='scene-cutin';this.homeElement.hidden=true;this.battleUI.hud.hidden=true;this.battleUI.panel.hidden=true;

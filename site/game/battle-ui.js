@@ -12,14 +12,18 @@ const calls=[['slot0','未設定','スロット1'],['slot1','未設定','スロ�
 
 /** HP and calls share the existing square view and lower-right action slot. */
 export class BattleUI{
- constructor({view,homeElement,isPaused=()=>false,onCall=()=>false,onReturn=()=>{},onReady=()=>{},onError=()=>{}}={}){
+ constructor({view,homeElement,isPaused=()=>false,onCall=()=>false,onTarget=()=>false,onReturn=()=>{},onReady=()=>{},onError=()=>{}}={}){
   if(!view?.surface||!homeElement)throw new TypeError('戦闘UIの表示先がありません。');
-  Object.assign(this,{view,homeElement,isPaused,onCall,onReturn,onReady,onError});this.active=false;this.loading=false;this.failed=false;this.generation=0;this.snapshot=null;
+  Object.assign(this,{view,homeElement,isPaused,onCall,onTarget,onReturn,onReady,onError});this.active=false;this.loading=false;this.failed=false;this.generation=0;this.snapshot=null;
   this.container=document.createElement('div');this.container.className='battle-scene';this.container.id='battleScene';
+  this.targetMarker=document.createElement('div');this.targetMarker.className='battle-lockon';this.targetMarker.hidden=true;this.targetMarker.setAttribute('aria-hidden','true');
+  this.targetMarker.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="battle-lockon__rim" d="M25 4H13Q4 4 4 13V25M75 4H87Q96 4 96 13V25M96 75V87Q96 96 87 96H75M25 96H13Q4 96 4 87V75"/><path class="battle-lockon__corners" d="M25 4H13Q4 4 4 13V25M75 4H87Q96 4 96 13V25M96 75V87Q96 96 87 96H75M25 96H13Q4 96 4 87V75"/><path class="battle-lockon__diamond" d="m50 0 4 4-4 4-4-4Z"/></svg>';this.container.append(this.targetMarker);
+  this.targetAnnouncement=document.createElement('span');this.targetAnnouncement.className='battle-lockon-announcement';this.targetAnnouncement.setAttribute('role','status');this.targetAnnouncement.setAttribute('aria-live','polite');this.container.append(this.targetAnnouncement);
   this.status=document.createElement('div');this.status.className='battle-render-status';this.status.setAttribute('role','status');this.status.hidden=true;
   this.status.innerHTML='<span></span><button type="button" hidden>もう一度読み込む</button>';this.container.append(this.status);this.status.querySelector('button').addEventListener('click',()=>this.retry());
   this.hud=document.createElement('div');this.hud.className='battle-hud';this.hud.id='battleHUD';this.hud.hidden=true;
   this.hud.innerHTML='';this.view.element.append(this.hud);
+  this.installTargetInput();
   this.panel=document.createElement('section');this.panel.className='lower-right battle-actions';this.panel.id='battleCallChoices';this.panel.hidden=true;this.panel.setAttribute('aria-label','戦闘中のかけごえ');
   this.panel.innerHTML='<header class="battle-actions__heading"><span>見つからないように、そっと</span><h2>かけごえ</h2></header><nav class="battle-calls" aria-label="おこていゆへのかけごえ">'+calls.map(([id,label,description])=>'<button type="button" data-battle-call="'+id+'"><span>'+label+'<small>'+description+'</small></span><b aria-hidden="true">›</b></button>').join('')+'</nav><p class="battle-call-status" role="status">おこていゆは、自分で考えて動く。</p>';homeElement.after(this.panel);
   this.panel.addEventListener('click',event=>{const button=event.target.closest('[data-battle-call]');if(button&&!button.disabled&&!this.blocked()){const accepted=this.onCall(button.dataset.battleCall);if(accepted!==false&&accepted?.ok!==false)this.panel.querySelector('.battle-call-status').textContent=button.dataset.battleCall==='auto'?'おこていゆを、そっと見守る。':button.dataset.battleCall==='super'?'んんーーーーー！':'次の動きのヒントを、そっと送った。';}});
@@ -28,11 +32,28 @@ export class BattleUI{
  get ended(){return this.snapshot?.phase==='ended'||this.snapshot?.status==='ended';}
  get resultReady(){return Boolean(this.ended&&this.ready&&this.controller?.presentationReadyForResult);}
  blocked(){return !this.active||this.isPaused()||isModalBlocked()||Boolean(this.controller?.cutin);}
+ activateTarget(id){if(this.blocked()||!this.ready||this.ended||document.hidden||!opponents(this.snapshot).some(enemy=>(enemy.id||'enemy')===id&&enemy.hp>0))return false;const result=this.onTarget(id);return result!==false&&result?.ok!==false;}
+ installTargetInput(){
+  this.targetInputCleanups=[];const listen=(element,type,callback)=>{element.addEventListener(type,callback);this.targetInputCleanups.push(()=>element.removeEventListener(type,callback));};
+  listen(this.container,'pointerdown',event=>{this.pendingTargetTap=null;if(event.target!==this.controller?.canvas||this.blocked()||!this.ready||this.ended||document.hidden||event.button!==0||event.isPrimary===false||this.targetGesture){this.targetGesture=null;return;}this.targetGesture={id:event.pointerId,x:event.clientX,y:event.clientY,at:performance.now(),dragged:false};});
+  listen(this.container,'pointermove',event=>{if(this.targetGesture?.id===event.pointerId&&Math.hypot(event.clientX-this.targetGesture.x,event.clientY-this.targetGesture.y)>8)this.targetGesture.dragged=true;});
+  listen(this.container,'pointerup',event=>{const gesture=this.targetGesture;this.targetGesture=null;if(!gesture||gesture.id!==event.pointerId||gesture.dragged||Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)>8||performance.now()-gesture.at>650)return;this.pendingTargetTap={x:event.clientX,y:event.clientY,at:performance.now()};});
+  listen(this.container,'pointercancel',()=>{this.targetGesture=null;this.pendingTargetTap=null;});
+  listen(this.container,'pointerleave',event=>{if(this.targetGesture?.id===event.pointerId){this.targetGesture=null;this.pendingTargetTap=null;}});
+  listen(this.container,'click',event=>{if(event.target!==this.controller?.canvas)return;const tap=this.pendingTargetTap;this.pendingTargetTap=null;if(!tap||performance.now()-tap.at>500||this.blocked()||!this.ready||this.ended||document.hidden)return;const id=this.controller.pickBattleTarget(tap.x,tap.y);if(id)this.activateTarget(id);});
+  const activateCard=event=>{const card=event.target.closest?.('.battle-hp--enemy[data-battle-actor]');if(!card||!this.hud.contains(card))return;if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;if(event.type==='keydown')event.preventDefault();this.activateTarget(card.dataset.battleActor);};
+  listen(this.hud,'click',activateCard);listen(this.hud,'keydown',activateCard);
+ }
+ paintTarget(target){
+  const visible=Boolean(target&&this.ready&&!this.blocked()&&!this.ended&&!document.hidden);this.targetMarker.hidden=!visible;if(!visible)return;
+  this.targetMarker.dataset.targetId=target.id;this.targetMarker.style.left=target.left+'px';this.targetMarker.style.top=target.top+'px';this.targetMarker.style.width=target.width+'px';this.targetMarker.style.height=target.height+'px';
+  if(this.announcedTarget!==target.id){this.announcedTarget=target.id;this.targetAnnouncement.textContent=target.name+'をロックオン';}
+ }
  async start(snapshot,stage={}, {presentationState=null}={}){
-  this.container.classList.add('is-loading');this.controller?.setActive(false);
+  this.container.classList.add('is-loading');this.controller?.setActive(false);this.targetMarker.hidden=true;this.targetGesture=null;this.pendingTargetTap=null;this.announcedTarget=null;this.targetAnnouncement.textContent='';
   this.view.clear();this.active=true;this.loading=true;this.failed=false;this.snapshot=snapshot;this.stage=stage;const generation=++this.generation;
   this.view.surface.append(this.container);this.panel.hidden=false;this.hud.hidden=true;this.status.hidden=false;this.status.querySelector('span').textContent='戦闘のモデルを読み込んでいます…';this.status.querySelector('button').hidden=true;this.panel.querySelector('.battle-call-status').textContent='おこていゆは、そっと身構える。';this.updateControls();
-  this.controller??=new BattleView({container:this.container,isPresentationPaused:()=>this.isPaused(),getContentInsets:()=>{const surface=this.view.surface.getBoundingClientRect(),hud=this.hud.getBoundingClientRect();return {top:this.hud.hidden?surface.height*.14:hud.bottom-surface.top+8,bottom:12};},onStatus:text=>{this.status.querySelector('span').textContent=text;this.status.hidden=!this.active||!text;},onError:error=>this.showError(error)});
+  this.controller??=new BattleView({container:this.container,isPresentationPaused:()=>this.isPaused(),onTargetFrame:target=>this.paintTarget(target),getContentInsets:()=>{const surface=this.view.surface.getBoundingClientRect(),hud=this.hud.getBoundingClientRect();return {top:this.hud.hidden?surface.height*.14:hud.bottom-surface.top+8,bottom:12};},onStatus:text=>{this.status.querySelector('span').textContent=text;this.status.hidden=!this.active||!text;},onError:error=>this.showError(error)});
   const ready=await this.controller.load(snapshot,stage,{presentationState});
   if(!this.active||generation!==this.generation)return false;
   this.loading=false;this.failed=!ready;this.hud.hidden=!ready;this.updateControls();if(ready){this.controller.setSnapshot(this.snapshot);this.controller.setActive(true);this.controller.advance(0);this.container.classList.remove('is-loading');this.onReady(this.snapshot);}return ready;
@@ -50,8 +71,10 @@ export class BattleUI{
   this.panel.querySelector('.battle-calls').hidden=this.ended;this.panel.querySelector('.battle-call-status').hidden=this.ended;
   for(const [role,state] of [['player',snapshot.player],...enemies.map(enemy=>[enemy.id||'enemy',enemy])]){
    if(!state)continue;const box=this.hud.querySelector('[data-battle-actor="'+role+'"]'),hp=Math.max(0,number(state.hp)),max=Math.max(.1,number(state.maxHp,1)),ratio=Math.min(1,hp/max),superActive=Boolean(state.superActive??(role==='player'&&snapshot.super?.active));
+   if(role!=='player'){const enabled=this.ready&&!this.blocked()&&!this.ended&&!document.hidden&&hp>0;box.setAttribute('role','button');box.tabIndex=enabled?0:-1;box.setAttribute('aria-disabled',String(!enabled));box.setAttribute('aria-pressed',String(snapshot.targetId===role&&hp>0));box.setAttribute('aria-label',(state.name||'珍生物')+(snapshot.targetId===role&&hp>0?'。ロックオン中':'をロックオン'));}
    box.dataset.category=state.category||'';box.dataset.hp=String(hp);box.dataset.maxHp=String(max);setPaintedText(box.querySelector('strong'),(role!=='player'&&enemies.length>1?(enemies.indexOf(state)+1)+'. ':'')+(state.name||(role==='player'?'おこていゆ':'珍生物')),{background:'#f8f4e9',lines:2});setPaintedText(box.querySelector('header>span'),'Lv.'+number(state.level,1),{background:'#f8f4e9'});setPaintedText(box.querySelector('.battle-hp__value'),format(hp)+' / '+format(max),{background:'#f8f4e9'});const stateLabel=superActive?'スーパーおこていゆ状態':hp<=0?'疲労':role!=='player'&&snapshot.targetId===role?'対象':'HP';setPaintedText(box.querySelector('small'),(role!=='player'&&CREATURE_CATEGORIES[state.category]?CREATURE_CATEGORIES[state.category].label+' · ':'')+stateLabel,{background:'#f8f4e9',lines:3});box.dataset.targeted=String(role!=='player'&&snapshot.targetId===role&&hp>0);box.classList.toggle('is-fatigued',hp<=0);const meter=box.querySelector('[role="progressbar"]');meter.setAttribute('aria-valuenow',String(Math.round(ratio*100)));meter.setAttribute('aria-label',(state.name||'珍生物')+'のHP '+format(hp)+' / '+format(max));meter.querySelector('i').style.width=ratio*100+'%';box.classList.toggle('is-low',ratio<=.25);box.classList.toggle('is-super',superActive);
   }
+  this.container.dataset.targetingEnabled=String(this.ready&&!this.blocked()&&!this.ended&&!document.hidden);this.paintTarget(this.controller?.getLockOnTarget()||null);
  }
  showError(error){this.failed=true;this.loading=false;this.status.hidden=!this.active;this.status.querySelector('span').textContent='戦闘の3D表示を読み込めませんでした。もう一度お試しください。';this.status.querySelector('button').hidden=false;this.hud.hidden=true;this.updateControls();this.onError(error);}
  async retry(){if(!this.active||this.isPaused()||isModalBlocked()||(!this.failed&&this.controller?.cutin))return false;const presentationState=this.controller?.capturePresentationState();return this.start(this.snapshot,this.stage,{presentationState});}
@@ -72,7 +95,7 @@ export class BattleUI{
   })().finally(()=>{this.recoveryPromise=null;});
   return this.recoveryPromise;
  }
- deactivate(){this.active=false;this.generation++;this.controller?.setActive(false);this.panel.hidden=true;this.hud.hidden=true;this.status.hidden=true;this.container.remove();}
- getDiagnostics(){return {active:this.active,ready:this.ready,loading:this.loading,failed:this.failed,ended:this.ended,resultReady:this.resultReady,visibleCalls:[...this.panel.querySelectorAll('[data-battle-call]')].filter(button=>!button.disabled).map(button=>button.dataset.battleCall),view:this.controller?.getDiagnostics()||null};}
- destroy(){this.deactivate();this.controller?.destroy();this.panel.remove();this.hud.remove();}
+ deactivate(){this.active=false;this.generation++;this.controller?.setActive(false);this.targetMarker.hidden=true;this.targetGesture=null;this.pendingTargetTap=null;this.panel.hidden=true;this.hud.hidden=true;this.status.hidden=true;this.container.remove();}
+ getDiagnostics(){return {active:this.active,ready:this.ready,loading:this.loading,failed:this.failed,ended:this.ended,resultReady:this.resultReady,lockOn:{visible:!this.targetMarker.hidden,targetId:this.targetMarker.hidden?null:this.targetMarker.dataset.targetId},visibleCalls:[...this.panel.querySelectorAll('[data-battle-call]')].filter(button=>!button.disabled).map(button=>button.dataset.battleCall),view:this.controller?.getDiagnostics()||null};}
+ destroy(){this.deactivate();for(const stop of this.targetInputCleanups)stop();this.controller?.destroy();this.panel.remove();this.hud.remove();}
 }

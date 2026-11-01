@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "ゲーム本編で現在使用するハウス、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
   "fileCount": 142,
-  "totalBytes": 105077000,
+  "totalBytes": 105067976,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -245,12 +245,12 @@
       "sha256": "867b1667c7e8d625ae54d7bf0e703fea45f736a49d872040d91be0d51d276c10"
     },
     {
-      "url": "assets/collection/punim.webp",
+      "url": "assets/collection/punim.webp?v=18738b2140e1a9117c23e3e58e8a0bf3ca5f89be8a2c4a897f5b55ae5f65815a",
       "label": "コレクション・記録帳の写真",
       "type": "image",
-      "bytes": 9972,
+      "bytes": 12284,
       "priority": 3,
-      "sha256": "5432e2b27cf487a8c1d2203259fa7edf319906e1551d5043f4840ee4808a6fdc"
+      "sha256": "18738b2140e1a9117c23e3e58e8a0bf3ca5f89be8a2c4a897f5b55ae5f65815a"
     },
     {
       "url": "assets/collection/stored_ki.webp",
@@ -485,12 +485,12 @@
       "sha256": "608b7a193d9db7634ab783d0f60b8920cc012247d01c4575e4d68b8c4d9a325a"
     },
     {
-      "url": "assets/battle3d/manifest.json",
+      "url": "assets/battle3d/manifest.json?v=c11ec545ea93c9f43f48c2bf01bb5b3aab236cc6f8cb1b0696947b54253b3796",
       "label": "戦闘モデルの設定",
       "type": "json",
       "bytes": 27044,
       "priority": 2,
-      "sha256": "48b0091156f6a995e6961288172770f6ab77195c31d5180bf3a14c176e9e43a7"
+      "sha256": "c11ec545ea93c9f43f48c2bf01bb5b3aab236cc6f8cb1b0696947b54253b3796"
     },
     {
       "url": "assets/battle3d/okoteiyu.glb?v=86c7e35cf2b4c59d3602fe04527c4525b2524c4daeb1edabdcd5b072212b89b0",
@@ -525,12 +525,12 @@
       "sha256": "0e451d1a32ab569a9bd3deab64cb07ad2160c4e1beb608f19a6c4568a7b900b5"
     },
     {
-      "url": "assets/battle3d/punim.glb?v=eb03fdf9d32aaf422c83c95711b7632962160c3d1d8a73128a948f7ba17bf5b4",
+      "url": "assets/battle3d/punim.glb?v=d2cb191114a9b4d8688deb73e9c0e767c0b89aeac3138a5d6a23323e7f92c9c4",
       "label": "プニム",
       "type": "binary",
-      "bytes": 481976,
+      "bytes": 470640,
       "priority": 3,
-      "sha256": "eb03fdf9d32aaf422c83c95711b7632962160c3d1d8a73128a948f7ba17bf5b4"
+      "sha256": "d2cb191114a9b4d8688deb73e9c0e767c0b89aeac3138a5d6a23323e7f92c9c4"
     },
     {
       "url": "assets/battle3d/crystal_striker.glb?v=f47315b95610693192608dfd2a6bf080ecd3eacae991437f783726a292511459",

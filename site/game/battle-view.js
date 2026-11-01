@@ -6,6 +6,7 @@ import {SuperRisingAura} from './super-rising-aura.js';
 import {FATIGUE_DURATION,FATIGUE_MAX_FRAME_SECONDS,fatigueMotion,FatigueEffects} from './fatigue-motion.js';
 import {HitParticles} from './hit-particles.js';
 import {BattleSupportView} from './support-view.js';
+import {battleBodyMeshes,projectBattleBody,assistedBattleTarget,battleReticleRect} from './battle-targeting.js';
 import {isModalBlocked} from './modal-layer.js';
 import { getBattleRegionAt } from './patrol-map.js';
 import * as THREE from './vendor/three/three.module.js';
@@ -31,9 +32,9 @@ function combatOffset(elapsed){
 
 /** Presentation only. The session owns action times, damage and outcomes. */
 export class BattleView{
- constructor({container,onStatus=()=>{},onError=()=>{},getContentInsets=()=>({}),isPresentationPaused=()=>false}={}){
+ constructor({container,onStatus=()=>{},onError=()=>{},getContentInsets=()=>({}),isPresentationPaused=()=>false,onTargetFrame=()=>{}}={}){
   if(!container)throw new TypeError('戦闘ビューの表示先がありません。');
-  Object.assign(this,{container,onStatus,onError,getContentInsets,isPresentationPaused});
+  Object.assign(this,{container,onStatus,onError,getContentInsets,isPresentationPaused,onTargetFrame});
   this.ready=false;this.loading=false;this.active=false;this.destroyed=false;this.contextLost=false;
   this.lastError=null;this.renderFrames=0;this.time=0;this.endVisualTime=null;this.snapshot=null;this.actorCache=new Map();this.actorPromises=new Map();this.templateCache=new Map();this.templatePromises=new Map();this.actors={};this.listeners=[];this.fatigueStates=new Map();this.presentationId=null;this.awakeningState=null;this.hitParticleSeen=new Set();this.hitParticlePresentationId=null;
   this.baseUrl=new URL('./assets/battle3d/',import.meta.url);this.loader=new GLTFLoader();
@@ -49,7 +50,7 @@ export class BattleView{
   try{this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});}catch{throw new Error('この端末では戦闘の3D表示を開始できませんでした。');}
   this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1;
   this.makeEnvironment();
-  this.canvas=this.renderer.domElement;this.canvas.className='battle-webgl';this.canvas.style.visibility='hidden';this.canvas.setAttribute('role','img');this.canvas.setAttribute('aria-label','おこていゆと珍生物の戦闘。攻撃はその場で行い、疲れると戦闘が終わります。');this.container.append(this.canvas);
+  this.canvas=this.renderer.domElement;this.canvas.className='battle-webgl';this.canvas.style.visibility='hidden';this.canvas.setAttribute('role','img');this.canvas.setAttribute('aria-label','おこていゆと珍生物の戦闘。相手をタップするとロックオン対象を切り替えられます。疲れると戦闘が終わります。');this.container.append(this.canvas);
   const canvas=this.canvas,listen=(type,handler)=>{canvas.addEventListener(type,handler);this.listeners.push(()=>canvas.removeEventListener(type,handler));};
   listen('webglcontextlost',event=>{event.preventDefault();this.contextLost=true;this.onStatus('戦闘の3D表示を復旧しています…');});
   listen('webglcontextrestored',()=>{this.contextLost=false;this.makeEnvironment();this.resize();this.onStatus('');this.render();});
@@ -163,6 +164,24 @@ export class BattleView{
   record.facing.updateWorldMatrix(true,true);const inverse=record.facing.matrixWorld.clone().invert(),bounds=new THREE.Box3();
   record.model.traverse(node=>{if(!node.isMesh)return;node.geometry.computeBoundingBox();const local=node.geometry.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse,node.matrixWorld));bounds.union(local);});
   return record.trainingBounds=bounds;
+ }
+ targetSelectionAvailable(){return Boolean(this.ready&&this.active&&!this.loading&&!this.destroyed&&!this.contextLost&&!this.cutin&&!this.isPresentationPaused?.()&&this.stageOptions?.presentation!=='training-hall'&&this.snapshot?.phase==='active'&&!(typeof document!=='undefined'&&(document.hidden||isModalBlocked())));}
+ getBattleTargets(){
+  if(!this.targetSelectionAvailable()||!this.canvas)return [];
+  if(this.targetProjectionCache?.frame===this.renderFrames&&this.targetProjectionCache.snapshot===this.snapshot&&this.targetProjectionCache.width===this.width&&this.targetProjectionCache.height===this.height)return this.targetProjectionCache.targets;
+  const viewport={width:this.width,height:this.height},targets=[];
+  for(const state of opponents(this.snapshot)){if(!(state.hp>0))continue;const id=state.id||'enemy',record=this.actors[id],body=record&&projectBattleBody(record,this.camera,viewport);if(body)targets.push({id,name:state.name||'珍生物',...body});}
+  this.targetProjectionCache={frame:this.renderFrames,snapshot:this.snapshot,...viewport,targets};return targets;
+ }
+ getLockOnTarget(){const target=this.getBattleTargets().find(target=>target.id===this.snapshot.targetId);return battleReticleRect(target,{width:this.width,height:this.height},this.getContentInsets?.());}
+ pickBattleTarget(clientX,clientY){
+  const box=this.canvas?.getBoundingClientRect();if(!this.targetSelectionAvailable()||!box?.width||!box?.height||clientX<box.left||clientX>box.right||clientY<box.top||clientY>box.bottom)return null;
+  const x=clientX-box.left,y=clientY-box.top,owners=new Map(),meshes=[];
+  for(const [id,record]of Object.entries(this.actors)){record.model.updateWorldMatrix(true,true);for(const mesh of battleBodyMeshes(record)){owners.set(mesh,id);meshes.push(mesh);}}
+  const support=this.supportView?.root.visible&&this.supportView.cache.get(this.supportView.id);if(support){support.model.updateWorldMatrix(true,true);for(const mesh of battleBodyMeshes(support)){owners.set(mesh,'support');meshes.push(mesh);}}
+  const ray=this.battleTargetRaycaster??=new THREE.Raycaster();this.camera.updateMatrixWorld(true);ray.setFromCamera(new THREE.Vector2(x/box.width*2-1,1-y/box.height*2),this.camera);
+  const hit=ray.intersectObjects(meshes,false)[0];if(hit){const id=owners.get(hit.object);return opponents(this.snapshot).some(state=>(state.id||'enemy')===id&&state.hp>0)?id:null;}
+  return assistedBattleTarget(this.getBattleTargets(),x,y);
  }
  trainingTerminalRecords(){
   if(!this.ready||!this.active||this.loading||this.destroyed||this.contextLost||this.field?.region!=='training'||this.stageOptions?.presentation!=='training-hall'||this.snapshot?.phase!=='visiting'||!this.fieldScene)return [];
@@ -481,10 +500,10 @@ export class BattleView{
    this.awakeningStage.sample(this.cutin.elapsed,this.cutin.duration,{width:this.width,height:this.height,pixelRatio:this.renderer.getPixelRatio()});
    this.renderer.render(this.awakeningStage.scene,this.awakeningStage.camera);
   }else{if(this.hasPendingFatigue())this.updatePose();for(const actor of Object.values(this.actors))actor.hitParticles?.setViewport(this.height,this.renderer.getPixelRatio());this.supportView?.setViewport(this.height,this.renderer.getPixelRatio());this.renderer.render(this.scene,this.camera);this.acknowledgeFatigueFrame();}
-  const visiting=this.stageOptions?.presentation==='training-hall',presentation=awakening?'super-awakening':visiting?'training-hall':'battle';if(this.canvas.dataset.presentation!==presentation){this.canvas.dataset.presentation=presentation;this.canvas.setAttribute('aria-label',awakening?'星々が煌めく宇宙で、マッスルポーズを取るスーパーおこていゆ状態への覚醒':visiting?'入口から見渡す地下の訓練所。おこていゆは入口を入ってすぐの場所で待っています。':'おこていゆと珍生物の戦闘。攻撃はその場で行い、疲れると戦闘が終わります。');}
-  this.canvas.style.visibility='visible';this.renderFrames++;
+  const visiting=this.stageOptions?.presentation==='training-hall',presentation=awakening?'super-awakening':visiting?'training-hall':'battle';if(this.canvas.dataset.presentation!==presentation){this.canvas.dataset.presentation=presentation;this.canvas.setAttribute('aria-label',awakening?'星々が煌めく宇宙で、マッスルポーズを取るスーパーおこていゆ状態への覚醒':visiting?'入口から見渡す地下の訓練所。おこていゆは入口を入ってすぐの場所で待っています。':'おこていゆと珍生物の戦闘。相手をタップするとロックオン対象を切り替えられます。疲れると戦闘が終わります。');}
+  this.canvas.style.visibility='visible';this.renderFrames++;this.onTargetFrame(this.getLockOnTarget());
  }
- setActive(active){this.active=Boolean(active);if(!this.active){this.supportView?.setVisible(false);for(const actor of this.actorCache.values())actor.hitParticles?.clear();}if(this.active){this.resize();this.updatePose();this.render();}}
+ setActive(active){this.active=Boolean(active);if(!this.active){this.supportView?.setVisible(false);this.onTargetFrame(null);for(const actor of this.actorCache.values())actor.hitParticles?.clear();}if(this.active){this.resize();this.updatePose();this.render();}}
  /** Replace a suspended GPU context, retaining CPU models and this battle's clocks. */
  recoverAfterInterruption(snapshot=this.snapshot,stage=this.stageOptions,{presentationState=this.capturePresentationState()}={}){
   if(this.recoveryPromise)return this.recoveryPromise;
@@ -512,7 +531,7 @@ export class BattleView{
   if(renderer){try{renderer.dispose();}catch{}try{renderer.forceContextLoss?.();}catch{}}
  }
  cancelPendingLoad(){if(!this.loading)return false;this.fieldGeneration=(this.fieldGeneration||0)+1;this.loading=false;this.ready=false;this.timeRequest=null;return true;}
- getDiagnostics(){return {support:this.supportView?.getDiagnostics()||null,supportCamera:this.supportFraming||null,field:this.field?.id||null,trainingEntranceFixed:this.field?.region==='training'&&this.stageOptions?.presentation==='training-hall',trainingFrame:this.field?.region==='training'?this.trainingFrame||null:null,trainingPlacements:this.field?.region==='training'?this.trainingPlacements||{}:null,camera:{position:this.camera.position.toArray(),target:this.cameraAim?.toArray()||null,fov:this.camera.fov,near:this.camera.near},fieldScale:this.fieldScene?.scale.toArray()||null,fieldPosition:this.fieldScene?.position.toArray()||null,awakeningCutin:this.cutin?{...this.cutin}:null,awakeningPresentation:this.awakeningState?{...this.awakeningState}:null,fatigue:this.getFatigueDiagnostics(),hitParticles:this.getHitParticleDiagnostics(),ready:this.ready,loading:this.loading,active:this.active,error:this.lastError,contextLost:this.contextLost,time:this.time,renderFrames:this.renderFrames,size:{width:this.width||0,height:this.height||0},actors:Object.fromEntries(Object.entries(this.actors).map(([role,actor])=>[role,{id:actor.id,height:actor.height,position:actor.anchor.position.toArray(),facingY:actor.facing.rotation.y,currentClip:actor.currentClip,shield:actor.shield?{id:this.snapshot?.player?.equipment?.defense,visible:actor.shield.visible,position:actor.shield.position.toArray(),animations:0}:null,auraId:actor.auraId||null,auraColor:actor.auraColor===undefined?null:'#'+actor.auraColor.toString(16).padStart(6,'0'),auraMaterialCount:actor.auraMaterials?.length||0,hitOffset:actor.hitRoot.position.toArray(),attackOffset:actor.attackRoot.position.toArray(),fixedGroundWorld:actor.fixedGround?.getWorldPosition(new THREE.Vector3()).toArray()||null,meshCount:(()=>{let count=0;actor.model.traverse(node=>{if(node.isMesh)count++;});return count;})()}]))};}
+ getDiagnostics(){return {lockOn:this.getLockOnTarget(),targetCandidateCount:this.getBattleTargets().length,support:this.supportView?.getDiagnostics()||null,supportCamera:this.supportFraming||null,field:this.field?.id||null,trainingEntranceFixed:this.field?.region==='training'&&this.stageOptions?.presentation==='training-hall',trainingFrame:this.field?.region==='training'?this.trainingFrame||null:null,trainingPlacements:this.field?.region==='training'?this.trainingPlacements||{}:null,camera:{position:this.camera.position.toArray(),target:this.cameraAim?.toArray()||null,fov:this.camera.fov,near:this.camera.near},fieldScale:this.fieldScene?.scale.toArray()||null,fieldPosition:this.fieldScene?.position.toArray()||null,awakeningCutin:this.cutin?{...this.cutin}:null,awakeningPresentation:this.awakeningState?{...this.awakeningState}:null,fatigue:this.getFatigueDiagnostics(),hitParticles:this.getHitParticleDiagnostics(),ready:this.ready,loading:this.loading,active:this.active,error:this.lastError,contextLost:this.contextLost,time:this.time,renderFrames:this.renderFrames,size:{width:this.width||0,height:this.height||0},actors:Object.fromEntries(Object.entries(this.actors).map(([role,actor])=>[role,{id:actor.id,height:actor.height,position:actor.anchor.position.toArray(),facingY:actor.facing.rotation.y,currentClip:actor.currentClip,shield:actor.shield?{id:this.snapshot?.player?.equipment?.defense,visible:actor.shield.visible,position:actor.shield.position.toArray(),animations:0}:null,auraId:actor.auraId||null,auraColor:actor.auraColor===undefined?null:'#'+actor.auraColor.toString(16).padStart(6,'0'),auraMaterialCount:actor.auraMaterials?.length||0,hitOffset:actor.hitRoot.position.toArray(),attackOffset:actor.attackRoot.position.toArray(),fixedGroundWorld:actor.fixedGround?.getWorldPosition(new THREE.Vector3()).toArray()||null,meshCount:(()=>{let count=0;actor.model.traverse(node=>{if(node.isMesh)count++;});return count;})()}]))};}
  disposeObject(object){const geometries=new Set(),materials=new Set(),textures=new Set();object?.traverse(node=>{if(node.geometry)geometries.add(node.geometry);for(const material of Array.isArray(node.material)?node.material:node.material?[node.material]:[]){materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});for(const value of geometries)value.dispose();for(const value of materials)value.dispose();for(const value of textures)if(value!==this.shadowTexture)value.dispose();}
  destroy(){if(this.destroyed)return;this.destroyed=true;this.active=false;this.supportView?.dispose();const resources=new THREE.Group();for(const record of this.actorCache.values()){record.hitParticles?.dispose();record.mixer.stopAllAction();resources.add(record.anchor);}for(const template of this.templateCache.values())resources.add(template.scene);this.disposeObject(resources);this.awakeningStage?.dispose();this.clearStage();this.shadowTexture?.dispose();for(const texture of this.auraTextureCache?.values()||[])texture.dispose();this.auraTextureCache?.clear();this.actorCache.clear();this.actorPromises.clear();this.templateCache.clear();this.templatePromises.clear();this.releaseRenderer();}
 }

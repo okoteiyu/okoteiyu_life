@@ -23,8 +23,10 @@ function returnAroundPlayer(from,to,center,side,forward,progress,radius){
 export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=null){
  const support=snapshot?.support||{},player=actors?.player;
  if(!player)return null;
- const start=point(player),forward=new THREE.Vector3(0,0,1).applyQuaternion(player.facing?.getWorldQuaternion(new THREE.Quaternion())||new THREE.Quaternion());forward.y=0;forward.normalize();
- const side=new THREE.Vector3(1,0,0).applyQuaternion(player.facing?.getWorldQuaternion(new THREE.Quaternion())||new THREE.Quaternion());side.y=0;side.normalize();
+ const start=point(player),fallback=new THREE.Vector3(0,0,1).applyQuaternion(player.facing?.getWorldQuaternion(new THREE.Quaternion())||new THREE.Quaternion());fallback.y=0;fallback.normalize();
+ // Anchors are the fixed battle formation; fatigued members stay in the frame.
+ const opponents=Object.entries(actors).filter(([id,actor])=>id!=='player'&&actor?.anchor),center=opponents.reduce((sum,[,actor])=>sum.add(point(actor)),new THREE.Vector3());
+ const forward=opponents.length?towards(start,center.multiplyScalar(1/opponents.length),fallback):fallback,side=new THREE.Vector3(forward.z,0,-forward.x);
  const beside=start.clone().addScaledVector(side,player.height*.82+height*.12).addScaledVector(forward,-player.height*.10);
  const behind=start.clone().addScaledVector(forward,-(player.height*.80+height*.45)).addScaledVector(side,player.height*.20);
  const idle=support.id==='moai_kun'&&support.guardUsed?behind:beside;
