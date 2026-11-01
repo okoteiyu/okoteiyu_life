@@ -9,7 +9,7 @@ export function outdoorMapDrawing({selected=null}={}){
  const zone=(id,x,y,width,height,fill)=>rect(x,y,width,height,fill,`data-building-zone="${id}" stroke="${selected===id?'#936843':'#ad9d7d'}" stroke-width="${selected===id?5:3}"`);
  let drawing=rect(30,40,1940,844,'#edf0df','stroke="#b4bf9e" stroke-width="4"')+
   text(1000,118,'おこていゆハウス周辺',64)+
-  // The warehouse occupies the northern half of the central vacant grounds.
+  // The northern warehouse has a deeper footprint and a broad west entrance.
   '<path data-outdoor-path="warehouse-freight" d="M540 300H260V350" fill="none" stroke="#d8d1bd" stroke-width="72" stroke-linejoin="round"/>'+
   // The neighbourhood street and sidewalk sit outside the building grounds.
   rect(0,960,2000,160,'#cdd0c8','data-outdoor-feature="street"')+
@@ -19,12 +19,13 @@ export function outdoorMapDrawing({selected=null}={}){
   '<path data-outdoor-path="front-entry" d="M1540 922V780" fill="none" stroke="#d9cfb8" stroke-width="92"/>'+
   '<path data-outdoor-path="large-entry" d="M260 922V780" fill="none" stroke="#d8d1bd" stroke-width="110"/>'+
   '<path d="m1522 866 18-18 18 18m-1316 0 18-18 18 18" fill="none" stroke="#aa9b78" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
-  zone('warehouse',540,200,740,315,'#eee8d9')+
-  rect(565,224,690,267,'#f8f3e6','data-outdoor-feature="warehouse-interior" stroke="#cfbea1" stroke-width="3"')+
-  '<g data-outdoor-feature="warehouse-shelves" fill="#d4c8b1" stroke="#b4a17e" stroke-width="3"><rect x="1124" y="246" width="102" height="224" rx="5"/><path d="M1124 302h102m-102 56h102m-102 56h102" fill="none"/></g>'+
-  '<g data-outdoor-feature="warehouse-crates" fill="#e1cfaa" stroke="#baa175" stroke-width="3"><rect x="603" y="240" width="82" height="56" rx="4"/><rect x="711" y="240" width="82" height="56" rx="4"/><path d="M644 240v56m108-56v56" fill="none"/></g>'+
-  text(835,413,'倉庫',82)+
-  '<path data-outdoor-feature="warehouse-door" d="M540 264v72M565 264v72" stroke="#d8d1bd" stroke-width="8"/><path d="M532 260h40m-40 80h40" stroke="#ad9d7d" stroke-width="4"/>'+
+  zone('warehouse',540,200,740,460,'#eee8d9')+
+  rect(565,224,690,412,'#f8f3e6','data-outdoor-feature="warehouse-interior" stroke="#cfbea1" stroke-width="3"')+
+  '<g data-outdoor-feature="warehouse-shelves" fill="#d4c8b1" stroke="#b4a17e" stroke-width="3"><rect x="1124" y="246" width="102" height="368" rx="5"/><path d="M1124 320h102m-102 74h102m-102 74h102m-102 74h102" fill="none"/></g>'+
+  '<g data-outdoor-feature="warehouse-crates" fill="#e1cfaa" stroke="#baa175" stroke-width="3"><rect x="711" y="240" width="82" height="56" rx="4"/><rect x="819" y="240" width="82" height="56" rx="4"/><path d="M752 240v56m108-56v56" fill="none"/></g>'+
+  text(835,485,'倉庫',82)+
+  '<path data-outdoor-feature="warehouse-entry-apron" d="M470 264H510L536 234H588V398H536L510 336H470Z" fill="#d8d1bd" stroke="#b7aa8b" stroke-width="3" stroke-linejoin="round"/>'+
+  '<g data-outdoor-feature="warehouse-door" data-opening-y="234" data-opening-height="164" fill="none" stroke="#a18b66"><path d="M532 234h115m-115 164h115" stroke-width="4"/><path d="M565 316A82 82 0 0 0 647 234M565 316A82 82 0 0 1 647 398" stroke-width="3" stroke-dasharray="7 5"/></g>'+
   // The near-square outline follows the existing F1 plan's proportions.
   // Entrance is intentionally inside this footprint, not a detached building.
   zone('building',1370,260,540,520,'#f7f1df')+
@@ -47,6 +48,6 @@ export function outdoorMapDrawing({selected=null}={}){
   '<path d="M260 675v-40m-14 12 14-14 14 14" fill="none" stroke="#a18b61" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
   text(260,744,'B1・B2へ',50)+
   // Small planting beds distinguish the grounds from the paved approaches.
-  '<g data-outdoor-feature="planting" fill="#b9cda7" stroke="#9db68b" stroke-width="3"><rect x="1070" y="732" width="100" height="78" rx="20"/><circle cx="1102" cy="758" r="22"/><circle cx="1138" cy="783" r="22"/><circle cx="520" cy="650" r="26"/></g>';
+  '<g data-outdoor-feature="planting" fill="#b9cda7" stroke="#9db68b" stroke-width="3"><rect x="1070" y="732" width="100" height="78" rx="20"/><circle cx="1102" cy="758" r="22"/><circle cx="1138" cy="783" r="22"/><circle cx="520" cy="710" r="26"/></g>';
  return `<g data-outdoor-plan="house-surroundings" font-family="system-ui, sans-serif">${drawing}</g>`;
 }
