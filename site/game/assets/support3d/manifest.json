@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "R146",
+  "revision": "R151",
   "models": [
     {
       "id": "moai_kun",
@@ -54,6 +54,24 @@
       "idleDuration": 1.5,
       "visualHeightIsAuthoringChoice": true,
       "softAlpha": true,
+      "sourceGeometryPreserved": true
+    },
+    {
+      "id": "green_moai",
+      "name": "回復モアイさん",
+      "url": "green_moai.glb",
+      "sha256": "a2c47bb576a556efebb746f531b36e13a5bab907e57f9c4d0cbab8ef14b0860f",
+      "bytes": 1195712,
+      "height": 0.2,
+      "geometryHeight": 0.19999830568222166,
+      "root": "Support.ModelRoot",
+      "forwardAxis": "+Z",
+      "clips": {
+        "idle": "Idle"
+      },
+      "idleDuration": 1.5,
+      "visualHeightIsAuthoringChoice": false,
+      "softAlpha": false,
       "sourceGeometryPreserved": true
     }
   ]

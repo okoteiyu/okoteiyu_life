@@ -10,6 +10,8 @@ import { encodeSave, decodeSave, validatePreviewState } from './save-data.js';
 import {describeSaveProgress} from './save-preview.js';
 import {additionalEffectsText} from './additional-effects.js';
 import {equipmentPreviewMarkup} from './equipment-preview-ui.js';
+import {equippedSupportIds,supportItemLevel,supportSelectionChange,SUPPORT_SLOT_LIMIT,DEFAULT_OWNED_SUPPORT_IDS,DEFAULT_EQUIPPED_SUPPORT_IDS} from './equipment-rules.js';
+import {INITIAL_PLAYER_LEVEL} from './initial-state.js';
 import {GROWTH_GUIDE_TABS,growthGuideMarkup,selectGrowthGuideTab} from './growth-guide.js';
 import { isModalBlocked, tryOpenModal, releaseModal } from './modal-layer.js';
 
@@ -75,8 +77,10 @@ export class OptionsDialog {
    if(equip){
     const snapshot=this.readGame(),kind=equip.dataset.kind,id=equip.dataset.collectionEquip||null;
     if(equip.disabled||snapshot?.location!=='home'||snapshot.pendingAngerEvent)return;
+    const supportChange=kind==='support'?supportSelectionChange(snapshot.player.equipment,id):null;
+    if(supportChange&&!supportChange.allowed){this.body.querySelector('[data-collection-status]').textContent='サポートもちものは、合わせて'+SUPPORT_SLOT_LIMIT+'つまで選べます。';return;}
     const generation=this.generation;equip.disabled=true;
-    try{const accepted=await(kind==='aura'?this.onEquipAura(id):this.onEquipItem(kind,id));if(!accepted)throw new Error('装備を変更できませんでした。');if(dialog.open&&generation===this.generation)this.renderCollectionCategory(kind);}
+    try{const accepted=await(kind==='aura'?this.onEquipAura(id):this.onEquipItem(kind,supportChange?supportChange.ids:id));if(!accepted)throw new Error('装備を変更できませんでした。');if(dialog.open&&generation===this.generation)this.renderCollectionCategory(kind);}
     catch(error){if(dialog.open&&generation===this.generation){equip.disabled=false;this.body.querySelector('[data-collection-status]').textContent=error.message||'装備を変更できませんでした。';}}return;
    }
    const training=event.target.closest('[data-training-select]');
@@ -173,29 +177,32 @@ export class OptionsDialog {
    this.body.innerHTML=empty('policy','内容は、今後掲載します。','');
   }
  }
- collectionPlayer(){return this.readGame()?.player||{equippedAura:'okoteiyu',auras:{okoteiyu:{name:'おこていゆのオーラ',level:1,copies:1,progress:0}},ownedItems:{support:['moai_kun'],defense:['acrylic_shield']},equipment:{support:'moai_kun',defense:'acrylic_shield'},techniqueSlots:['punch',null,null],punchLevel:1,energyRayLevel:1,energyRayUnlocked:false,superLevel:1,superConfiguration:'none'};}
+ collectionPlayer(){return this.readGame()?.player||{level:INITIAL_PLAYER_LEVEL,equippedAura:'okoteiyu',auras:{okoteiyu:{name:'おこていゆのオーラ',level:1,copies:1,progress:0}},ownedItems:{support:[...DEFAULT_OWNED_SUPPORT_IDS],defense:['acrylic_shield']},supportLevels:Object.fromEntries(DEFAULT_OWNED_SUPPORT_IDS.map(id=>[id,1])),equipment:{support:[...DEFAULT_EQUIPPED_SUPPORT_IDS],defense:'acrylic_shield'},techniqueSlots:['punch',null,null],punchLevel:1,energyRayLevel:1,energyRayUnlocked:false,superLevel:1,superConfiguration:'none'};}
  thumbnail(kind,id,name,classes=''){return '<img class="collection-photo '+classes+'" src="'+collectionThumbnail(kind,id)+'" alt="'+escapeHtml(name)+'の3Dモデル" width="320" height="320" decoding="async">';}
+ supportTag(item){return '<span class="support-role" data-support-role="'+escapeHtml(item.tag||'support')+'">'+escapeHtml(item.tagLabel||'サポート')+'</span>';}
  renderCollection(){
   const player=this.collectionPlayer();
   this.body.innerHTML='<nav class="collection-categories" aria-label="持ち物の種類">'+Object.entries(COLLECTION_KINDS).map(([kind,label])=>{
-   const id=kind==='aura'?player.equippedAura:player.equipment?.[kind],name=kind==='aura'?player.auras?.[id]?.name:(kind==='defense'?DEFENSE_ITEMS:SUPPORT_ITEMS)[id]?.name;
-   return '<button class="collection-category" type="button" data-panel="collection-'+kind+'">'+(id?this.thumbnail(kind,id,name):'<span class="collection-category__empty">'+icon(kind==='defense'?'shield':kind==='aura'?'aura':'moai')+'</span>')+'<span><strong>'+label+'</strong><small>装備中</small><b>'+escapeHtml(name||'なし')+'</b></span><span class="option-chevron" aria-hidden="true">›</span></button>';
+   const supports=kind==='support'?equippedSupportIds(player.equipment):[],id=kind==='aura'?player.equippedAura:kind==='support'?supports[0]:player.equipment?.[kind],name=kind==='aura'?player.auras?.[id]?.name:kind==='support'?supports.map(id=>SUPPORT_ITEMS[id]?.name).filter(Boolean).join('・'):DEFENSE_ITEMS[id]?.name;
+   return '<button class="collection-category" type="button" data-panel="collection-'+kind+'">'+(id?this.thumbnail(kind,id,kind==='support'?SUPPORT_ITEMS[id]?.name:name):'<span class="collection-category__empty">'+icon(kind==='defense'?'shield':kind==='aura'?'aura':'moai')+'</span>')+'<span><strong>'+label+'</strong><small>'+(kind==='support'?'選択中 '+supports.length+' / '+SUPPORT_SLOT_LIMIT:'装備中')+'</small><b>'+escapeHtml(name||'なし')+'</b></span><span class="option-chevron" aria-hidden="true">›</span></button>';
   }).join('')+'<button class="collection-category" type="button" data-panel="techniques">'+this.thumbnail('technique',player.techniqueSlots?.find(Boolean)||'punch','技')+'<span><strong>技</strong><small>3スロット</small><b>'+escapeHtml((player.techniqueSlots||['punch']).filter(Boolean).map(id=>TECHNIQUES[id]?.name).join('・'))+'</b></span><span class="option-chevron" aria-hidden="true">›</span></button></nav>';
  }
  renderCollectionCategory(kind){
   if(!Object.hasOwn(COLLECTION_KINDS,kind))return;
   const snapshot=this.readGame(),player=this.collectionPlayer(),canEquip=snapshot?.location==='home'&&!snapshot.pendingAngerEvent;
   const entries=kind==='aura'?Object.entries(player.auras||{}).map(([id,value])=>({id,...value})):((player.ownedItems?.[kind])||[]).map(id=>(kind==='defense'?DEFENSE_ITEMS:SUPPORT_ITEMS)[id]).filter(Boolean);
-  const equipped=kind==='aura'?player.equippedAura:player.equipment?.[kind];
-  let selected=this.selectedCollection[kind];if(!entries.some(e=>e.id===selected))selected=entries.some(e=>e.id===equipped)?equipped:entries[0]?.id;this.selectedCollection[kind]=selected;
-  const item=entries.find(e=>e.id===selected),isEquipped=Boolean(item&&equipped===item.id);
-  const grid=entries.map(entry=>'<button type="button" class="collection-tile" data-collection-select="'+escapeHtml(entry.id)+'" data-kind="'+kind+'" data-equipped="'+String(entry.id===equipped)+'" aria-label="'+escapeHtml(entry.name+(entry.id===equipped?'（装備中）':''))+'" aria-pressed="'+String(selected===entry.id)+'">'+this.thumbnail(kind,entry.id,entry.name)+'<span class="collection-tile__name">'+escapeHtml(entry.name)+'</span>'+'</button>').join('');
+  const equipped=kind==='aura'?player.equippedAura:player.equipment?.[kind],equippedIds=kind==='support'?equippedSupportIds(player.equipment):[equipped].filter(Boolean);
+  let selected=this.selectedCollection[kind];if(!entries.some(e=>e.id===selected))selected=entries.find(e=>equippedIds.includes(e.id))?.id||entries[0]?.id;this.selectedCollection[kind]=selected;
+  const item=entries.find(e=>e.id===selected),isEquipped=Boolean(item&&equippedIds.includes(item.id)),supportChange=kind==='support'&&item?supportSelectionChange(player.equipment,item.id):null;
+  const grid=entries.map(entry=>'<button type="button" class="collection-tile" data-collection-select="'+escapeHtml(entry.id)+'" data-kind="'+kind+'" data-equipped="'+String(equippedIds.includes(entry.id))+'" aria-label="'+escapeHtml(entry.name+(kind==='support'?'（'+(entry.tagLabel||'サポート')+'・Lv.'+supportItemLevel(player,entry.id)+'）':'')+(equippedIds.includes(entry.id)?'（装備中）':''))+'" aria-pressed="'+String(selected===entry.id)+'">'+this.thumbnail(kind,entry.id,entry.name)+'<span class="collection-tile__name">'+escapeHtml(entry.name)+'</span>'+(kind==='support'?'<span class="collection-tile__meta">'+this.supportTag(entry)+'<span>Lv.'+supportItemLevel(player,entry.id)+'</span></span>':'')+'</button>').join('');
   let detail='<div class="collection-detail collection-detail--empty"><p>まだ'+COLLECTION_KINDS[kind]+'を持っていません。</p></div>';
   if(item){
-   const auraDetail=kind==='aura'?(item.id==='okoteiyu'?'全パラメータが1.2倍になります。レベル1で固定です。':'元の珍生物のパラメータランクとオーラレベルに応じて、能力値が加算されます。'):'',progress=kind==='aura'?'<p class="collection-detail__meta">Lv.'+count(item.level)+' · '+(item.id==='okoteiyu'?'固定':item.level>=30?'最大レベル':'次のレベルまで '+count(item.progress)+'/3')+'</p>':'';
-   detail='<section class="collection-detail" aria-label="選択した持ち物の詳細">'+this.thumbnail(kind,item.id,item.name,'collection-detail__photo')+'<div class="collection-detail__copy"><h3>'+escapeHtml(item.name)+'</h3>'+progress+(kind==='aura'?'<p class="collection-detail__quantity">累計入手：'+count(item.copies)+'個</p>':'')+'<p>'+escapeHtml(kind==='aura'?auraDetail:item.description)+'</p>'+(kind==='aura'?'<p class="option-note">'+escapeHtml(additionalEffectsText(CREATURES[item.id]?.auraAdditionalEffects))+'</p>':'')+'</div>'+equipmentPreviewMarkup(player,kind,item.id)+'<button class="option-action collection-equip" type="button" data-collection-equip="'+(isEquipped?'':escapeHtml(item.id))+'" data-kind="'+kind+'"'+(canEquip?'':' disabled')+'>'+(isEquipped?'外す':'装備する')+'</button></section>';
+   const auraDetail=kind==='aura'?(item.id==='okoteiyu'?'全パラメータが1.2倍になります。レベル1で固定です。':'元の珍生物のパラメータランクとオーラレベルに応じて、能力値が加算されます。'):'',progress=kind==='aura'?'<p class="collection-detail__meta">Lv.'+count(item.level)+' · '+(item.id==='okoteiyu'?'固定':item.level>=30?'最大レベル':'次のレベルまで '+count(item.progress)+'/3')+'</p>':kind==='support'?'<div class="support-item-meta">'+this.supportTag(item)+'<span>Lv.'+supportItemLevel(player,item.id)+' / '+item.maxLevel+(supportItemLevel(player,item.id)>=item.maxLevel?' · 最大レベル':'')+'</span></div>':'';
+   const allowed=!supportChange||supportChange.allowed,preview=allowed?equipmentPreviewMarkup(player,kind,item.id):'<p class="option-note support-selection-limit">サポートもちものは、合わせて'+SUPPORT_SLOT_LIMIT+'つまで選べます。ほかのものを外してから選んでください。</p>';
+   detail='<section class="collection-detail" aria-label="選択した持ち物の詳細">'+this.thumbnail(kind,item.id,item.name,'collection-detail__photo')+'<div class="collection-detail__copy"><h3>'+escapeHtml(item.name)+'</h3>'+progress+(kind==='aura'?'<p class="collection-detail__quantity">累計入手：'+count(item.copies)+'個</p>':'')+'<p>'+escapeHtml(kind==='aura'?auraDetail:item.description)+'</p>'+(kind==='aura'?'<p class="option-note">'+escapeHtml(additionalEffectsText(CREATURES[item.id]?.auraAdditionalEffects))+'</p>':'')+'</div>'+preview+'<button class="option-action collection-equip" type="button" data-collection-equip="'+(kind==='support'?escapeHtml(item.id):isEquipped?'':escapeHtml(item.id))+'" data-kind="'+kind+'"'+(kind==='support'?' data-support-remove="'+String(isEquipped)+'"':'')+(canEquip&&allowed?'':' disabled')+'>'+(isEquipped?'外す':'装備する')+'</button></section>';
   }
-  this.body.innerHTML='<div class="collection-browser"><div class="collection-tiles" aria-label="'+COLLECTION_KINDS[kind]+'の一覧">'+grid+'</div>'+detail+'</div>'+(!canEquip&&snapshot?'<p class="option-note">装備はホーム画面にいる時に変更できます。</p>':'')+'<p class="save-status" role="status" aria-live="polite" data-collection-status></p>';
+  const supportSummary=kind==='support'?'<section class="support-loadout" aria-label="選択中のサポートもちもの"><header><strong>選択中</strong><span>'+equippedIds.length+' / '+SUPPORT_SLOT_LIMIT+'</span></header><p>'+escapeHtml(equippedIds.map(id=>SUPPORT_ITEMS[id]?.name).filter(Boolean).join('・')||'選択なし')+'</p><small>「サポート」「助っ人」を合わせて'+SUPPORT_SLOT_LIMIT+'つまで選べます。</small></section>':'';
+  this.body.innerHTML=supportSummary+'<div class="collection-browser"><div class="collection-tiles" aria-label="'+COLLECTION_KINDS[kind]+'の一覧">'+grid+'</div>'+detail+'</div>'+(!canEquip&&snapshot?'<p class="option-note">装備はホーム画面にいる時に変更できます。</p>':'')+'<p class="save-status" role="status" aria-live="polite" data-collection-status></p>';
  }
  renderMembership(){
   const snapshot=this.readGame(),player=this.collectionPlayer(),stats=profileStats(player),defeats=Object.values(player.journal||{}).reduce((sum,e)=>sum+BigInt(count(e.defeats)),0n),rank=this.game.querySelector('#rankValue')?.textContent||'C';

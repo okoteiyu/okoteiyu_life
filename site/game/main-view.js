@@ -4,6 +4,7 @@ import {installBonusButtonLayout} from './bonus-button-layout.js';
 import {VisitorNamePopup} from './visitor-name.js';
 import {installPasswordViewportGuard} from './password-viewport.js';
 import { GameRuntime } from './game-runtime.js';
+import {equippedSupportIds} from './equipment-rules.js';
 import { HouseUI } from './house-ui.js';
 import { TrainingHallUI } from './training-hall.js';
 import { PatrolUI } from './patrol-ui.js';
@@ -162,7 +163,7 @@ if(new URLSearchParams(location.search).get('options')==='open')popup.dialog.add
 document.querySelector('#collectionTrigger').addEventListener('click',event=>optionsUI.open('collection',event.currentTarget));
 document.querySelector('#mapTrigger').addEventListener('click',event=>optionsUI.open('maps',event.currentTarget));
 
-patrolUI=new PatrolUI({view,isSupportEquipped:()=>gameRuntime?.session.player.equipment.support==='moai_kun',canStart:()=>gameRuntime?.scene==='patrol'&&gameRuntime.session.state.location==='patrol',mapPanel:areaMap,homeElement:document.querySelector('#homeChoices'),
+patrolUI=new PatrolUI({view,isSupportEquipped:()=>equippedSupportIds(gameRuntime?.session.player.equipment??{}).includes('moai_kun'),canStart:()=>gameRuntime?.scene==='patrol'&&gameRuntime.session.state.location==='patrol',mapPanel:areaMap,homeElement:document.querySelector('#homeChoices'),
  enemyProvider:(map,options)=>gameRuntime.session.makePatrolEnemies(map,options),
  onEncounter:(enemy,stage)=>gameRuntime.onEncounter(enemy,stage),
  onAbort:opener=>optionsUI.open('confirm-patrol-return',opener),

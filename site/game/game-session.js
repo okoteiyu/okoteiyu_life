@@ -3,13 +3,13 @@ import {NO_ADDITIONAL_EFFECTS,firstAttackParameterMultipliers,additionalDamageMu
 import {INITIAL_PLAYER_LEVEL,INITIAL_CALM_POINTS,INITIAL_JOURNAL_SPECIES} from './initial-state.js';
 import {normalizeVisitorName} from './visitor-profile.js';
 import {currentTimeOfDay} from './world-time.js';
-import {SUPPORT_ITEMS,DEFENSE_ITEMS,equipmentMultipliers} from './equipment-rules.js';
-export {SUPPORT_ITEMS,DEFENSE_ITEMS,equipmentMultipliers} from './equipment-rules.js';
+import {SUPPORT_ITEMS,DEFENSE_ITEMS,equipmentMultipliers,equippedSupportIds,supportItemLevel,validateSupportSelection,DEFAULT_OWNED_SUPPORT_IDS,DEFAULT_EQUIPPED_SUPPORT_IDS} from './equipment-rules.js';
+export {SUPPORT_ITEMS,DEFENSE_ITEMS,equipmentMultipliers,equippedSupportIds,supportItemLevel,supportSelectionChange,validateSupportSelection,SUPPORT_SLOT_LIMIT,SUPPORT_TAG_LABELS,DEFAULT_OWNED_SUPPORT_IDS,DEFAULT_EQUIPPED_SUPPORT_IDS} from './equipment-rules.js';
 import {getRegionAt} from './patrol-map.js';
 import {ENCOUNTER_PROFILES,TRAINING_COURSES,overlapLevelBand,patrolSpeciesEligible,trainingLevelRange} from './encounter-rules.js';
 export {TRAINING_COURSES} from './encounter-rules.js';
 import {selectOkoteiyuReward,eligibleOkoteiyuRewards} from './okoteiyu-events.js';
-import {createBattleSupport,MOAI_COUNTER_TIMING,SUPPORT_COUNTER_TECHNIQUE,supportNextEventTime} from './support-rules.js';
+import {createBattleSupports,applySupportHealing,MOAI_COUNTER_TIMING,SUPPORT_COUNTER_TECHNIQUE,supportNextEventTime} from './support-rules.js';
 import {TECHNIQUES,techniqueDuration,ADDED_TECHNIQUE_IDS,PLAYER_TECHNIQUE_IDS,playerTechniqueLevel,availableTechniqueIds,defaultTechniqueSlots,validateTechniqueSlots,SUPER_CONFIGURATIONS,superStateDetails,SUPER_MAX_LEVEL,clampTechniqueLevel,techniquePower,syncLevelTechniques} from './technique-rules.js';
 /** Pure game rules shared by the browser and native WebView. */
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -92,7 +92,7 @@ function randomValue(rng){const value=Number(rng());if(!Number.isFinite(value))t
 function shuffle(items,rng){const result=[...items];for(let index=result.length-1;index>0;index--){const at=Math.floor(randomValue(rng)*(index+1));[result[index],result[at]]=[result[at],result[index]];}return result;}
 function initialJournal(){return Object.fromEntries(INITIAL_JOURNAL_SPECIES.map(id=>[id,{speciesId:id,name:CREATURES[id].name,registered:true,encounters:0,defeats:0,patrolDefeats:0,lastLevel:null}]));}
 export function hasJournalRecord(entry){return Boolean(entry&&(entry.registered===true||entry.encounters>0));}
-function prototypePlayer(){return {speciesId:'okoteiyu',name:'おこていゆ',level:INITIAL_PLAYER_LEVEL,xp:0,superLevel:1,punchLevel:1,energyRayLevel:1,energyRayUnlocked:false,unlockedTechniques:[],techniqueLevels:Object.fromEntries(ADDED_TECHNIQUE_IDS.map(id=>[id,1])),techniqueSlots:['punch',null,null],superConfiguration:'none',equipmentRulesVersion:1,ownedItems:{support:['moai_kun','hard_glove','stored_ki'],defense:['acrylic_shield','iron_shield','aura_shield']},equipment:{support:'moai_kun',defense:'acrylic_shield'},equippedAura:'okoteiyu',auras:{okoteiyu:{speciesId:'okoteiyu',name:'おこていゆのオーラ',level:1,copies:1,progress:0}},journal:initialJournal(),battlesWon:0,battlesLost:0};}
+function prototypePlayer(){return {speciesId:'okoteiyu',name:'おこていゆ',level:INITIAL_PLAYER_LEVEL,xp:0,superLevel:1,punchLevel:1,energyRayLevel:1,energyRayUnlocked:false,unlockedTechniques:[],techniqueLevels:Object.fromEntries(ADDED_TECHNIQUE_IDS.map(id=>[id,1])),techniqueSlots:['punch',null,null],superConfiguration:'none',equipmentRulesVersion:2,supportLevels:Object.fromEntries(DEFAULT_OWNED_SUPPORT_IDS.map(id=>[id,SUPPORT_ITEMS[id].initialLevel])),ownedItems:{support:[...DEFAULT_OWNED_SUPPORT_IDS],defense:['acrylic_shield','iron_shield','aura_shield']},equipment:{support:[...DEFAULT_EQUIPPED_SUPPORT_IDS],defense:'acrylic_shield'},equippedAura:'okoteiyu',auras:{okoteiyu:{speciesId:'okoteiyu',name:'おこていゆのオーラ',level:1,copies:1,progress:0}},journal:initialJournal(),battlesWon:0,battlesLost:0};}
 function recordJournalEncounter(player,enemy){
  const speciesId=enemy.speciesId,entry=player.journal[speciesId]||{speciesId,name:enemy.name,encounters:0,defeats:0,patrolDefeats:0,lastLevel:enemy.level};
  entry.registered=true;entry.encounters++;entry.lastLevel=enemy.level;player.journal[speciesId]=entry;return entry;
@@ -158,12 +158,17 @@ function restorePlayer(saved){
   player.ownedItems={support:[...owned.support],defense:[...owned.defense]};
  }
  if(saved.equipment!==undefined){
-  const gear=saved.equipment;if(!gear||typeof gear!=='object'||(gear.support!==null&&!player.ownedItems.support.includes(gear.support))||(gear.defense!==null&&!player.ownedItems.defense.includes(gear.defense)))throw new TypeError('Invalid equipped items.');
-  player.equipment={support:gear.support,defense:gear.defense};
- }else if(!player.ownedItems.support.includes(player.equipment.support))player.equipment.support=null;
+  const gear=saved.equipment;if(!gear||typeof gear!=='object'||Array.isArray(gear)||(gear.defense!==null&&!player.ownedItems.defense.includes(gear.defense)))throw new TypeError('Invalid equipped items.');
+  const selection=Array.isArray(gear.support)?gear.support:gear.support===null?[]:typeof gear.support==='string'?[gear.support]:null;
+  player.equipment={support:validateSupportSelection(selection,{owned:player.ownedItems.support}),defense:gear.defense};
+ }else player.equipment.support=player.ownedItems.support.includes('moai_kun')?['moai_kun']:[];
  if(saved.equipmentRulesVersion===undefined){if(!player.ownedItems.defense.includes('acrylic_shield'))player.ownedItems.defense.push('acrylic_shield');player.equipment.defense='acrylic_shield';}
- else integer(saved.equipmentRulesVersion,'equipment rules version',1,1);
- for(const id of ['hard_glove','stored_ki'])if(!player.ownedItems.support.includes(id))player.ownedItems.support.push(id);
+ else integer(saved.equipmentRulesVersion,'equipment rules version',1,2);
+ const supportLevels=saved.supportLevels;
+ if(supportLevels!==undefined&&(supportLevels===null||typeof supportLevels!=='object'||Array.isArray(supportLevels)||![Object.prototype,null].includes(Object.getPrototypeOf(supportLevels))||Object.keys(supportLevels).some(id=>!player.ownedItems.support.includes(id))))throw new TypeError('Invalid support item levels.');
+ if(supportLevels!==undefined)for(const [id,value]of Object.entries(supportLevels))integer(value,'support item level',1,SUPPORT_ITEMS[id].maxLevel);
+ for(const id of ['hard_glove','stored_ki','green_moai'])if(!player.ownedItems.support.includes(id))player.ownedItems.support.push(id);
+ player.supportLevels=Object.fromEntries(player.ownedItems.support.map(id=>[id,supportLevels!==undefined&&Object.hasOwn(supportLevels,id)?supportLevels[id]:SUPPORT_ITEMS[id].initialLevel]));
  for(const id of ['iron_shield','aura_shield'])if(!player.ownedItems.defense.includes(id))player.ownedItems.defense.push(id);
  if(!saved.journal||typeof saved.journal!=='object'||Array.isArray(saved.journal))throw new TypeError('Journal must be a record.');
  player.journal=initialJournal();for(const [id,entry]of Object.entries(saved.journal)){
@@ -199,7 +204,7 @@ export class GameSession{
  emit(type,detail={}){const event={type,...detail};this.eventLog.push(clone(event));if(this.eventLog.length>120)this.eventLog.shift();this.onEvent(event);return event;}
  random(){return randomValue(this.rng);}
  get player(){return this.state.player;}
- observation(){const aura=this.player.auras[this.player.equippedAura];return {level:this.player.level,experience:{current:this.player.xp,required:this.player.level<100?requiredLevelExperience(this.player.level):null},stats:playerStats(this.player),equipment:{support:this.player.equipment.support||'none',defense:this.player.equipment.defense||'none'},items:{support:SUPPORT_ITEMS[this.player.equipment.support]?.name||'なし',defense:DEFENSE_ITEMS[this.player.equipment.defense]?.name||'なし'},aura:aura?{id:this.player.equippedAura,name:aura.name,level:aura.level}:null};}
+ observation(){const aura=this.player.auras[this.player.equippedAura],ids=equippedSupportIds(this.player.equipment),supportEntries=ids.map(id=>({id,name:SUPPORT_ITEMS[id].name,tag:SUPPORT_ITEMS[id].tag,level:supportItemLevel(this.player,id),maxLevel:SUPPORT_ITEMS[id].maxLevel}));return {level:this.player.level,experience:{current:this.player.xp,required:this.player.level<100?requiredLevelExperience(this.player.level):null},stats:playerStats(this.player),equipment:{support:ids,defense:this.player.equipment.defense||'none'},items:{support:supportEntries.map(item=>item.name+' Lv.'+item.level).join('・')||'なし',supportEntries,defense:DEFENSE_ITEMS[this.player.equipment.defense]?.name||'なし'},aura:aura?{id:this.player.equippedAura,name:aura.name,level:aura.level}:null};}
  snapshot(){return clone({...this.state,player:{...this.player,stats:playerStats(this.player),nextLevelExperience:this.player.level<100?requiredLevelExperience(this.player.level):null},battle:this.snapshotBattle()});}
  commandAvailability(relaxStreak=0){
   const home=this.state.location==='home'&&!this.state.pendingAngerEvent,points=Number.isSafeInteger(relaxStreak)&&relaxStreak>=0?relaxStreak:0,interfereBonus=home&&this.state.interferenceBonusAvailable;
@@ -259,7 +264,8 @@ export class GameSession{
   const enemies=members.map((enemy,index)=>{const speciesId=enemy?.speciesId||enemy?.creatureId;if(!Object.hasOwn(CREATURES,speciesId)||!Object.hasOwn(CREATURE_CATEGORIES,CREATURES[speciesId].category))throw new RangeError('Unsupported prototype opponent.');const level=integer(enemy.level,'opponent level',1,106);return {...actor(index?'enemy-'+(index+1):'enemy',speciesId,level,creatureStats(speciesId,level)),techniqueLevels:Object.fromEntries(CREATURES[speciesId].techniques.map(id=>[id,clampTechniqueLevel(id,level)])),sourceId:enemy.id||null};});
   const playerStatBase=playerStatValues(this.player);
   const completedAttacks=Object.fromEntries(['player',...enemies.map(enemy=>enemy.id)].map(id=>[id,0]));
-  const battle={kind,phase:'active',status:'active',time:0,player:actor('player','okoteiyu',this.player.level,applySuperStats(playerStatBase)),playerStatBase,completedAttacks,support:createBattleSupport(this.player.equipment.support),enemies,enemy:enemies[0],targetId:enemies[0].id,super:{used:false,pending:false,active:false,until:0,multiplier:1,duration:0},result:null,rewards:null,enemyId:encounter?.id||enemies[0].speciesId};
+  const supports=createBattleSupports(this.player.equipment,this.player);
+  const battle={kind,phase:'active',status:'active',time:0,player:actor('player','okoteiyu',this.player.level,applySuperStats(playerStatBase)),playerStatBase,completedAttacks,supports,support:supports.find(item=>item.id==='moai_kun')||null,enemies,enemy:enemies[0],targetId:enemies[0].id,super:{used:false,pending:false,active:false,until:0,multiplier:1,duration:0},result:null,rewards:null,enemyId:encounter?.id||enemies[0].speciesId};
   this.state.battle=battle;this.state.location='battle';
   for(const id of this.actorIds())this.combatant(id).nextActionAt=this.nextInterval(id);
   if(kind==='patrol')for(const enemy of enemies)recordJournalEncounter(this.player,enemy);
@@ -315,10 +321,16 @@ export class GameSession{
   // The visual cutin has spent its own time; finish without advancing battle time.
   this.finishAction('player');return true;
  }
- autoSuper(){
+ resolveSupportHealing(){
+  const b=this.state.battle;if(!b||b.phase!=='active')return {healed:false,selfLow:false};
+  const selfLow=b.player.hp>0&&b.player.hp/b.player.maxHp<=.25+EPSILON;
+  const events=applySupportHealing(b);for(const {type,...event}of events)this.emit(type,event);
+  return {healed:events.length>0,selfLow};
+ }
+ autoSuper({selfLow=false}={}){
   const b=this.state.battle;if(!b||b.phase!=='active'||b.super.used||b.player.hp<=0)return;
   const living=b.enemies.filter(enemy=>enemy.hp>0);if(!living.length)return;
-  if(b.player.hp/b.player.maxHp<=.25+EPSILON||living.some(enemy=>enemy.hp/enemy.maxHp<=.25+EPSILON)){b.super.used=true;b.super.pending=true;this.emit('super-requested',{actor:'player',source:'automatic',time:b.time});if(!b.player.action)this.beginSuper();}
+  if(selfLow||b.player.hp/b.player.maxHp<=.25+EPSILON||living.some(enemy=>enemy.hp/enemy.maxHp<=.25+EPSILON)){b.super.used=true;b.super.pending=true;this.emit('super-requested',{actor:'player',source:'automatic',time:b.time});if(!b.player.action)this.beginSuper();}
  }
  startAction(actorId,technique=null){
   const battle=this.state.battle,actor=this.combatant(actorId);if(!actor||battle.phase!=='active'||actor.hp<=0||actor.action)return false;
@@ -380,7 +392,7 @@ export class GameSession{
   if(s.phase==='returning'&&b.time+EPSILON>=s.returnEndsAt)s.phase='idle';
  }
  finishAction(actorId){
-  const b=this.state.battle,actor=this.combatant(actorId),action=actor?.action;if(!action||b.phase!=='active')return;
+  const b=this.state.battle,actor=this.combatant(actorId),action=actor?.action;if(!action||b.phase!=='active')return;let selfLowBeforeHealing=false;
   actor.action=null;this.emit('action-complete',{actor:actorId,technique:action.technique,duration:action.duration,time:b.time});
   if(action.technique!=='super_awaken'){
    const target=actorId==='player'?(this.combatant(action.targetId)?.hp>0?this.combatant(action.targetId):this.selectTarget()):b.player;if(!target)return;
@@ -403,9 +415,10 @@ export class GameSession{
    if(!absorbed){const remaining=Math.max(0,target.hp-amount);target.hp=remaining<EPSILON?0:remaining;
     if(target.hp>0)for(const effect of TECHNIQUES[action.technique].additionalEffects||[])if(effect.type==='next_attack_damage_multiplier')target.nextAttackDamageMultiplier*=effect.multiplier;
     this.emit('damage',{actor:actorId,actorName:actor.name,target:target.id,targetName:target.name,technique:action.technique,amount,hp:target.hp,maxHp:target.maxHp,time:b.time});
+    if(target.id==='player'&&target.hp>0)selfLowBeforeHealing=this.resolveSupportHealing().selfLow;
     if(target.hp<=0&&this.finishFatigue(target))return;
    }
-   this.autoSuper();
+   this.autoSuper({selfLow:selfLowBeforeHealing});
   }
   if(actorId==='player'&&b.super.pending){this.beginSuper();return;}
   actor.nextActionAt=b.time+this.nextInterval(actorId);
@@ -413,6 +426,7 @@ export class GameSession{
  update(deltaSeconds,{pauseOnSuperAwakening=false}={}){
   finite(deltaSeconds,'elapsed seconds');if(deltaSeconds<0)throw new RangeError('Elapsed seconds cannot be negative.');const b=this.state.battle;if(!b||b.phase!=='active'||deltaSeconds===0)return this.snapshotBattle();
   if(pauseOnSuperAwakening&&this.isSuperAwakening())return this.snapshotBattle();
+  const recovery=this.resolveSupportHealing();if(recovery.healed){this.autoSuper({selfLow:recovery.selfLow});if(pauseOnSuperAwakening&&this.isSuperAwakening())return this.snapshotBattle();}
   const targetTime=b.time+deltaSeconds;let iterations=0;
   while(b.phase==='active'&&b.time<targetTime-EPSILON){
    if(++iterations>100000)throw new Error('Battle event budget exceeded.');
@@ -455,7 +469,16 @@ export class GameSession{
   this.player.techniqueSlots=validateTechniqueSlots(next,this.player);this.emit('technique-equipped',{slot,technique:id});return true;
  }
  setSuperConfiguration(id){if(this.state.location!=='home'||this.state.pendingAngerEvent||!Object.hasOwn(SUPER_CONFIGURATIONS,id))return false;this.player.superConfiguration=id;this.emit('super-configuration',{id});return true;}
- equipItem(kind,id){if(this.state.location!=='home'||this.state.pendingAngerEvent||!['support','defense'].includes(kind))return false;if(id!==null&&!this.player.ownedItems[kind].includes(id))return false;this.player.equipment[kind]=id;this.emit('item-equipped',{kind,id});return true;}
+ equipItem(kind,id){
+  if(this.state.location!=='home'||this.state.pendingAngerEvent||!['support','defense'].includes(kind))return false;
+  if(kind==='support'){
+   const selection=Array.isArray(id)?id:id===null?[]:typeof id==='string'?[id]:null;let next;
+   try{next=validateSupportSelection(selection,{owned:this.player.ownedItems.support});}catch{return false;}
+   this.player.equipment.support=next;this.emit('item-equipped',{kind,id:Array.isArray(id)?[...next]:id,ids:[...next]});return true;
+  }
+  if(id!==null&&!this.player.ownedItems.defense.includes(id))return false;
+  this.player.equipment.defense=id;this.emit('item-equipped',{kind,id});return true;
+ }
  returnHomeAfterBattle(){
   const b=this.state.battle;if(!b||b.phase!=='ended')return false;this.state.lastBattle={result:b.result,enemy:{speciesId:b.enemy.speciesId,name:b.enemy.name,level:b.enemy.level},enemies:b.enemies.map(enemy=>({speciesId:enemy.speciesId,name:enemy.name,level:enemy.level})),rewards:clone(b.rewards)};this.state.battle=null;this.state.location='home';this.state.commandsLocked=false;this.state.interferenceUsedSinceBattle=false;this.state.interferenceBonusAvailable=true;this.state.patrolUsedSinceRecovery=false;this.emit('home-return',{afterBattle:true,resetRelaxStreak:false});return true;
  }

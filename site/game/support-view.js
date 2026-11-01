@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three/three.module.js';
 import {loadAssetJson,loadGLTFAsset} from './asset-store.js';
-import {MOAI_COUNTER_TIMING} from './support-rules.js';
+import {MOAI_COUNTER_TIMING,battleSupportStates} from './support-rules.js';
+import {SUPPORT_ITEMS,equippedSupportIds} from './equipment-rules.js';
 
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const finite=(v,fallback=0)=>Number.isFinite(v)?v:fallback;
@@ -20,7 +21,7 @@ function returnAroundPlayer(from,to,center,side,forward,progress,radius){
 }
 
 /** A rigid, canonical-sized companion. All phases are derived from Core time. */
-export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=null){
+export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=null,slot={index:0,count:1}){
  const support=snapshot?.support||{},player=actors?.player;
  if(!player)return null;
  const start=point(player),fallback=new THREE.Vector3(0,0,1).applyQuaternion(player.facing?.getWorldQuaternion(new THREE.Quaternion())||new THREE.Quaternion());fallback.y=0;fallback.normalize();
@@ -28,8 +29,10 @@ export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=n
  const opponents=Object.entries(actors).filter(([id,actor])=>id!=='player'&&actor?.anchor),center=opponents.reduce((sum,[,actor])=>sum.add(point(actor)),new THREE.Vector3());
  const forward=opponents.length?towards(start,center.multiplyScalar(1/opponents.length),fallback):fallback,side=new THREE.Vector3(forward.z,0,-forward.x);
  const beside=start.clone().addScaledVector(side,player.height*.82+height*.12).addScaledVector(forward,-player.height*.10);
- const behind=start.clone().addScaledVector(forward,-(player.height*.80+height*.45)).addScaledVector(side,player.height*.20);
- const idle=support.id==='moai_kun'&&support.guardUsed?behind:beside;
+ const slotIndex=Math.max(0,finite(slot.index)),spacing=Math.max(player.height*.55,height*.95,finite(slot.spacing)),slotSide=slotIndex?(slotIndex%2?-Math.ceil(slotIndex/2):Math.ceil(slotIndex/2))*spacing:0;
+ const alwaysBehind=support.id==='green_moai'||slot.alwaysBehind===true;
+ const behind=start.clone().addScaledVector(forward,-(player.height*.80+height*.45+(alwaysBehind?height*.75:0))).addScaledVector(side,player.height*.20+slotSide);
+ const idle=alwaysBehind||support.id==='moai_kun'&&support.guardUsed?behind:beside;
  const target=actors[support.attackerId],enemy=target?point(target):start.clone().addScaledVector(forward,1),direction=towards(start,enemy,forward);
  const guard=start.clone().addScaledVector(direction,player.height*.95+height*.40).addScaledVector(side,player.height*.25);guard.y=start.y;
  const bridge=guardOrigin?.isVector3?{position:guardOrigin}:guardOrigin;
@@ -47,7 +50,7 @@ export function sampleSupportMotion(snapshot,actors,time,height=.2,guardOrigin=n
   if(at<attackStart)return guard.clone().lerp(counter,smooth((at-counterStart)/Math.max(.001,attackStart-counterStart)));
   return counter.clone();
  };
- let phase=support.phase||'idle',position=idle.clone(),facing=forward.clone(),attackElapsed=null;
+ let phase=support.phase||'idle',position=idle.clone(),facing=alwaysBehind?idleFacing.clone():forward.clone(),attackElapsed=null;
  if(support.id==='moai_kun'){
   if(phase==='guarding')position.copy(guardFrom).lerp(guard,smooth((time-visualGuardStart)/.18));
   else if(phase==='waiting')position.copy(guard);
@@ -82,7 +85,7 @@ function commonAttackOffset(elapsed){
  return 0;
 }
 
-export class BattleSupportView{
+class SingleBattleSupportView{
  constructor({scene,loader,baseUrl=new URL('./assets/support3d/',import.meta.url)}={}){
   Object.assign(this,{scene,loader,baseUrl});this.cache=new Map();this.pending=new Map();this.id=null;this.destroyed=false;this.sampleTime=0;this.clockOffset=0;
   this.root=new THREE.Group();this.root.name='Battle.Support';this.root.visible=false;scene.add(this.root);
@@ -95,6 +98,7 @@ export class BattleSupportView{
   this.halo=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.ShaderMaterial({uniforms:{strength:{value:0}},transparent:true,depthWrite:false,depthTest:true,blending:THREE.AdditiveBlending,toneMapped:false,
    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float strength;varying vec2 vUv;void main(){vec2 p=(vUv-.5)*2.;float a=exp(-dot(p,p)*3.5)*strength;gl_FragColor=vec4(1.,.81,.05,a);\n#include <colorspace_fragment>\n}'}));this.flash.add(this.halo);
   this.shadow=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x344137,transparent:true,opacity:.12,depthWrite:false}));this.shadow.rotation.x=-Math.PI/2;this.shadow.name='Battle.Support.Shadow';this.root.add(this.shadow);
+  this.healRing=new THREE.Mesh(new THREE.RingGeometry(.68,1,40),new THREE.MeshBasicMaterial({color:0xb8efa6,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));this.healRing.name='Battle.Support.HealPulse';this.healRing.rotation.x=-Math.PI/2;this.healRing.visible=false;this.root.add(this.healRing);
  }
  async prepare(id){
   if(!id)return null;if(this.cache.has(id))return this.cache.get(id);if(this.pending.has(id))return this.pending.get(id);
@@ -121,7 +125,7 @@ export class BattleSupportView{
  setVisible(visible){this.root.visible=Boolean(visible&&this.id&&this.cache.has(this.id));}
  sample(snapshot,actors,time,{enabled=true,camera}={}){
   const record=this.cache.get(this.id),equipped=snapshot?.player?.equipment?.support;
-  if(!record||!enabled||equipped!==this.id||snapshot?.phase==='visiting'){this.root.visible=false;this.flash.visible=false;return;}
+  if(!record||!enabled||equipped!==this.id||snapshot?.phase==='visiting'){this.root.visible=false;this.flash.visible=false;this.healRing.visible=false;return;}
   this.root.visible=true;record.anchor.visible=true;this.sampleTime=finite(time)+this.clockOffset;this.logicalState=snapshot.support||null;
   const logical=this.logicalState;
   if(logical?.phase==='guarding'&&Number.isFinite(logical.guardStartedAt)&&(logical.guardStartedAt!==this.guardStartedAt||logical.attackerId!==this.guardAttackerId)){
@@ -129,7 +133,7 @@ export class BattleSupportView{
    this.guardBridge=position?{startedAt:logical.guardStartedAt,attackerId:logical.attackerId,blendStartedAt:newGuard?logical.guardStartedAt:this.sampleTime,position:position.clone(),facing:facing?.clone()||null}:null;this.guardStartedAt=logical.guardStartedAt;this.guardAttackerId=logical.attackerId;
   }
   const origin=this.guardBridge&&this.guardBridge.startedAt===logical?.guardStartedAt&&this.guardBridge.attackerId===logical?.attackerId?this.guardBridge:null;
-  const state=sampleSupportMotion(snapshot,actors,this.sampleTime,record.height,origin);if(!state){this.root.visible=false;return;}
+  const state=sampleSupportMotion(snapshot,actors,this.sampleTime,record.height,origin,this.slot);if(!state){this.root.visible=false;return;}
   record.anchor.position.copy(state.position);record.facing.rotation.y=Math.atan2(state.facing.x,state.facing.z);record.motion.position.set(0,0,state.attackElapsed===null?0:record.height*.16*commonAttackOffset(state.attackElapsed));
   if(record.action){record.action.time=this.sampleTime%Math.max(.001,record.clip.duration);record.mixer.update(0);}
   const cameraTarget=this.id==='moai_kun'&&['guarding','waiting','counter'].includes(state.phase)?1:0,delta=Math.max(0,Math.min(.1,this.sampleTime-finite(this.lastCameraTime,this.sampleTime)));
@@ -145,16 +149,88 @@ export class BattleSupportView{
    pos.needsUpdate=true;alpha.needsUpdate=true;size.needsUpdate=true;
    this.halo.position.set(0,record.height*1.35,0);this.halo.scale.set(record.height*3.0,record.height*4.0,1);this.halo.material.uniforms.strength.value=.18*intensity;if(camera)this.halo.quaternion.copy(camera.getWorldQuaternion(new THREE.Quaternion()));
   }
-
+  const healAge=Number.isFinite(logical?.healedAt)?this.sampleTime-logical.healedAt:Infinity;
+  this.healRing.visible=this.id==='green_moai'&&logical?.healUsed&&healAge>=0&&healAge<.8;
+  if(this.healRing.visible){const progress=healAge/.8;this.healRing.position.copy(state.position);this.healRing.position.y=point(actors.player).y+.004;this.healRing.scale.setScalar(record.height*(.8+progress*.5));this.healRing.material.opacity=.35*(1-progress)**2;}
  }
  interceptionPoint(snapshot,actorId){
   const s=snapshot?.support;if(!this.root.visible||this.id!=='moai_kun'||s?.phase!=='guarding'||s.guardUsed||s.attackerId!==actorId)return null;
   return this.state?.position.clone().add(new THREE.Vector3(0,this.cache.get(this.id).height*.5,0))||null;
  }
  setViewport(height,pixelRatio=1){this.auraParticles.material.uniforms.viewportHeight.value=Math.max(1,height);this.auraParticles.material.uniforms.pixelRatio.value=Math.max(1,pixelRatio);}
- framingBounds(){const record=this.cache.get(this.id);if(!this.root.visible||!record)return null;record.model.updateWorldMatrix(true,true);const bounds=new THREE.Box3().setFromObject(record.model);bounds.expandByScalar(record.height*.12);if(this.flash.visible){const origin=this.flash.getWorldPosition(new THREE.Vector3()),radius=record.height*1.6;bounds.union(new THREE.Box3(new THREE.Vector3(-radius,-record.height*.35,-radius).add(origin),new THREE.Vector3(radius,record.height*3.7,radius).add(origin)));}return bounds;}
+ framingBounds(){const record=this.cache.get(this.id);if(!this.root.visible||!record)return null;record.model.updateWorldMatrix(true,true);const bounds=new THREE.Box3().setFromObject(record.model);bounds.expandByScalar(record.height*.12);if(this.flash.visible){const origin=this.flash.getWorldPosition(new THREE.Vector3()),radius=record.height*1.6;bounds.union(new THREE.Box3(new THREE.Vector3(-radius,-record.height*.35,-radius).add(origin),new THREE.Vector3(radius,record.height*3.7,radius).add(origin)));}if(this.healRing.visible){const origin=this.healRing.getWorldPosition(new THREE.Vector3()),r=this.healRing.scale.x;bounds.union(new THREE.Box3(origin.clone().add(new THREE.Vector3(-r,-.01,-r)),origin.clone().add(new THREE.Vector3(r,.01,r))));}return bounds;}
  capturePresentationState(){return {id:this.id,time:this.sampleTime,cameraBlend:this.cameraBlend,guardStartedAt:this.guardStartedAt??null,guardAttackerId:this.guardAttackerId??null,position:(this.state?.position||this.lastPosition)?.toArray()||null,facing:(this.state?.facing||this.lastFacing)?.toArray()||null,guardBridge:this.guardBridge?{startedAt:this.guardBridge.startedAt,attackerId:this.guardBridge.attackerId,blendStartedAt:this.guardBridge.blendStartedAt,position:this.guardBridge.position.toArray(),facing:this.guardBridge.facing?.toArray()||null}:null};}
- getDiagnostics(){const record=this.cache.get(this.id),s=this.state,logical=this.logicalState||{};return {id:this.id,visible:this.root.visible,phase:this.phase||'idle',height:record?.height??null,position:record?.anchor.position.toArray()||null,currentClip:record?.clip?.name||null,sampleTime:this.sampleTime,attackElapsed:s?.attackElapsed??null,flashVisible:this.flash.visible,auraParticleCount:this.flash.visible?this.particleCount:0,auraColor:'yellow',cameraBlend:this.cameraBlend||0,groundY:this.state?.guard.y??null,hop:s?.hop||0,clockOffset:this.clockOffset,guardUsed:Boolean(logical.guardUsed),attackerId:logical.attackerId??null,absorbedAt:logical.absorbedAt??null,counterStartsAt:logical.counterStartsAt??null,counterAttackStartsAt:logical.counterAttackStartsAt??null,counterEndsAt:logical.counterEndsAt??null,returnEndsAt:logical.returnEndsAt??null,reflectDamage:logical.reflectDamage??0,guardBridge:this.guardBridge?{attackerId:this.guardBridge.attackerId,blendStartedAt:this.guardBridge.blendStartedAt}:null};}
+ getDiagnostics(){const record=this.cache.get(this.id),s=this.state,logical=this.logicalState||{};return {id:this.id,visible:this.root.visible,phase:this.phase||'idle',height:record?.height??null,position:record?.anchor.position.toArray()||null,currentClip:record?.clip?.name||null,sampleTime:this.sampleTime,attackElapsed:s?.attackElapsed??null,flashVisible:this.flash.visible,auraParticleCount:this.flash.visible?this.particleCount:0,auraColor:'yellow',cameraBlend:this.cameraBlend||0,groundY:this.state?.guard.y??null,hop:s?.hop||0,clockOffset:this.clockOffset,guardUsed:Boolean(logical.guardUsed),attackerId:logical.attackerId??null,absorbedAt:logical.absorbedAt??null,counterStartsAt:logical.counterStartsAt??null,counterAttackStartsAt:logical.counterAttackStartsAt??null,counterEndsAt:logical.counterEndsAt??null,returnEndsAt:logical.returnEndsAt??null,reflectDamage:logical.reflectDamage??0,level:logical.level??1,tag:'helper',healUsed:Boolean(logical.healUsed),healedAt:logical.healedAt??null,healAmount:logical.healAmount??0,healPulseVisible:this.healRing.visible,slotIndex:this.slot?.index??0,guardBridge:this.guardBridge?{attackerId:this.guardBridge.attackerId,blendStartedAt:this.guardBridge.blendStartedAt}:null};}
  disposeTree(root){const geometry=new Set(),materials=new Set(),textures=new Set();root?.traverse(node=>{if(node.geometry)geometry.add(node.geometry);for(const material of Array.isArray(node.material)?node.material:node.material?[node.material]:[]){materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});for(const value of geometry)value.dispose();for(const value of materials)value.dispose();for(const value of textures)value.dispose();}
  dispose(){if(this.destroyed)return;this.destroyed=true;for(const record of this.cache.values())record.mixer.stopAllAction();this.disposeTree(this.root);this.root.removeFromParent();this.cache.clear();this.id=null;}
+}
+
+const helperIds=value=>equippedSupportIds({support:value}).filter(id=>SUPPORT_ITEMS[id]?.tag==='helper').sort((a,b)=>a==='moai_kun'?-1:b==='moai_kun'?1:0);
+
+/** Visible helpers share the battle clock but keep independent presentation state. */
+export class BattleSupportView{
+ constructor({scene,loader,baseUrl=new URL('./assets/support3d/',import.meta.url)}={}){
+  Object.assign(this,{scene,loader,baseUrl});this.instances=new Map();this.ids=[];this.id=null;this.destroyed=false;
+  this.root=new THREE.Group();this.root.name='Battle.Helpers';this.root.visible=false;scene.add(this.root);
+  this.hiddenFlash=new THREE.Group();this.hiddenFlash.visible=false;
+ }
+ get primary(){return this.instances.get(this.id)||null;}
+ get cache(){const all=new Map();for(const instance of this.instances.values())for(const [id,record]of instance.cache)all.set(id,record);return all;}
+ get sampleTime(){return this.primary?.sampleTime??0;}
+ get cameraBlend(){return Math.max(0,...this.ids.map(id=>this.instances.get(id)?.cameraBlend||0));}
+ get state(){return this.primary?.state||null;}
+ get phase(){return this.primary?.phase||'idle';}
+ get logicalState(){return this.primary?.logicalState||null;}
+ get lastPosition(){return this.primary?.lastPosition||null;}
+ get guardBridge(){return this.primary?.guardBridge||null;}
+ get clockOffset(){return this.primary?.clockOffset||0;}
+ get flash(){return this.primary?.flash||this.hiddenFlash;}
+ get auraParticles(){return this.primary?.auraParticles||null;}
+ get particleCount(){return this.primary?.particleCount||0;}
+ async prepare(value){
+  if(this.destroyed)throw new Error('助っ人の表示を終了しました。');
+  const records=await Promise.all(helperIds(value).map(async id=>{
+   if(!this.instances.has(id))this.instances.set(id,new SingleBattleSupportView({scene:this.root,loader:this.loader,baseUrl:this.baseUrl}));
+   return this.instances.get(id).prepare(id);
+  }));return Array.isArray(value)?records:records[0]||null;
+ }
+ activate(value,{baseTime=0,resumeTime,ended=false,resumeState=null}={}){
+  this.ids=helperIds(value);this.id=this.ids[0]||null;this.root.visible=false;
+  const savedItems=Array.isArray(resumeState?.items)?resumeState.items:resumeState?.id?[resumeState]:[];
+  for(const [id,instance]of this.instances){
+   if(!this.ids.includes(id)){instance.setVisible(false);continue;}
+   const saved=savedItems.find(item=>item?.id===id)||null;
+   instance.activate(id,{baseTime,resumeTime:saved?.time??resumeTime,ended,resumeState:saved});
+  }
+ }
+ setVisible(visible){
+  this.root.visible=Boolean(visible&&this.ids.some(id=>this.instances.get(id)?.cache.has(id)));
+  for(const [id,instance]of this.instances)instance.setVisible(Boolean(visible&&this.ids.includes(id)));
+ }
+ sample(snapshot,actors,time,options={}){
+  const equipped=helperIds(snapshot?.player?.equipment?.support),states=battleSupportStates(snapshot),enabled=options.enabled!==false&&snapshot?.phase!=='visiting';
+  const active=this.ids.filter(id=>equipped.includes(id)&&states.some(state=>state.id===id)),spacing=Math.max(actors?.player?.height*.55||0,...active.map(id=>(this.instances.get(id)?.cache.get(id)?.height||.2)*.95));
+  for(const [id,instance]of this.instances){
+   const index=active.indexOf(id),logical=states.find(state=>state.id===id);
+   if(!enabled||index<0||!logical){instance.setVisible(false);continue;}
+   instance.slot={index,count:active.length,spacing,alwaysBehind:id!=='moai_kun'};
+   // A per-helper facade leaves the canonical simulation and equipped list untouched.
+   instance.sample({...snapshot,support:logical,player:{...snapshot.player,equipment:{...snapshot.player.equipment,support:id}}},actors,time,options);
+  }
+  this.root.visible=enabled&&active.some(id=>this.instances.get(id)?.root.visible);
+ }
+ interceptionPoint(snapshot,actorId){const logical=battleSupportStates(snapshot).find(state=>state.id==='moai_kun');return this.root.visible&&logical?this.instances.get('moai_kun')?.interceptionPoint({...snapshot,support:logical},actorId)||null:null;}
+ getRenderRecords(){if(!this.root.visible)return [];return this.ids.flatMap(id=>{const instance=this.instances.get(id),record=instance?.cache.get(id);return instance?.root.visible&&record?.anchor.visible?[record]:[];});}
+ setViewport(height,pixelRatio=1){for(const instance of this.instances.values())instance.setViewport(height,pixelRatio);}
+ framingBounds(){
+  const bounds=new THREE.Box3();if(!this.root.visible)return null;
+  for(const id of this.ids){const box=this.instances.get(id)?.framingBounds();if(box)bounds.union(box);}
+  return bounds.isEmpty()?null:bounds;
+ }
+ capturePresentationState(){const items=this.ids.map(id=>this.instances.get(id)?.capturePresentationState()).filter(Boolean);return {...(items.find(item=>item.id===this.id)||{}),ids:[...this.ids],items};}
+ getDiagnostics(){
+  const helpers=this.ids.map(id=>this.instances.get(id)?.getDiagnostics()).filter(Boolean),primary=helpers.find(helper=>helper.id===this.id);
+  return {...(primary||{id:null,visible:false,phase:'idle',height:null}),helpers,visible:this.root.visible&&Boolean(primary?.visible),visibleCount:helpers.filter(helper=>helper.visible).length};
+ }
+ dispose(){if(this.destroyed)return;this.destroyed=true;for(const instance of this.instances.values())instance.dispose();this.instances.clear();this.ids=[];this.id=null;this.root.removeFromParent();}
 }

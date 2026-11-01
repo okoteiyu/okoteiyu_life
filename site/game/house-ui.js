@@ -1,5 +1,6 @@
 import {PaintedLabel,setPaintedText} from './painted-label.js';
 import { isModalBlocked } from './modal-layer.js';
+import {equippedSupportIds} from './equipment-rules.js';
 const FOOD_LABELS={soda_cup:'ソーダ',soda_straw:'ソーダ',bacon:'ベーコン',bread:'パン',hamburger:'ハンバーグ',pudding:'プリン'};
 function activityLabel(life){
  if(!life)return '';
@@ -90,12 +91,12 @@ export class HouseUI {
   this.activityPaint.set(text);this.activityValue.title=text;
  }
  updateObservation(){
-  const visible=this.active&&this.controller?.sceneMode==='interaction',character=this.readCharacter(),profile=visible?character:null;if(this.controller?.life?.companion)this.controller.life.companion.visible=character?.equipment?.support!=='none';this.observationCard.hidden=!profile;if(!profile){this.layoutObservation(false);return;}
+  const visible=this.active&&this.controller?.sceneMode==='interaction',character=this.readCharacter(),profile=visible?character:null;if(this.controller?.life?.companion)this.controller.life.companion.visible=equippedSupportIds(character?.equipment).includes('moai_kun');this.observationCard.hidden=!profile;if(!profile){this.layoutObservation(false);return;}
   const key=JSON.stringify(profile);if(key===this.observationKey){this.layoutObservation(true);return;}this.observationKey=key;
   const exp=profile.experience||{current:0,required:15},percent=exp.required?Math.round(Math.max(0,Math.min(1,exp.current/exp.required))*100):100,expMeter=this.observationCard.querySelector('#experienceGauge');expMeter.setAttribute('aria-valuenow',String(percent));expMeter.querySelector('i').style.width=percent+'%';setPaintedText(this.observationCard.querySelector('#experienceValue'),exp.required?Number(exp.current).toLocaleString('ja-JP',{maximumFractionDigits:1})+' / '+Number(exp.required).toLocaleString('ja-JP'):(profile.level>=106?'MAX':'強化試練'),{background:'#f6f1e6',align:'right',fitText:true,immutableImage:true});
   const format=value=>Number(value).toLocaleString('ja-JP',{maximumFractionDigits:1});
   const values={level:profile.level,...profile.stats,support:profile.items.support,defense:profile.items.defense,aura:profile.aura?profile.aura.name+' Lv.'+profile.aura.level:'なし'};
-  for(const [name,value]of Object.entries(values)){const field=this.observationCard.querySelector('[data-observe="'+name+'"]');if(field)setPaintedText(field,typeof value==='number'?format(value):value,{background:'#f6f1e6',align:typeof value==='number'?'center':'left',lines:name==='aura'?2:1});}
+  for(const [name,value]of Object.entries(values)){const field=this.observationCard.querySelector('[data-observe="'+name+'"]');if(field)setPaintedText(field,typeof value==='number'?format(value):value,{background:'#f6f1e6',align:typeof value==='number'?'center':'left',lines:name==='support'?3:name==='aura'?2:1});}
   this.layoutObservation(true);
  }
  layoutObservation(visible){

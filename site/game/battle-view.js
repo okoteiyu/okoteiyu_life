@@ -100,11 +100,11 @@ export class BattleView{
    this.field=field;this.fieldScene=fieldGLTF.scene;this.fieldScene.scale.setScalar(fieldRegion==='training'?1:Math.max(1,maxHeight/1.2));this.fieldScene.position.y=fieldRegion==='training'?0:-.02;this.stage.add(this.fieldScene);
    this.scene.background.set(field.sky);this.scene.fog.color.set(field.sky);this.hemi.intensity=field.ambient;this.sun.intensity=field.sunIntensity;this.sun.color.set(field.sunColor);this.cutin=null;
    if(['acrylic_shield','iron_shield','aura_shield'].includes(snapshot.player.equipment?.defense))await this.prepareShield(player,snapshot.player.equipment.defense);
-   const supportId=stage.presentation==='training-hall'?null:snapshot.player.equipment?.support||null;
-   await this.supportView.prepare(supportId);
+   const supportIds=stage.presentation==='training-hall'?[]:snapshot.player.equipment?.support||[];
+   await this.supportView.prepare(supportIds);
    if(this.destroyed||generation!==this.fieldGeneration)return false;
    const savedSupport=this.presentationId!==null&&presentationState?.presentationId===this.presentationId?presentationState.supportClock:null;
-   this.supportView.activate(supportId,{baseTime:this.time,resumeTime:savedSupport?.time,resumeState:savedSupport,ended:snapshot.phase==='ended'||snapshot.status==='ended'});
+   this.supportView.activate(supportIds,{baseTime:this.time,resumeTime:savedSupport?.time,resumeState:savedSupport,ended:snapshot.phase==='ended'||snapshot.status==='ended'});
    this.restoreAwakeningPresentation(snapshot,presentationState);this.ready=true;this.loading=false;this.resize();this.updatePose();this.render();this.onStatus('');return true;
   }catch(error){if(this.destroyed||generation!==this.fieldGeneration)return false;this.ready=false;this.loading=false;this.lastError=error instanceof Error?error.message:String(error);this.onStatus('');this.onError(error);return false;}
  }
@@ -178,7 +178,7 @@ export class BattleView{
   const box=this.canvas?.getBoundingClientRect();if(!this.targetSelectionAvailable()||!box?.width||!box?.height||clientX<box.left||clientX>box.right||clientY<box.top||clientY>box.bottom)return null;
   const x=clientX-box.left,y=clientY-box.top,owners=new Map(),meshes=[];
   for(const [id,record]of Object.entries(this.actors)){record.model.updateWorldMatrix(true,true);for(const mesh of battleBodyMeshes(record)){owners.set(mesh,id);meshes.push(mesh);}}
-  const support=this.supportView?.root.visible&&this.supportView.cache.get(this.supportView.id);if(support){support.model.updateWorldMatrix(true,true);for(const mesh of battleBodyMeshes(support)){owners.set(mesh,'support');meshes.push(mesh);}}
+  for(const support of this.supportView?.getRenderRecords()||[]){support.model.updateWorldMatrix(true,true);for(const mesh of battleBodyMeshes(support)){owners.set(mesh,'support');meshes.push(mesh);}}
   const ray=this.battleTargetRaycaster??=new THREE.Raycaster();this.camera.updateMatrixWorld(true);ray.setFromCamera(new THREE.Vector2(x/box.width*2-1,1-y/box.height*2),this.camera);
   const hit=ray.intersectObjects(meshes,false)[0];if(hit){const id=owners.get(hit.object);return opponents(this.snapshot).some(state=>(state.id||'enemy')===id&&state.hp>0)?id:null;}
   return assistedBattleTarget(this.getBattleTargets(),x,y);

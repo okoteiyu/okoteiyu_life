@@ -78,6 +78,7 @@
 .save-inventory li { display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;padding:7px 0;border-bottom:1px solid #a3846128;font-size:12.5px;line-height:1.6; }
 .save-inventory li>span:first-child { flex:1;min-inline-size:110px;overflow-wrap:anywhere; }
 .save-inventory li>span:last-child { flex-shrink:0;font-variant-numeric:tabular-nums; }
+.save-inventory li>span:last-child { max-inline-size:100%;white-space:normal;overflow-wrap:anywhere; }
 .save-inventory .option-note { margin:12px 0 0; }
 .technique-slots strong,.collection-tile__name,.super-configuration h3 { max-inline-size:100%;white-space:normal;overflow-wrap:anywhere; }
 .super-configuration { min-inline-size:0; }
@@ -148,7 +149,20 @@ body[data-password-keyboard] .options-dialog{max-block-size:calc(var(--password-
 .collection-tile[data-equipped=true][aria-pressed=true]{border-color:#5f7c3d;background:#e0eafa;box-shadow:0 0 0 1px #5f7c3d;}
 
 .collection-detail .collection-equip[data-collection-equip=""],
+.collection-detail .collection-equip[data-support-remove="true"],
 .collection-detail .collection-equip[data-technique-assign=""]{background:#f8dbe5;border-color:#d699b1;color:#86455f;}
+
+.support-loadout{margin:0 0 12px;padding:10px 11px;border:1px solid #b8a07a70;border-radius:10px 4px;background:#fff8e9bd;}
+.support-loadout header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:#70573d;font-size:13px;}
+.support-loadout header>span{font-weight:650;font-variant-numeric:tabular-nums;}
+.support-loadout p{margin:6px 0 4px;font-size:12.5px;line-height:1.6;overflow-wrap:anywhere;}
+.support-loadout small{display:block;font-size:11.5px;line-height:1.6;color:#8a755b;}
+.collection-tile__meta{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:3px 5px;margin-top:5px;min-inline-size:0;font-size:10.5px;line-height:1.4;font-variant-numeric:tabular-nums;}
+.support-role{display:inline-block;max-inline-size:100%;box-sizing:border-box;padding:2px 5px;border:1px solid #c7ac855c;border-radius:5px;background:#f4e9d7;color:#806448;font-size:10.5px;line-height:1.35;overflow-wrap:anywhere;}
+.support-role[data-support-role="helper"]{border-color:#91b89077;background:#e7f1de;color:#52704b;}
+.support-item-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 9px;font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums;color:#8c775c;}
+.support-item-meta .support-role{font-size:11.5px;}
+.collection-detail .support-selection-limit{grid-column:1/-1;margin:0;}
 .equipment-preview{grid-column:1/-1;min-inline-size:0;padding:11px 10px;border:1px solid #b6b98a66;border-radius:9px 3px;background:#f5f7e9b8;}
 .equipment-preview h4{margin:0 0 8px;color:#65553e;font-size:13px;line-height:1.6;font-weight:600;}
 .equipment-preview table{inline-size:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;line-height:1.6;font-variant-numeric:tabular-nums;}

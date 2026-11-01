@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "ゲーム本編で現在使用するハウス、道中、戦闘、怒りカットイン、キャラクター、妖精、サポート/防御もちものと共通UI画像。専用モデル確認ページのみの素材は除外。",
   "fileCount": 142,
-  "totalBytes": 105067976,
+  "totalBytes": 106101039,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1109,12 +1109,12 @@
       "sha256": "22c872ba8b8dd9863edb3c1e692ff1fc758cb4a3321c16d393b8c7e97472a7d3"
     },
     {
-      "url": "assets/support3d/manifest.json",
+      "url": "assets/support3d/manifest.json?v=e72ad71974566e32fd3be9f237b41d8d58d30026f901adcca3ce02c1030e6ac5",
       "label": "サポートもちものの設定",
       "type": "json",
-      "bytes": 1663,
+      "bytes": 2194,
       "priority": 2,
-      "sha256": "9232f0a484880ae38e55ea47f5a4b291bd0e0819db35e76771decb08ba801efb"
+      "sha256": "e72ad71974566e32fd3be9f237b41d8d58d30026f901adcca3ce02c1030e6ac5"
     },
     {
       "url": "assets/support3d/moai_kun.glb?v=189262d6452a92da9b4e86e7c5492b3cfeb95424eae8059dc198ca214765b429",
@@ -1125,20 +1125,20 @@
       "sha256": "189262d6452a92da9b4e86e7c5492b3cfeb95424eae8059dc198ca214765b429"
     },
     {
-      "url": "assets/support3d/hard_glove.glb?v=d949338e1a239310da3e3b6dafa650dbbca5b3e44e209c124b7a5903315cc7d1",
-      "label": "かたいグローブ",
+      "url": "assets/support3d/green_moai.glb?v=a2c47bb576a556efebb746f531b36e13a5bab907e57f9c4d0cbab8ef14b0860f",
+      "label": "回復モアイさん",
       "type": "binary",
-      "bytes": 154396,
+      "bytes": 1195712,
       "priority": 3,
-      "sha256": "d949338e1a239310da3e3b6dafa650dbbca5b3e44e209c124b7a5903315cc7d1"
+      "sha256": "a2c47bb576a556efebb746f531b36e13a5bab907e57f9c4d0cbab8ef14b0860f"
     },
     {
-      "url": "assets/support3d/stored_ki.glb?v=9ba823d840b1e27089a4bb10f36cf919cfb230304b4ceb037c0a8c8898fc0cfb",
-      "label": "溜めた気",
-      "type": "binary",
-      "bytes": 13832,
+      "url": "assets/collection/green_moai.webp?v=3a7e5886256a2b3d35427faaeb1b537c98e2fed68332765409610b1dc487587a",
+      "label": "回復モアイさん",
+      "type": "image",
+      "bytes": 5048,
       "priority": 3,
-      "sha256": "9ba823d840b1e27089a4bb10f36cf919cfb230304b4ceb037c0a8c8898fc0cfb"
+      "sha256": "3a7e5886256a2b3d35427faaeb1b537c98e2fed68332765409610b1dc487587a"
     }
   ]
 }
