@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
   "fileCount": 158,
-  "totalBytes": 152853809,
+  "totalBytes": 153204278,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1237,36 +1237,36 @@
       "sha256": "0d793d7d90e079a811d7fe0ec622350a975a85036f0f4adbeab896055aba6102"
     },
     {
-      "url": "assets/guest-lounge/room.glb?v=68f0a3f9622d9590d7f00d1f84509cdc72dba0f48728677589d3d2602739b5b2",
+      "url": "assets/guest-lounge/room.glb?v=9c961ee904008a7b4c05f84335e42641931f9c71a3b99531af92fc941b3859c5",
       "label": "休憩室",
       "type": "binary",
-      "bytes": 6429452,
+      "bytes": 6610240,
       "priority": 2,
-      "sha256": "68f0a3f9622d9590d7f00d1f84509cdc72dba0f48728677589d3d2602739b5b2"
+      "sha256": "9c961ee904008a7b4c05f84335e42641931f9c71a3b99531af92fc941b3859c5"
     },
     {
       "url": "assets/guest-lounge/metadata.json",
       "label": "休憩室の設定",
       "type": "json",
-      "bytes": 20410,
+      "bytes": 22041,
       "priority": 2,
-      "sha256": "e2837579ab5c3f074eac93348a8831934e90fd31b9945c2d25595599fc848d44"
+      "sha256": "aae685bf8e2bf0e2ec3a244cbc85ca6de2c011e522dc635eee6dd5c5e655cda1"
     },
     {
-      "url": "assets/management-room/room.glb?v=a8adaab8bb2649b5021d583bcb19a79bab2a7b18184560d6e8ce62fdba31c54c",
+      "url": "assets/management-room/room.glb?v=071b0c81e5a1b958896e4e4b2cd61ae1a31a08071b46302164fcf29fd560784e",
       "label": "管理室",
       "type": "binary",
-      "bytes": 5028308,
+      "bytes": 5192588,
       "priority": 2,
-      "sha256": "a8adaab8bb2649b5021d583bcb19a79bab2a7b18184560d6e8ce62fdba31c54c"
+      "sha256": "071b0c81e5a1b958896e4e4b2cd61ae1a31a08071b46302164fcf29fd560784e"
     },
     {
       "url": "assets/management-room/metadata.json",
       "label": "管理室の設定",
       "type": "json",
-      "bytes": 14796,
+      "bytes": 18566,
       "priority": 2,
-      "sha256": "15cdc6d298eec0496790eaee95f31fd92c42ec4a24b2898344031f860a314454"
+      "sha256": "936d32e4a3e0109035a833b7f502a05761f5e55207f9df2d855c2e0034796627"
     }
   ]
 }

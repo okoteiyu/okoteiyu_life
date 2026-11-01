@@ -4,6 +4,10 @@ import {BattleLog} from './battle-log.js';
 import {interiorMapSvg} from './interior-map.js';
 import {INTERIOR_ROOMS} from './interior-rules.js';
 
+// Decorative cue stays outside the map SVGs copied into the dialogs.
+const MAP_TAP_CUE='<span class="area-map__tap-cue" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M13 19V9a2 2 0 0 1 4 0v7a2 2 0 0 1 4 0v1a2 2 0 0 1 4 0v2a2 2 0 0 1 4 0v4c0 4-2 7-6 7h-6c-2 0-3-1-4-2L7 21c-1-2 1-4 3-3l3 2Z" fill="#f4e6ce"/><path d="M9 7a6 6 0 0 1 12 0M11.5 7a3.5 3.5 0 0 1 7 0"/></svg></span>';
+const addMapTapCue=button=>{if(!button.querySelector(':scope > .area-map__tap-cue'))button.insertAdjacentHTML('beforeend',MAP_TAP_CUE);};
+
 const DEFAULT_BOUNDS={min:[-2.72,-.1,-5.72],max:[2.72,2.8,.15]};
 /** Project the actual Y-up room coordinates: rear at the top, entrance below. */
 export function roomMapPoint(position,bounds=DEFAULT_BOUNDS){
@@ -31,21 +35,21 @@ export class AreaMap {
  }
  showPatrol(map){
   this.clearBattleLog();
-  this.mode='patrol';this.element.dataset.area='patrol';this.title.textContent='道中マップ';this.hint.textContent='タップで拡大';this.content.replaceChildren(map);
+  this.mode='patrol';this.element.dataset.area='patrol';this.title.textContent='道中マップ';this.hint.textContent='タップで拡大';addMapTapCue(map);this.content.replaceChildren(map);
  }
  showTraining(){
   this.clearBattleLog();
   this.mode='training';this.element.dataset.area='training';this.title.textContent='訓練所';this.hint.textContent='';
-  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="訓練所の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+trainingMapSvg()+'</button>';
+  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="訓練所の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+trainingMapSvg()+MAP_TAP_CUE+'</button>';
  }
  showAnalysis(){
   this.clearBattleLog();
   this.mode='analysis';this.element.dataset.area='analysis';this.title.textContent='コンピュータ室';this.hint.textContent='';
-  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="コンピュータ室の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+analysisMapSvg({compact:true,current:true})+'</button>';
+  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="コンピュータ室の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+analysisMapSvg({compact:true,current:true})+MAP_TAP_CUE+'</button>';
  }
  showInterior(id){
   const room=INTERIOR_ROOMS[id];if(!room||id==='analysis-room')return false;this.clearBattleLog();this.mode='interior';this.element.dataset.area='interior';this.title.textContent=room.title;this.hint.textContent='';
-  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="'+room.title+'の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+interiorMapSvg(id)+'</button>';return true;
+  this.content.innerHTML='<button class="area-map__house-trigger" data-house-map-open type="button" aria-label="'+room.title+'の建物マップを開く" aria-haspopup="dialog" aria-controls="buildingMapDialog" aria-expanded="false">'+interiorMapSvg(id)+MAP_TAP_CUE+'</button>';return true;
  }
  handleBattleEvent(event){
   if(event?.type==='battle-start'){
@@ -84,7 +88,7 @@ export class AreaMap {
    <path data-room-window="right" d="M230 163v38" stroke="#9dbfbd" stroke-width="3"/>
    <g id="roomMapMoai"><path d="M0-5 4-2 3 5H-3L-4-2Z" fill="#8e9687" stroke="#fffef7" stroke-width="1.3"/></g>
    <g id="roomMapOkoteiyu"><circle r="6" fill="#fff7e9" stroke="#bb817a" stroke-width="1.8"/><circle cx="-2.5" cy="1" r="1.1" fill="#d8a1a0"/><circle cx="2.5" cy="1" r="1.1" fill="#d8a1a0"/></g>
-  </svg><span class="area-map__tap-cue" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M13 19V9a2 2 0 0 1 4 0v7a2 2 0 0 1 4 0v1a2 2 0 0 1 4 0v2a2 2 0 0 1 4 0v4c0 4-2 7-6 7h-6c-2 0-3-1-4-2L7 21c-1-2 1-4 3-3l3 2Z" fill="#f4e6ce"/><path d="M9 7a6 6 0 0 1 12 0M11.5 7a3.5 3.5 0 0 1 7 0"/></svg></span></button>`;
+  </svg>${MAP_TAP_CUE}</button>`;
   this.houseSvg=this.content.querySelector('.room-map');
  }
 }

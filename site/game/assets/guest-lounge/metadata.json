@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "R179",
+  "revision": "R180",
   "id": "guest-lounge",
   "title": "休憩室",
   "floor": "b2",
@@ -9,7 +9,7 @@
   "dimensionsAreArtProductionValues": true,
   "architecturalDimensionsConfirmed": false,
   "guestCapacityUndecided": true,
-  "purpose": "A shared rest room for invited creatures and facility staff; guests are welcomed freely, not confined. Staff NPCs and facility services remain undecided.",
+  "purpose": "A shared rest room for invited creatures and facility staff, with a hot-water sink and two refrigerators; guests are welcomed freely, not confined.",
   "room": {
     "width": 21.4,
     "depth": 5.8,
@@ -118,7 +118,8 @@
     "refreshment_counter",
     "plants",
     "brass_trim",
-    "warm_indirect_lighting"
+    "warm_indirect_lighting",
+    "two_refrigerators"
   ],
   "features": [
     {
@@ -979,11 +980,89 @@
           1.7725000381469727
         ]
       }
+    },
+    {
+      "id": "lounge-fridge-1",
+      "node": "Interior.lounge-fridge-1",
+      "label": "休憩室の冷蔵庫1",
+      "role": "fridge",
+      "position": [
+        9.24,
+        0.94,
+        -2.32
+      ],
+      "size": [
+        0.76,
+        1.88,
+        0.8
+      ],
+      "yaw": 0,
+      "footprint": [
+        8.869999885559082,
+        -2.6660001277923584,
+        0.7399997711181641,
+        0.7820001840591431
+      ],
+      "area": "lounge",
+      "loungeKind": "fridge",
+      "handleSide": "left",
+      "doorState": "closed",
+      "actualBounds": {
+        "min": [
+          8.869999885559082,
+          0.0,
+          -2.6660001277923584
+        ],
+        "max": [
+          9.609999656677246,
+          1.8399999141693115,
+          -1.8839999437332153
+        ]
+      }
+    },
+    {
+      "id": "lounge-fridge-2",
+      "node": "Interior.lounge-fridge-2",
+      "label": "休憩室の冷蔵庫2",
+      "role": "fridge",
+      "position": [
+        10.09,
+        0.94,
+        -2.32
+      ],
+      "size": [
+        0.76,
+        1.88,
+        0.8
+      ],
+      "yaw": 0,
+      "footprint": [
+        9.720000267028809,
+        -2.6660001277923584,
+        0.7399997711181641,
+        0.7820001840591431
+      ],
+      "area": "lounge",
+      "loungeKind": "fridge",
+      "handleSide": "left",
+      "doorState": "closed",
+      "actualBounds": {
+        "min": [
+          9.720000267028809,
+          0.0,
+          -2.6660001277923584
+        ],
+        "max": [
+          10.460000038146973,
+          1.8399999141693115,
+          -1.8839999437332153
+        ]
+      }
     }
   ],
   "status": "complete",
-  "sourceRevision": "R179",
-  "surfaceRevision": "R179",
+  "sourceRevision": "R180",
+  "surfaceRevision": "R180",
   "pbrSurfaceSets": [
     "oak",
     "plaster",
@@ -1013,19 +1092,19 @@
   },
   "model": {
     "url": "room.glb",
-    "bytes": 6429452,
-    "sha256": "68f0a3f9622d9590d7f00d1f84509cdc72dba0f48728677589d3d2602739b5b2"
+    "bytes": 6610240,
+    "sha256": "9c961ee904008a7b4c05f84335e42641931f9c71a3b99531af92fc941b3859c5"
   },
   "animationCount": 0,
-  "meshBatchCount": 120,
+  "meshBatchCount": 126,
   "previews": [
     {
       "id": "overview",
       "url": "preview.webp",
       "width": 960,
       "height": 640,
-      "bytes": 34806,
-      "sha256": "54269a194848b1c2989d0093beb894c3e0b4cc7f45945b44847a9d6ef530a61b"
+      "bytes": 36488,
+      "sha256": "360c6b43899704b953a936cfada5f55e2141f1ecc126d0aedbec57a2a5567a34"
     }
   ],
   "source": "environments/interiors/source/build_guest_lounge.py",

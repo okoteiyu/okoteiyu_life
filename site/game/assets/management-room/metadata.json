@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "R176",
+  "revision": "R182",
   "id": "management-room",
   "title": "管理室",
   "floor": "b2",
@@ -97,7 +97,13 @@
   },
   "map": {
     "width": 250,
-    "height": 145
+    "height": 145,
+    "svgPadding": {
+      "left": 4,
+      "top": 4,
+      "right": 18,
+      "bottom": 4
+    }
   },
   "features": [
     {
@@ -686,9 +692,190 @@
     "diningSeats": 2,
     "countsAreArtLayoutValues": true
   },
+  "securityEntrance": {
+    "revision": "R182",
+    "node": "Interior.SecurityEntrance",
+    "appearanceOnly": true,
+    "doorState": "open",
+    "doorType": "heavy_sliding_leaf_parked_outside_north",
+    "authenticationGameplay": false,
+    "portal": {
+      "centre": [
+        5,
+        0,
+        0.46
+      ],
+      "clearWidth": 1.28,
+      "clearHeight": 2.65,
+      "insideX": 4.76
+    },
+    "jambFootprints": [
+      [
+        4.76,
+        -0.34,
+        0.48,
+        0.16
+      ],
+      [
+        4.76,
+        1.1,
+        0.48,
+        0.16
+      ]
+    ],
+    "frame": {
+      "node": "Interior.SecurityFrame",
+      "worldBounds": {
+        "min": [
+          4.737999439239502,
+          0.0,
+          -0.3400000035762787
+        ],
+        "max": [
+          5.239999771118164,
+          2.8499999046325684,
+          1.2599999904632568
+        ]
+      },
+      "footprint": [
+        4.737999439239502,
+        -0.3400000035762787,
+        0.5020003318786621,
+        1.5999999940395355
+      ]
+    },
+    "parkedDoor": {
+      "node": "Interior.SecurityDoorLeaf",
+      "centre": [
+        5.36,
+        1.335,
+        -0.935
+      ],
+      "coreFootprint": [
+        5.29,
+        -1.6,
+        0.14,
+        1.33
+      ],
+      "state": "open",
+      "worldBounds": {
+        "min": [
+          5.289999961853027,
+          0.040000081062316895,
+          -1.600000023841858
+        ],
+        "max": [
+          5.513999938964844,
+          2.630000114440918,
+          -0.26999998092651367
+        ]
+      },
+      "footprint": [
+        5.289999961853027,
+        -1.600000023841858,
+        0.2239999771118164,
+        1.3300000429153442
+      ]
+    },
+    "track": {
+      "node": "Interior.SecurityTrack",
+      "worldBounds": {
+        "min": [
+          5.014999866485596,
+          2.5999999046325684,
+          -1.6100000143051147
+        ],
+        "max": [
+          5.470000267028809,
+          3.0,
+          1.4899998903274536
+        ]
+      },
+      "footprint": [
+        5.014999866485596,
+        -1.6100000143051147,
+        0.4550004005432129,
+        3.0999999046325684
+      ]
+    },
+    "reader": {
+      "node": "Interior.SecurityReader",
+      "screenNode": "Interior.SecurityReaderScreen",
+      "viewPoint": [
+        4.62,
+        1.46,
+        1.123
+      ],
+      "frontNormal": [
+        0,
+        0,
+        -1
+      ],
+      "orientation": "north-facing_inside_south_jamb",
+      "worldBounds": {
+        "min": [
+          4.489999771118164,
+          1.1100000143051147,
+          1.1080000400543213
+        ],
+        "max": [
+          4.940000057220459,
+          1.649999976158142,
+          1.28000009059906
+        ]
+      },
+      "footprint": [
+        4.489999771118164,
+        1.1080000400543213,
+        0.4500002861022949,
+        0.17200005054473877
+      ]
+    },
+    "statusLight": {
+      "node": "Interior.SecurityStatus",
+      "viewPoint": [
+        4.66,
+        1.82,
+        1.125
+      ],
+      "decorativeOnly": true,
+      "worldBounds": {
+        "min": [
+          4.549999713897705,
+          1.75,
+          1.125
+        ],
+        "max": [
+          4.885000228881836,
+          1.8900001049041748,
+          1.3000000715255737
+        ]
+      },
+      "footprint": [
+        4.549999713897705,
+        1.125,
+        0.33500051498413086,
+        0.17500007152557373
+      ]
+    },
+    "bedVisibilityPreserved": true,
+    "dimensionsAreArtProductionValues": true,
+    "worldBounds": {
+      "min": [
+        4.489999771118164,
+        0.0,
+        -1.6100000143051147
+      ],
+      "max": [
+        5.513999938964844,
+        3.0,
+        1.4899998903274536
+      ]
+    }
+  },
   "status": "complete",
-  "sourceRevision": "R176",
-  "surfaceRevision": "R176",
+  "sourceRevision": "R182",
+  "surfaceRevision": "R182",
   "pbrSurfaceSets": [
     "oak",
     "plaster",
@@ -709,25 +896,25 @@
       -2.9600000381469727
     ],
     "max": [
-      5.09499979019165,
+      5.513999938964844,
       3.879999876022339,
       2.9600000381469727
     ]
   },
   "model": {
     "url": "room.glb",
-    "bytes": 5028308,
-    "sha256": "a8adaab8bb2649b5021d583bcb19a79bab2a7b18184560d6e8ce62fdba31c54c"
+    "bytes": 5192588,
+    "sha256": "071b0c81e5a1b958896e4e4b2cd61ae1a31a08071b46302164fcf29fd560784e"
   },
   "animationCount": 0,
-  "meshBatchCount": 102,
+  "meshBatchCount": 112,
   "previews": [
     {
       "url": "preview.webp",
       "width": 960,
       "height": 640,
-      "bytes": 25688,
-      "sha256": "fd33fdfa03d166d8791af09be6ef56882967bb90b652c8a54731d7471dc9ed7e"
+      "bytes": 28250,
+      "sha256": "e335cde5fde55d1f75363b6f1f06eb0539be656ca7722af5accbbd3b88e9aade"
     }
   ],
   "source": "environments/interiors/source/build_management_room.py",

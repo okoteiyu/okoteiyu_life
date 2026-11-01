@@ -28,6 +28,13 @@ function loungeFurniture(f,p,q){
   }else body+=[.24,.40,.56,.72].map(at=>`<circle cx="${n(p.x+w*at)}" cy="${n(p.y+d*.5)}" r="${n(d*.19)}" fill="#b3cec6" stroke="#8fa999" stroke-width=".7"/>`).join('');
  }
  else if(kind==='reading-shelf')body=round(p.x,p.y,w,d,'#c9b594',2,outline)+Array.from({length:12},(_,i)=>rect(p.x+2+i*(w-4)/12,p.y+2,(w-4)/12-1,d-4,['#a1b9a9','#d8bc9a','#bec3cf'][i%3])).join('');
+ else if(kind==='fridge'){
+  const vertical=Math.abs(Math.sin(yaw))>.5,front=vertical?(Math.sin(yaw)<0?p.x+1:q.x-1):(Math.cos(yaw)<0?p.y+1:q.y-1),side=f.handleSide==='right'?.76:.24;
+  body='<g data-lounge-fixture="fridge">'+round(p.x,p.y,w,d,'#dce5e0',2,'stroke="#91aaa2" stroke-width=".9"')+
+   `<path d="${vertical?`M${n(front)} ${n(p.y+d*.08)}V${n(q.y-d*.08)}`:`M${n(p.x+w*.08)} ${n(front)}H${n(q.x-w*.08)}`}" stroke="#7f9b91" stroke-width="1.5"/>`;
+  if(f.handleSide)body+=`<path d="${vertical?`M${n(front)} ${n(p.y+d*side)}V${n(p.y+d*(side+.12))}`:`M${n(p.x+w*side)} ${n(front)}H${n(p.x+w*(side+.12))}`}" stroke="#f9f6e9" stroke-width="1.8" stroke-linecap="round"/>`;
+  body+='</g>';
+ }
  else if(kind==='plant')body=round(p.x+w*.23,p.y+d*.25,w*.54,d*.54,'#cfbea1',3,outline)+[[-.17,-.10],[.16,-.05],[0,.17]].map(([x,y],i)=>`<ellipse cx="${n(p.x+w*(.5+x))}" cy="${n(p.y+d*(.5+y))}" rx="${n(w*.24)}" ry="${n(d*.20)}" fill="${i%2?'#a9c69a':'#8eaf86'}"/>`).join('');
  else if(kind==='welcome-relief')body=round(p.x,p.y,w,d,'#d5bc83',1,outline);
  else body=round(p.x,p.y,w,d,'#ded2bd',3,outline);
@@ -92,6 +99,15 @@ function aperture(id,entry,options){
  const half=entry.width/2,side=entry.side,alongX=side==='north'||side==='south',a=[...entry.center],b=[...entry.center];a[alongX?0:2]-=half;b[alongX?0:2]+=half;const p=interiorMapPoint(id,a,options),q=interiorMapPoint(id,b,options);
  return `<path data-interior-door="${side}" data-world-width="${entry.width}" d="M${n(p.x)} ${n(p.y)}L${n(q.x)} ${n(q.y)}" stroke="#f7f2df" stroke-width="5"/><path d="M${n(p.x)} ${n(p.y)}L${n(q.x)} ${n(q.y)}" stroke="#8dad9d" stroke-width="1.4"/>`;
 }
+function managementEntryDrawing(layout,options){
+ const security=layout.securityEntrance;if(!security)return'';
+ const part=(name,footprint,color)=>{const [x,z,w,d]=footprint,p=interiorMapPoint(layout.id,[x,0,z],options),q=interiorMapPoint(layout.id,[x+w,0,z+d],options);return{p,q,w:q.x-p.x,d:q.y-p.y,svg:`<g data-security-part="${name}" data-world-footprint="${escape(JSON.stringify(footprint))}">`+rect(p.x,p.y,q.x-p.x,q.y-p.y,color,'stroke="#667e78" stroke-width=".7"')+'</g>'};};
+ let body=`<g data-interior-security="management-entry" data-door-state="${escape(security.doorState)}" data-model-node="${escape(security.node)}"><title>補強枠と認証端末のある入口</title>`;
+ for(const [i,footprint]of security.jambFootprints.entries())body+=part('jamb-'+i,footprint,'#91a6a0').svg;
+ const door=part('parked-door',security.parkedDoor.footprint,'#a9b7ae'),reader=part('reader',security.reader.footprint,'#6d857d');
+ body+=door.svg+[.25,.5,.75].map(at=>`<path d="M${n(door.p.x+.5)} ${n(door.p.y+door.d*at)}H${n(door.q.x-.5)}" stroke="#6c817b" stroke-width=".8"/>`).join('')+reader.svg+rect(reader.p.x+reader.w*.22,reader.p.y+reader.d*.24,reader.w*.56,reader.d*.38,'#b6d1b8');
+ return body+'</g>';
+}
 export function interiorMapDrawing(id,{livingOnly=false,width,height,current=false,selected=false}={}){
  const l=INTERIOR_LAYOUTS[id];if(!l)return'';const dimensions=livingOnly?l.living.map:l.map,W=width||dimensions.width,H=height||dimensions.height,o={livingOnly,width:W,height:H};
  let content=rect(0,0,W,H,id==='production-room'?'#edf0df':'#f3eedf','data-interior-floor="true"');
@@ -111,7 +127,8 @@ export function interiorMapDrawing(id,{livingOnly=false,width,height,current=fal
   }
   const a=interiorMapPoint(id,[2.448,0,.036],o),b=interiorMapPoint(id,[2.448,0,1.656],o);content+=`<path data-interior-window="right" d="M${n(a.x)} ${n(a.y)}L${n(b.x)} ${n(b.y)}" stroke="#97bdbc" stroke-width="3"/>`;
  }else for(const e of[l.entrance,...l.secondaryEntrances||[]])content+=aperture(id,e,o);
+ if(id==='management-room')content+=managementEntryDrawing(l,o);
  if(current){const p=interiorMapPoint(id,l.entrance.heroStand,o);content+=`<g data-interior-current="true" transform="translate(${n(p.x)} ${n(p.y)})"><circle r="${id==='warehouse'?8:5}" fill="#fff7e9" stroke="#bb817a" stroke-width="2"/></g>`;}
  return `<g data-interior-plan="${id}" font-family="system-ui,sans-serif">${content}</g>`;
 }
-export function interiorMapSvg(id,{current=true}={}){const l=INTERIOR_LAYOUTS[id];return `<svg class="room-map" viewBox="-4 -4 ${l.map.width+8} ${l.map.height+8}" role="img" aria-label="${l.title}の地図。設備は3Dモデルと同じ配置。">${interiorMapDrawing(id,{current})}</svg>`;}
+export function interiorMapSvg(id,{current=true}={}){const l=INTERIOR_LAYOUTS[id],p=l.map.svgPadding||{},left=p.left??4,top=p.top??4,right=p.right??4,bottom=p.bottom??4;return `<svg class="room-map" viewBox="${-left} ${-top} ${l.map.width+left+right} ${l.map.height+top+bottom}" role="img" aria-label="${l.title}の地図。設備は3Dモデルと同じ配置。">${interiorMapDrawing(id,{current})}</svg>`;}

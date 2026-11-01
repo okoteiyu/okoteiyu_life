@@ -7,7 +7,7 @@
 .area-map[data-area="house"]{grid-template-rows:minmax(0,1fr);}
 .area-map[data-area="house"] .area-map__header{display:none;}
 .area-map[data-area="house"] .area-map__content{padding:2px;}
-.area-map[data-area="house"] .area-map__house-trigger{position:relative;}
+.area-map .area-map__house-trigger{position:relative;}
 .area-map__tap-cue{position:absolute;inset-inline-end:5px;inset-block-end:5px;display:grid;place-items:center;inline-size:clamp(25px,18%,32px);aspect-ratio:1;border:1px solid #b59c70;border-radius:50%;background:#fffaf0f2;color:#876a42;box-shadow:0 2px 5px #78644522;pointer-events:none;}
 .area-map__tap-cue>svg{display:block;inline-size:78%;block-size:78%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .area-map[data-area="training"]{grid-template-rows:minmax(0,1fr);}
@@ -31,5 +31,5 @@
 .battle-log__meta{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:11px;line-height:16px;color:#78674d;font-variant-numeric:tabular-nums;}
 .battle-log__meta>span{color:var(--log-color);font-weight:600;}
 .battle-log__entry p{margin:3px 0 0;color:#5d5142;font-size:12px;line-height:1.5;overflow-wrap:anywhere;}
-@media(max-height:540px){.area-map__header{padding:4px;}.area-map__header h2{overflow:hidden;text-overflow:ellipsis;font-size:7.5px;}.area-map__header span{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;font-size:5.5px;}.area-map__content{padding:3px;}}
-@media(max-height:340px){.area-map__header{padding:2px 3px;}.area-map__header h2{overflow:hidden;text-overflow:ellipsis;font-size:6.5px;}.area-map__header span{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;display:none;}.area-map__content{padding:2px;}}
+@media(max-height:540px){.area-map__tap-cue{inline-size:clamp(18px,14%,25px);inset-inline-end:3px;inset-block-end:3px;}.area-map__header{padding:4px;}.area-map__header h2{overflow:hidden;text-overflow:ellipsis;font-size:7.5px;}.area-map__header span{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;font-size:5.5px;}.area-map__content{padding:3px;}}
+@media(max-height:340px){.area-map__tap-cue{inline-size:18px;inset-inline-end:2px;inset-block-end:2px;}.area-map__header{padding:2px 3px;}.area-map__header h2{overflow:hidden;text-overflow:ellipsis;font-size:6.5px;}.area-map__header span{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;display:none;}.area-map__content{padding:2px;}}
