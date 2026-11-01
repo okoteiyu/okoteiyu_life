@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
   "fileCount": 158,
-  "totalBytes": 152385110,
+  "totalBytes": 152596490,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1253,20 +1253,20 @@
       "sha256": "e2f49caabbeca0a633a9da392e3877973a014c0df7e384fd9346702162955184"
     },
     {
-      "url": "assets/management-room/room.glb?v=ac07a5b3e39186e22d5db15dae365cd5e402009eedb81d7833f3841bf345acbb",
+      "url": "assets/management-room/room.glb?v=a8adaab8bb2649b5021d583bcb19a79bab2a7b18184560d6e8ce62fdba31c54c",
       "label": "管理室",
       "type": "binary",
-      "bytes": 4820176,
+      "bytes": 5028308,
       "priority": 2,
-      "sha256": "ac07a5b3e39186e22d5db15dae365cd5e402009eedb81d7833f3841bf345acbb"
+      "sha256": "a8adaab8bb2649b5021d583bcb19a79bab2a7b18184560d6e8ce62fdba31c54c"
     },
     {
       "url": "assets/management-room/metadata.json",
       "label": "管理室の設定",
       "type": "json",
-      "bytes": 11548,
+      "bytes": 14796,
       "priority": 2,
-      "sha256": "5efc0b6a9c1e495ce1d9c8833f43976221d11c3f6709a96a063042132cabb34a"
+      "sha256": "15cdc6d298eec0496790eaee95f31fd92c42ec4a24b2898344031f860a314454"
     }
   ]
 }

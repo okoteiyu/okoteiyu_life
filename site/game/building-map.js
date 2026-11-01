@@ -9,7 +9,7 @@ export const BUILDING_FLOORS=Object.freeze([
  {id:'b2',label:'B2',name:'地下の訓練場',areas:[
   {id:'training',name:'訓練所',text:'招待した珍生物と訓練する施設。'},
   {id:'guest-lounge',name:'休憩室',text:'招待した珍生物と施設作業員が自由にくつろぐための休憩室。'},
-  {id:'control',name:'管理室',text:'施設の運営を支える管理室。'},
+  {id:'control',name:'管理室',text:'管理人が住み込み、2人ほどで使う管理室。'},
   {id:'washrooms',name:'トイレ・シャワー・脱衣所',mapOnly:true,text:''},
   {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
   {id:'core',name:'階段・エレベーター',text:''}]},

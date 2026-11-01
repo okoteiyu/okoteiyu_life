@@ -25,14 +25,28 @@ function loungeFurniture(f,p,q){
 }
 function managementFurniture(f,p,q){
  const w=q.x-p.x,d=q.y-p.y,kind=f.officeKind||f.role,outline='stroke="#9ea89b" stroke-width=".9"';
- let body=rect(p.x,p.y,w,d,{desk:'#dbc8a8',chair:'#b7c9bf',monitor:'#a2b7ae',shelf:'#cbb68e',storage:'#c4cec3',whiteboard:'#f6f6ec',plant:'#b7cda3'}[f.role]||'#d2dbc7',outline);
- if(kind==='workstation')body+=[.13,.54].map(at=>rect(p.x+w*at,p.y+d*.12,w*.3,d*.28,'#547a74')+rect(p.x+w*(at+.02),p.y+d*.61,w*.26,d*.13,'#eee9da')).join('');
+ let body=rect(p.x,p.y,w,d,{desk:'#dbc8a8',chair:'#b7c9bf',monitor:'#a2b7ae',shelf:'#cbb68e',storage:'#c4cec3',whiteboard:'#f6f6ec',plant:'#b7cda3',fridge:'#cbd5ca',partition:'#d3c4a6'}[f.role]||'#d2dbc7',outline);
+ if(kind==='workstation')body+=rect(p.x+w*.28,p.y+d*.12,w*.44,d*.28,'#547a74')+rect(p.x+w*.31,p.y+d*.61,w*.38,d*.13,'#eee9da');
+ else if(kind==='caretaker-bed'){
+  const east=f.bedHeadSide==='east',headX=east?p.x+w*.77:p.x+w*.07;
+  body=rect(p.x,p.y,w,d,'#d4bc97',outline)+rect(p.x+w*.04,p.y+d*.06,w*.92,d*.88,'#f3efe6')+
+   rect(east?p.x+w*.04:p.x+w*.32,p.y+d*.06,w*.64,d*.88,'#afc3bc')+
+   rect(headX,p.y+d*.23,w*.16,d*.54,'#fffaf0','stroke="#d8d9ca" stroke-width=".6"')+
+   `<path d="M${n(east?p.x+w*.96:p.x+w*.04)} ${n(p.y+d*.06)}V${n(q.y-d*.06)}" stroke="#b29773" stroke-width="1.5"/>`;
+ }
  else if(f.role==='chair'){
   const cx=p.x+w*.5,cy=p.y+d*.5,yaw=f.yaw||0;
   body=`<ellipse cx="${n(cx)}" cy="${n(cy)}" rx="${n(w*.40)}" ry="${n(d*.40)}" fill="#b7c9bf" ${outline}/><path d="M${n(cx-Math.cos(yaw)*w*.32-Math.sin(yaw)*w*.28)} ${n(cy-Math.sin(yaw)*d*.32+Math.cos(yaw)*d*.28)}L${n(cx+Math.cos(yaw)*w*.32-Math.sin(yaw)*w*.28)} ${n(cy+Math.sin(yaw)*d*.32+Math.cos(yaw)*d*.28)}" stroke="#7f9a8c" stroke-width="2.5" stroke-linecap="round"/>`;
  }else if(kind==='console')body+=[.10,.38,.66].map(at=>rect(p.x+w*.16,p.y+d*at,w*.65,d*.19,'#537b73')).join('');
+ else if(kind==='living-divider')body=rect(p.x,p.y,w,d,'#d3c4a6','stroke="#ab9778" stroke-width="1"');
+ else if(kind==='wardrobe'){
+  const yaw=f.yaw||0,vertical=Math.abs(Math.sin(yaw))>.5,front=vertical?(Math.sin(yaw)<0?p.x+2:q.x-2):(Math.cos(yaw)<0?p.y+2:q.y-2);
+  body=rect(p.x,p.y,w,d,'#d1bc99',outline)+`<path d="${vertical?`M${n(p.x+1)} ${n(p.y+d*.5)}H${n(q.x-1)}M${n(front)} ${n(p.y+d*.35)}V${n(p.y+d*.45)}M${n(front)} ${n(p.y+d*.55)}V${n(p.y+d*.65)}`:`M${n(p.x+w*.5)} ${n(p.y+1)}V${n(q.y-1)}M${n(p.x+w*.35)} ${n(front)}H${n(p.x+w*.45)}M${n(p.x+w*.55)} ${n(front)}H${n(p.x+w*.65)}`}" stroke="#a58e6e" stroke-width="1"/>`;
+ }
+ else if(kind==='living-fridge')body+=rect(p.x+w*.13,p.y+1,w*.74,2,'#91aaa0')+rect(p.x+w*.18,p.y+1,w*.26,1,'#eef2e7');
  else if(kind==='reference-shelf')body+=Array.from({length:10},(_,i)=>rect(p.x+2+i*(w-4)/10,p.y+2,(w-4)/10-1,d-4,['#9eb7a7','#d2bc91','#adbccc'][i%3])).join('');
  else if(kind==='meeting-table')body+=rect(p.x+w*.19,p.y+d*.24,w*.24,d*.42,'#f7f2e3')+`<circle cx="${n(p.x+w*.7)}" cy="${n(p.y+d*.5)}" r="${n(d*.12)}" fill="#b5c6b9"/>`;
+ else if(kind==='dining-table')body+=rect(p.x+w*.13,p.y+d*.24,w*.30,d*.42,'#f7f2e3')+[.66,.84].map(at=>`<circle cx="${n(p.x+w*at)}" cy="${n(p.y+d*.45)}" r="${n(Math.min(w,d)*.08)}" fill="#f8f3e7" stroke="#a7b9ad" stroke-width=".6"/>`).join('');
  else if(kind==='supply-cabinet')body+=`<path d="M${n(p.x+w*.5)} ${n(p.y+2)}V${n(q.y-2)}M${n(p.x+w*.42)} ${n(p.y+d*.35)}V${n(p.y+d*.65)}M${n(p.x+w*.58)} ${n(p.y+d*.35)}V${n(p.y+d*.65)}" stroke="#82998b"/>`;
  else if(f.role==='plant')body=`<ellipse cx="${n(p.x+w*.5)}" cy="${n(p.y+d*.5)}" rx="${n(w*.45)}" ry="${n(d*.45)}" fill="#9ebb8c" ${outline}/><path d="M${n(p.x+w*.25)} ${n(p.y+d*.3)}L${n(p.x+w*.7)} ${n(p.y+d*.72)}M${n(p.x+w*.72)} ${n(p.y+d*.25)}L${n(p.x+w*.3)} ${n(p.y+d*.7)}" stroke="#718f68"/>`;
  return `<g data-interior-feature="${f.id}" data-feature-role="${f.role}" data-model-node="${f.node}" data-world-footprint="${escape(JSON.stringify(f.footprint))}"><title>${escape(f.label)}</title>${body}</g>`;

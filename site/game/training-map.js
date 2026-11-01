@@ -3,8 +3,8 @@ import {interiorMapDrawing} from './interior-map.js';
 // Looking into the hall from that entrance, camera-left (-X) is map-down.
 // The rest room and management room share their authored 3D layouts.
 const SCALE=28.8,ORIGIN={x:70,y:220},WORLD={minX:-5.36,minZ:-28.12,maxX:5.36,maxZ:3.46};
-export const BASEMENT_MAP_VIEWBOX='-240 55 1860 685';
-export const BASEMENT_COMPACT_VIEWBOX='-240 160 1860 580';
+export const BASEMENT_MAP_VIEWBOX='-240 55 1440 685';
+export const BASEMENT_COMPACT_VIEWBOX='-240 160 1440 580';
 export const TRAINING_MAP_VIEWBOX=BASEMENT_MAP_VIEWBOX;
 export function trainingMapPoint(position){return {x:ORIGIN.x+(position[2]-WORLD.minZ)*SCALE,y:ORIGIN.y+(WORLD.maxX-position[0])*SCALE};}
 const rect=(x,y,w,h,fill,extra='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${fill}" ${extra}/>`;
@@ -15,42 +15,38 @@ function worldRect(x,z,width,depth,fill,extra=''){
 function feature(id,position,body){const p=trainingMapPoint(position);return `<g data-training-feature="${id}" data-world-x="${position[0]}" data-world-z="${position[2]}" transform="translate(${p.x} ${p.y})">${body}</g>`;}
 function equipmentLabel(compact,x,y,label){return compact?'':text(x,y,label,32);}
 
-/** Shared schematic floor extension; existing room and lift coordinates stay fixed. */
+/** Existing schematic floor; room and lift coordinates stay fixed. */
 export function basementFloorDrawing(){
- return rect(-215,160,1805,570,'#edf0e0','stroke="#b2bc9e" stroke-width="4"');
+ return rect(-215,160,1385,570,'#edf0e0','stroke="#b2bc9e" stroke-width="4"');
 }
 
-/** Map-only shared facilities beside the ordinary passenger lift, on both floors. */
+/** Compact map-only facilities below the ordinary passenger lift, on both floors. */
 export function basementWashroomDrawing({selected=null,compact=false}={}){
- const wall='stroke="#a9bbb2" stroke-width="3" fill="none" stroke-linejoin="round"',door='stroke="#9dad9c" stroke-width="2" fill="none"';
- const wc=(x)=>rect(x,246,34,17,'#fbfcf7','stroke="#adbbb4" stroke-width="2"')+
-  `<ellipse cx="${x+17}" cy="282" rx="17" ry="21" fill="#fbfcf7" stroke="#adbbb4" stroke-width="2"/><ellipse cx="${x+17}" cy="282" rx="9" ry="12" fill="#deebe6"/>`;
- const basin=(x)=>rect(x,355,58,26,'#fbfcf7','stroke="#adbbb4" stroke-width="2"')+
-  `<ellipse cx="${x+29}" cy="369" rx="19" ry="8" fill="#deebe6"/><path d="M${x+29} 355v8" stroke="#90a5a0" stroke-width="2"/>`;
- let drawing='<g data-basement-facilities="washrooms">'+
-  '<path data-basement-access="washrooms" d="M1006 374V480H1206V448H1230" fill="none" stroke="#e2d9c4" stroke-width="32" stroke-linejoin="round"/>'+
-  rect(1230,190,340,505,'#f4f2e7','data-building-zone="washrooms" data-basement-wet-zone="true"')+
-  rect(1232,192,86,501,'#f8f5e9','data-basement-wet-hall="true"')+
-  rect(1320,190,250,200,'#e7efea','data-basement-wet-room="toilet"')+
-  rect(1320,390,250,160,'#f0e7d5','data-basement-wet-room="changing"')+
-  rect(1320,550,250,145,'#deece9','data-basement-wet-room="shower"')+
-  `<path data-basement-wet-wall="outer" d="M1230 426V190H1570V695H1230V470" fill="none" stroke="${selected==='washrooms'?'#936843':'#a9bbb2'}" stroke-width="${selected==='washrooms'?5:3}" stroke-linejoin="round"/>`+
-  `<path data-basement-wet-wall="partition" d="M1320 190V315M1320 355V452M1320 492V695M1320 390H1570M1320 550H1438M1478 550H1570" ${wall}/>`+
-  '<path data-basement-wet-door="entry" d="M1230 426h44M1230 470a44 44 0 0 0 44-44" '+door+'/>'+
-  '<path data-basement-wet-door="toilet" d="M1320 315h40M1320 355a40 40 0 0 0 40-40" '+door+'/>'+
-  '<path data-basement-wet-door="changing" d="M1320 452h40M1320 492a40 40 0 0 0 40-40" '+door+'/>'+
-  '<path data-basement-wet-door="shower" d="M1438 550h40m-40 5h20" '+door+'/>'+
-  text(1445,225,'トイレ',compact?28:30)+
-  '<path d="M1334 236V315H1364M1404 315H1430V236M1446 236V315H1476M1516 315H1556V236" '+wall+'/>'+
-  wc(1366)+wc(1482)+basin(1352)+basin(1474)+
-  text(1445,423,'脱衣所',compact?28:30)+
-  rect(1530,436,24,96,'#d2d9cd','data-basement-wet-fixture="lockers" stroke="#a9b7a3" stroke-width="2"')+
-  '<path d="M1530 468h24m-24 32h24m-7-52v8m0 24v8m0 24v8" stroke="#a3b29d" stroke-width="2"/>'+
-  rect(1340,510,80,23,'#d7c3a1','data-basement-wet-fixture="bench" stroke="#b3a181" stroke-width="2"')+
-  text(1445,582,'シャワー',compact?26:28)+
-  '<path d="M1445 594V695" stroke="#a3bbb6" stroke-width="3" stroke-dasharray="7 4"/>';
- for(const x of [1383,1507])drawing+=`<g data-basement-wet-fixture="shower"><path d="M${x-17} 609h17v12m-12 1h24" fill="none" stroke="#8aa7a0" stroke-width="3"/><path d="M${x-8} 629l-4 25m12-25v25m8-25 4 25" fill="none" stroke="#9fbfba" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${x}" cy="674" r="6" fill="#b4c8c0" stroke="#8ea99f" stroke-width="2"/></g>`;
- return drawing+'</g>';
+ const wall='stroke="#a9bbb2" stroke-width="2" fill="none" stroke-linejoin="round"',door='stroke="#9dad9c" stroke-width="1.5" fill="none"',outline=`stroke="${selected==='washrooms'?'#936843':'#a9bbb2'}" stroke-width="${selected==='washrooms'?4:2}" fill="none" stroke-linejoin="round"`;
+ return '<g data-basement-facilities="washrooms">'+
+  '<path data-basement-access="washrooms" d="M1006 374V612M1006 528H1034M1006 612H1034" fill="none" stroke="#e2d9c4" stroke-width="24" stroke-linejoin="round"/>'+
+  rect(1034,480,136,215,'#edf0e0','data-building-zone="washrooms" data-basement-wet-zone="true"')+
+  rect(1034,480,136,70,'#e7efea','data-basement-wet-room="toilet"')+
+  rect(1102,480,68,70,'#e7efea','data-basement-wet-cubicle="toilet"')+
+  rect(1034,565,68,130,'#f0e7d5','data-basement-wet-room="changing"')+
+  rect(1102,565,68,130,'#deece9','data-basement-wet-room="shower"')+
+  `<path data-basement-wet-wall="toilet-outer" d="M1034 514V480H1170V550H1034V542" ${outline}/>`+
+  `<path data-basement-wet-wall="lower-outer" d="M1034 598V565H1170V695H1034V626" ${outline}/>`+
+  `<path data-basement-wet-wall="partition" d="M1102 480V513M1102 535V550M1102 565V604M1102 632V695" ${wall}/>`+
+  '<path data-basement-wet-door="entry" d="M1034 514h28M1034 542a28 28 0 0 0 28-28" '+door+'/>'+
+  '<path data-basement-wet-door="toilet" d="M1102 513h22M1102 535a22 22 0 0 0 22-22" '+door+'/>'+
+  '<path data-basement-wet-door="changing" d="M1034 598h28M1034 626a28 28 0 0 0 28-28" '+door+'/>'+
+  '<path data-basement-wet-door="shower" d="M1102 604v28m4-28v14" '+door+'/>'+
+  text(1102,474,'トイレ',compact?17:18)+
+  '<g data-basement-wet-fixture="toilet">'+rect(1128,488,18,9,'#fbfcf7','stroke="#adbbb4" stroke-width="1.5"')+
+  '<ellipse cx="1137" cy="508" rx="9" ry="12" fill="#fbfcf7" stroke="#adbbb4" stroke-width="1.5"/><ellipse cx="1137" cy="508" rx="5" ry="7" fill="#deebe6"/></g>'+
+  '<g data-basement-wet-fixture="basin">'+rect(1045,486,38,14,'#fbfcf7','stroke="#adbbb4" stroke-width="1.5"')+
+  '<ellipse cx="1064" cy="494" rx="12" ry="4" fill="#deebe6"/><path d="M1064 486v5" stroke="#90a5a0" stroke-width="1.5"/></g>'+
+  text(1068,585,'脱衣所',compact?15:16)+text(1136,585,'シャワー',compact?12:13)+
+  rect(1042,649,20,34,'#d2d9cd','data-basement-wet-fixture="lockers" stroke="#a9b7a3" stroke-width="1.5"')+
+  '<path d="M1042 666h20m-6-9v4m0 12v4" stroke="#a3b29d" stroke-width="1.5"/>'+
+  rect(1068,664,26,12,'#d7c3a1','data-basement-wet-fixture="bench" stroke="#b3a181" stroke-width="1.5"')+
+  '<g data-basement-wet-fixture="shower"><path d="M1125 600h11v10m-8 1h16" fill="none" stroke="#8aa7a0" stroke-width="2"/><path d="M1130 620l-3 31m9-31v31m6-31 3 31" fill="none" stroke="#9fbfba" stroke-width="2" stroke-dasharray="3 3"/><circle cx="1136" cy="679" r="4" fill="#b4c8c0" stroke="#8ea99f" stroke-width="1.5"/></g></g>';
 }
 
 /** Both basement floors share the same stairwell and elevator shaft. */
@@ -104,7 +100,7 @@ export function trainingMapDrawing({selected=null,compact=false,current=false}={
   '<g transform="translate(70 550)">'+interiorMapDrawing('guest-lounge',{selected:selected==='guest-lounge'})+'</g>'+
   text(337,728,'休憩室',compact?26:24);
  // Keep the existing east access; furniture and the doorway come from the model layout.
- drawing+=zone('control',650,550,250,145,'#e4ece5','data-map-marker-x="1006" data-map-marker-y="620" data-map-marker-unit=".8"')+
+ drawing+=zone('control',650,550,250,145,'#e4ece5','data-map-marker-x="1006" data-map-marker-y="692" data-map-marker-unit=".6"')+
   '<g transform="translate(650 550)">'+interiorMapDrawing('management-room',{selected:selected==='control'})+'</g>'+
   text(775,728,'管理室',compact?26:24)+
   basementWashroomDrawing({selected,compact})+basementCoreDrawing({selected,compact})+basementFreightDrawing({selected,compact})+
@@ -120,5 +116,5 @@ export function trainingMapDrawing({selected=null,compact=false,current=false}={
  return `<g data-training-plan="right-entrance" font-family="system-ui, sans-serif">${drawing}</g>`;
 }
 export function trainingMapSvg({compact=true,current=true}={}){
- return `<svg class="room-map" viewBox="${compact?BASEMENT_COMPACT_VIEWBOX:TRAINING_MAP_VIEWBOX}" role="img" aria-label="右側が入口の訓練所。奥の大型EVは屋外搬入口につながります。訓練マット、操作端末、送風機、照明、収納、ベンチと管理室。招待した珍生物と施設作業員がくつろぐ休憩室。右側の通常エレベーター隣にトイレ・シャワー・脱衣所。${current?'おこていゆは入口付近で待機しています。':''}">${trainingMapDrawing({compact,current})}</svg>`;
+ return `<svg class="room-map" viewBox="${compact?BASEMENT_COMPACT_VIEWBOX:TRAINING_MAP_VIEWBOX}" role="img" aria-label="右側が入口の訓練所。奥の大型EVは屋外搬入口につながります。訓練マット、操作端末、送風機、照明、収納、ベンチと管理室。招待した珍生物と施設作業員がくつろぐ休憩室。右側の通常エレベーター下にコンパクトなトイレ・シャワー・脱衣所。${current?'おこていゆは入口付近で待機しています。':''}">${trainingMapDrawing({compact,current})}</svg>`;
 }
