@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "ゲーム本編で使用するハウス、支援施設、あなたの部屋、倉庫、道中、戦闘、カットイン、キャラクター、妖精、もちものと共通UI画像。専用確認ページだけの素材は除外。",
   "fileCount": 158,
-  "totalBytes": 152596490,
+  "totalBytes": 152853809,
   "files": [
     {
       "url": "assets/house3d/house.glb?v=c436b4f219682756d48fb3ad5f5b1924fcfcb6780b05118d731a509b13bf54c9",
@@ -1237,20 +1237,20 @@
       "sha256": "0d793d7d90e079a811d7fe0ec622350a975a85036f0f4adbeab896055aba6102"
     },
     {
-      "url": "assets/guest-lounge/room.glb?v=b5c8c6c0096059bee0fb4c524acf05413c4beaed002d7466016e47fa7bd72e29",
+      "url": "assets/guest-lounge/room.glb?v=68f0a3f9622d9590d7f00d1f84509cdc72dba0f48728677589d3d2602739b5b2",
       "label": "休憩室",
       "type": "binary",
-      "bytes": 6173764,
+      "bytes": 6429452,
       "priority": 2,
-      "sha256": "b5c8c6c0096059bee0fb4c524acf05413c4beaed002d7466016e47fa7bd72e29"
+      "sha256": "68f0a3f9622d9590d7f00d1f84509cdc72dba0f48728677589d3d2602739b5b2"
     },
     {
       "url": "assets/guest-lounge/metadata.json",
       "label": "休憩室の設定",
       "type": "json",
-      "bytes": 18779,
+      "bytes": 20410,
       "priority": 2,
-      "sha256": "e2f49caabbeca0a633a9da392e3877973a014c0df7e384fd9346702162955184"
+      "sha256": "e2837579ab5c3f074eac93348a8831934e90fd31b9945c2d25595599fc848d44"
     },
     {
       "url": "assets/management-room/room.glb?v=a8adaab8bb2649b5021d583bcb19a79bab2a7b18184560d6e8ce62fdba31c54c",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": "R174",
+  "revision": "R179",
   "id": "guest-lounge",
   "title": "休憩室",
   "floor": "b2",
@@ -494,7 +494,7 @@
     {
       "id": "refreshments",
       "node": "Interior.refreshments",
-      "label": "飲み物の台",
+      "label": "シンク付きの飲み物の台",
       "role": "desk",
       "position": [
         8.28,
@@ -526,6 +526,88 @@
           1.440000057220459,
           2.8000001907348633
         ]
+      },
+      "mapFixtures": {
+        "sink": {
+          "kind": "sink",
+          "footprint": [
+            7.01,
+            2.15,
+            0.84,
+            0.6
+          ],
+          "openingFootprint": [
+            7.08,
+            2.22,
+            0.7,
+            0.46
+          ],
+          "faucetPosition": [
+            7.43,
+            0.944,
+            2.74
+          ],
+          "faucetOutletPosition": [
+            7.43,
+            1.105,
+            2.49
+          ],
+          "rimY": 0.929,
+          "bottomY": 0.721,
+          "counterTopY": 0.92,
+          "cabinetCutBottomY": 0.65,
+          "cutFootprint": [
+            7.058,
+            2.198,
+            0.744,
+            0.504
+          ],
+          "mixingTap": true,
+          "hotColdMarkers": true,
+          "localCentre": [
+            0.85,
+            0.929,
+            0
+          ]
+        },
+        "tray": {
+          "kind": "tea-tray",
+          "footprint": [
+            8.02,
+            2.13,
+            0.88,
+            0.36
+          ]
+        },
+        "cups": {
+          "kind": "cups",
+          "count": 3,
+          "positions": [
+            [
+              8.71,
+              0.947,
+              2.3
+            ],
+            [
+              8.4,
+              0.947,
+              2.3
+            ],
+            [
+              8.11,
+              0.947,
+              2.3
+            ]
+          ]
+        },
+        "hotWaterPot": {
+          "kind": "hot-water-pot",
+          "position": [
+            9.24,
+            1.2,
+            2.5
+          ]
+        }
       }
     },
     {
@@ -900,8 +982,8 @@
     }
   ],
   "status": "complete",
-  "sourceRevision": "R174",
-  "surfaceRevision": "R174",
+  "sourceRevision": "R179",
+  "surfaceRevision": "R179",
   "pbrSurfaceSets": [
     "oak",
     "plaster",
@@ -912,9 +994,10 @@
     "linen",
     "brass",
     "bronze",
-    "walnut"
+    "walnut",
+    "steel"
   ],
-  "pbrMaterialCount": 10,
+  "pbrMaterialCount": 11,
   "textureImagesEmbedded": true,
   "bounds": {
     "min": [
@@ -930,19 +1013,19 @@
   },
   "model": {
     "url": "room.glb",
-    "bytes": 6173764,
-    "sha256": "b5c8c6c0096059bee0fb4c524acf05413c4beaed002d7466016e47fa7bd72e29"
+    "bytes": 6429452,
+    "sha256": "68f0a3f9622d9590d7f00d1f84509cdc72dba0f48728677589d3d2602739b5b2"
   },
   "animationCount": 0,
-  "meshBatchCount": 116,
+  "meshBatchCount": 120,
   "previews": [
     {
       "id": "overview",
       "url": "preview.webp",
       "width": 960,
       "height": 640,
-      "bytes": 35022,
-      "sha256": "429556a3ae060affd2d98d6c806ee988f2e89b704a2aa4a88212c0194f96537f"
+      "bytes": 34806,
+      "sha256": "54269a194848b1c2989d0093beb894c3e0b4cc7f45945b44847a9d6ef530a61b"
     }
   ],
   "source": "environments/interiors/source/build_guest_lounge.py",

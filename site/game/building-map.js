@@ -1,5 +1,5 @@
 import {tryOpenModal,releaseModal,isModalBlocked} from './modal-layer.js';
-import {trainingMapDrawing,BASEMENT_MAP_VIEWBOX,basementFloorDrawing,basementWashroomDrawing,basementCoreDrawing,basementFreightDrawing} from './training-map.js';
+import {trainingMapDrawing,BASEMENT_MAP_VIEWBOX,basementFloorDrawing,basementUpperToiletDrawing,basementWashroomDrawing,basementCoreDrawing,basementFreightDrawing} from './training-map.js';
 import {outdoorMapDrawing,OUTDOOR_MAP_VIEWBOX} from './outdoor-map.js';
 import {analysisMapDrawing} from './analysis-map.js';
 import {interiorMapDrawing} from './interior-map.js';
@@ -11,6 +11,7 @@ export const BUILDING_FLOORS=Object.freeze([
   {id:'guest-lounge',name:'休憩室',text:'招待した珍生物と施設作業員が自由にくつろぐための休憩室。'},
   {id:'control',name:'管理室',text:'管理人が住み込み、2人ほどで使う管理室。'},
   {id:'washrooms',name:'トイレ・シャワー・脱衣所',mapOnly:true,text:''},
+  {id:'toilet-upper',name:'トイレ（EV上）',mapOnly:true,text:''},
   {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
   {id:'core',name:'階段・エレベーター',text:''}]},
  {id:'b1',label:'B1',name:'研究と支援',areas:[
@@ -18,6 +19,7 @@ export const BUILDING_FLOORS=Object.freeze([
   {id:'analysis',name:'コンピュータ室',text:''},
   {id:'production',name:'生産施設',text:'植物を育てる区画と、液体を扱うバイオプラント。'},
   {id:'washrooms',name:'トイレ・シャワー・脱衣所',mapOnly:true,text:''},
+  {id:'toilet-upper',name:'トイレ（EV上）',mapOnly:true,text:''},
   {id:'freight',name:'屋外につながる大型EV',mapOnly:true,text:'大きな珍生物を迎えるための搬入設備。'},
   {id:'maintenance',name:'整備施設',text:'研究と支援を支える整備エリア。'}]},
  {id:'1f',label:'F1',name:'おこていゆの暮らし',areas:[
@@ -113,7 +115,7 @@ export function buildingFloorSvg(floorId,selected){
     rect(545,410,435,285,'#e8dfd5','data-building-zone="maintenance" data-map-marker-x="762" data-map-marker-y="345" data-map-marker-unit="1"')+'<g transform="translate(545 410)">'+interiorMapDrawing('maintenance-room',{selected:selected==='maintenance'})+'</g>'+
     '<path data-basement-access="room-doors" d="M260 410h44M65 536v32" fill="none" stroke="#e2d9c4" stroke-width="8"/>'+
     text(400,175,'研究所',28)+text(658,175,'コンピュータ室',28)+text(282,720,'生産施設',28)+text(762,720,'整備施設',28)+
-    text(550,125,'研究・支援エリア',35)+basementWashroomDrawing({selected})+basementCoreDrawing({selected})+basementFreightDrawing({selected});
+    text(550,125,'研究・支援エリア',35)+basementUpperToiletDrawing({selected})+basementWashroomDrawing({selected})+basementCoreDrawing({selected})+basementFreightDrawing({selected});
   }else{
    drawing=trainingMapDrawing({selected});
   }

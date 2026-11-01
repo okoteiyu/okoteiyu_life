@@ -20,28 +20,50 @@ export function basementFloorDrawing(){
  return rect(-215,160,1385,570,'#edf0e0','stroke="#b2bc9e" stroke-width="4"');
 }
 
+/** Shared compact toilet geometry, reused above and below the passenger lift. */
+function basementToiletParts({active=false,compact=false,labelY=474}={}){
+ const wall='stroke="#a9bbb2" stroke-width="2" fill="none" stroke-linejoin="round"',door='stroke="#9dad9c" stroke-width="1.5" fill="none"',outline=`stroke="${active?'#936843':'#a9bbb2'}" stroke-width="${active?4:2}" fill="none" stroke-linejoin="round"`;
+ return {
+  floor:rect(1034,480,136,70,'#e7efea','data-basement-wet-room="toilet"')+rect(1102,480,68,70,'#e7efea','data-basement-wet-cubicle="toilet"'),
+  outer:`<path data-basement-wet-wall="toilet-outer" d="M1034 514V480H1170V550H1034V542" ${outline}/>`,
+  partition:'M1102 480V513M1102 535V550',
+  entry:'<path data-basement-wet-door="entry" d="M1034 514h28M1034 542a28 28 0 0 0 28-28" '+door+'/>',
+  cubicleDoor:'<path data-basement-wet-door="toilet" d="M1102 513h22M1102 535a22 22 0 0 0 22-22" '+door+'/>',
+  label:text(1102,labelY,'トイレ',compact?17:18),
+  fixtures:'<g data-basement-wet-fixture="toilet">'+rect(1128,488,18,9,'#fbfcf7','stroke="#adbbb4" stroke-width="1.5"')+
+   '<ellipse cx="1137" cy="508" rx="9" ry="12" fill="#fbfcf7" stroke="#adbbb4" stroke-width="1.5"/><ellipse cx="1137" cy="508" rx="5" ry="7" fill="#deebe6"/></g>'+
+   '<g data-basement-wet-fixture="basin">'+rect(1045,486,38,14,'#fbfcf7','stroke="#adbbb4" stroke-width="1.5"')+
+   '<ellipse cx="1064" cy="494" rx="12" ry="4" fill="#deebe6"/><path d="M1064 486v5" stroke="#90a5a0" stroke-width="1.5"/></g>',
+  wall
+ };
+}
+
+/** Map-only toilet above the lift; global hit bounds stay outside the translation. */
+export function basementUpperToiletDrawing({selected=null,compact=false}={}){
+ const t=basementToiletParts({active:selected==='toilet-upper',compact,labelY:574});
+ return '<g data-basement-facilities="toilet-upper">'+
+  '<path data-basement-access="toilet-upper" d="M1006 374V228H1034" fill="none" stroke="#e2d9c4" stroke-width="24" stroke-linejoin="round"/>'+
+  rect(1034,180,136,70,'#e7efea','data-building-zone="toilet-upper" data-basement-wet-zone="true"')+
+  '<g data-basement-toilet-copy="upper" transform="translate(0 -300)">'+t.floor+t.outer+`<path data-basement-wet-wall="partition" d="${t.partition}" ${t.wall}/>`+t.entry+t.cubicleDoor+t.label+t.fixtures+'</g></g>';
+}
+
 /** Compact map-only facilities below the ordinary passenger lift, on both floors. */
 export function basementWashroomDrawing({selected=null,compact=false}={}){
  const wall='stroke="#a9bbb2" stroke-width="2" fill="none" stroke-linejoin="round"',door='stroke="#9dad9c" stroke-width="1.5" fill="none"',outline=`stroke="${selected==='washrooms'?'#936843':'#a9bbb2'}" stroke-width="${selected==='washrooms'?4:2}" fill="none" stroke-linejoin="round"`;
+ const t=basementToiletParts({active:selected==='washrooms',compact});
  return '<g data-basement-facilities="washrooms">'+
   '<path data-basement-access="washrooms" d="M1006 374V612M1006 528H1034M1006 612H1034" fill="none" stroke="#e2d9c4" stroke-width="24" stroke-linejoin="round"/>'+
   rect(1034,480,136,215,'#edf0e0','data-building-zone="washrooms" data-basement-wet-zone="true"')+
-  rect(1034,480,136,70,'#e7efea','data-basement-wet-room="toilet"')+
-  rect(1102,480,68,70,'#e7efea','data-basement-wet-cubicle="toilet"')+
+  t.floor+
   rect(1034,565,68,130,'#f0e7d5','data-basement-wet-room="changing"')+
   rect(1102,565,68,130,'#deece9','data-basement-wet-room="shower"')+
-  `<path data-basement-wet-wall="toilet-outer" d="M1034 514V480H1170V550H1034V542" ${outline}/>`+
+  t.outer+
   `<path data-basement-wet-wall="lower-outer" d="M1034 598V565H1170V695H1034V626" ${outline}/>`+
-  `<path data-basement-wet-wall="partition" d="M1102 480V513M1102 535V550M1102 565V604M1102 632V695" ${wall}/>`+
-  '<path data-basement-wet-door="entry" d="M1034 514h28M1034 542a28 28 0 0 0 28-28" '+door+'/>'+
-  '<path data-basement-wet-door="toilet" d="M1102 513h22M1102 535a22 22 0 0 0 22-22" '+door+'/>'+
+  `<path data-basement-wet-wall="partition" d="${t.partition}M1102 565V604M1102 632V695" ${wall}/>`+
+  t.entry+t.cubicleDoor+
   '<path data-basement-wet-door="changing" d="M1034 598h28M1034 626a28 28 0 0 0 28-28" '+door+'/>'+
   '<path data-basement-wet-door="shower" d="M1102 604v28m4-28v14" '+door+'/>'+
-  text(1102,474,'トイレ',compact?17:18)+
-  '<g data-basement-wet-fixture="toilet">'+rect(1128,488,18,9,'#fbfcf7','stroke="#adbbb4" stroke-width="1.5"')+
-  '<ellipse cx="1137" cy="508" rx="9" ry="12" fill="#fbfcf7" stroke="#adbbb4" stroke-width="1.5"/><ellipse cx="1137" cy="508" rx="5" ry="7" fill="#deebe6"/></g>'+
-  '<g data-basement-wet-fixture="basin">'+rect(1045,486,38,14,'#fbfcf7','stroke="#adbbb4" stroke-width="1.5"')+
-  '<ellipse cx="1064" cy="494" rx="12" ry="4" fill="#deebe6"/><path d="M1064 486v5" stroke="#90a5a0" stroke-width="1.5"/></g>'+
+  t.label+t.fixtures+
   text(1068,585,'脱衣所',compact?15:16)+text(1136,585,'シャワー',compact?12:13)+
   rect(1042,649,20,34,'#d2d9cd','data-basement-wet-fixture="lockers" stroke="#a9b7a3" stroke-width="1.5"')+
   '<path d="M1042 666h20m-6-9v4m0 12v4" stroke="#a3b29d" stroke-width="1.5"/>'+
@@ -103,7 +125,7 @@ export function trainingMapDrawing({selected=null,compact=false,current=false}={
  drawing+=zone('control',650,550,250,145,'#e4ece5','data-map-marker-x="1006" data-map-marker-y="692" data-map-marker-unit=".6"')+
   '<g transform="translate(650 550)">'+interiorMapDrawing('management-room',{selected:selected==='control'})+'</g>'+
   text(775,728,'管理室',compact?26:24)+
-  basementWashroomDrawing({selected,compact})+basementCoreDrawing({selected,compact})+basementFreightDrawing({selected,compact})+
+  basementUpperToiletDrawing({selected,compact})+basementWashroomDrawing({selected,compact})+basementCoreDrawing({selected,compact})+basementFreightDrawing({selected,compact})+
   '<path data-training-access="freight-lounge-entry" d="M-106 484h32" fill="none" stroke="#e2d9c4" stroke-width="8"/>';
  if(!compact){
   drawing+=text(200,198,'訓練所',42)+text(1021,285,'入口',34)+
@@ -116,5 +138,5 @@ export function trainingMapDrawing({selected=null,compact=false,current=false}={
  return `<g data-training-plan="right-entrance" font-family="system-ui, sans-serif">${drawing}</g>`;
 }
 export function trainingMapSvg({compact=true,current=true}={}){
- return `<svg class="room-map" viewBox="${compact?BASEMENT_COMPACT_VIEWBOX:TRAINING_MAP_VIEWBOX}" role="img" aria-label="右側が入口の訓練所。奥の大型EVは屋外搬入口につながります。訓練マット、操作端末、送風機、照明、収納、ベンチと管理室。招待した珍生物と施設作業員がくつろぐ休憩室。右側の通常エレベーター下にコンパクトなトイレ・シャワー・脱衣所。${current?'おこていゆは入口付近で待機しています。':''}">${trainingMapDrawing({compact,current})}</svg>`;
+ return `<svg class="room-map" viewBox="${compact?BASEMENT_COMPACT_VIEWBOX:TRAINING_MAP_VIEWBOX}" role="img" aria-label="右側が入口の訓練所。奥の大型EVは屋外搬入口につながります。訓練マット、操作端末、送風機、照明、収納、ベンチと管理室。招待した珍生物と施設作業員がくつろぐ休憩室。右側の通常エレベーターの上下にトイレ、下側にはシャワー・脱衣所。${current?'おこていゆは入口付近で待機しています。':''}">${trainingMapDrawing({compact,current})}</svg>`;
 }

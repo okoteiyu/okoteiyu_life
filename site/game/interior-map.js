@@ -16,7 +16,17 @@ function loungeFurniture(f,p,q){
   if(f.role==='sofa'&&!vertical)body+=`<path d="M${n(p.x+w/3)} ${n(p.y+d*.28)}V${n(p.y+d*.77)}M${n(p.x+w*2/3)} ${n(p.y+d*.28)}V${n(p.y+d*.77)}" stroke="#c4b99e" stroke-width="1"/>`;
  }else if(kind==='pouf')body=round(p.x,p.y,w,d,'#dbc8a6',Math.min(w,d)*.35,outline)+`<path d="M${n(p.x+w*.25)} ${n(p.y+d*.25)}L${n(p.x+w*.75)} ${n(p.y+d*.75)}M${n(p.x+w*.75)} ${n(p.y+d*.25)}L${n(p.x+w*.25)} ${n(p.y+d*.75)}" stroke="#f4e9d5"/>`;
  else if(kind==='tea-table')body=`<ellipse cx="${n((p.x+q.x)/2)}" cy="${n((p.y+q.y)/2)}" rx="${n(w/2)}" ry="${n(d/2)}" fill="#ead8b8" ${outline}/><ellipse cx="${n((p.x+q.x)/2)}" cy="${n((p.y+q.y)/2)}" rx="${n(w*.40)}" ry="${n(d*.36)}" fill="#fff6e4"/>`+[.35,.62].map((at,i)=>`<circle cx="${n(p.x+w*at)}" cy="${n(p.y+d*(i ? .6 : .4))}" r="${n(Math.min(w,d)*.12)}" fill="${i?'#d8b7ab':'#a9c6be'}" stroke="#a6a98c" stroke-width=".6"/>`).join('');
- else if(kind==='refreshments')body=round(p.x,p.y,w,d,'#d6c1a0',2,outline)+round(p.x+w*.07,p.y+d*.15,w*.86,d*.70,'#fff8e8',2)+[.24,.40,.56,.72].map(at=>`<circle cx="${n(p.x+w*at)}" cy="${n(p.y+d*.5)}" r="${n(d*.19)}" fill="#b3cec6" stroke="#8fa999" stroke-width=".7"/>`).join('');
+ else if(kind==='refreshments'){
+  body=round(p.x,p.y,w,d,'#d6c1a0',2,outline)+round(p.x+w*.07,p.y+d*.15,w*.86,d*.70,'#fff8e8',2);
+  const sink=f.mapFixtures?.sink,tray=f.mapFixtures?.tray;
+  if(sink&&tray){
+   const [fx,fz,fw,fd]=f.footprint,point=(x,z)=>({x:p.x+(x-fx)/fw*w,y:p.y+(z-fz)/fd*d}),box=foot=>{const [x,z,ww,dd]=foot,a=point(x,z),b=point(x+ww,z+dd);return{x:a.x,y:a.y,w:b.x-a.x,d:b.y-a.y};};
+   const bowl=box(sink.footprint),inner=box(sink.openingFootprint),tea=box(tray.footprint),tap=point(sink.faucetPosition[0],sink.faucetPosition[2]),centre=point(sink.footprint[0]+sink.footprint[2]/2,sink.footprint[1]+sink.footprint[3]/2);
+   const cups=f.mapFixtures.cups.positions.map(at=>point(at[0],at[2]));
+   body+=round(tea.x,tea.y,tea.w,tea.d,'#faf2dd',1,'stroke="#bca784" stroke-width=".6"')+cups.map(at=>`<circle cx="${n(at.x)}" cy="${n(at.y)}" r="${n(tea.d*.16)}" fill="#b3cec6" stroke="#8fa999" stroke-width=".6"/>`).join('');
+   body+=`<g data-lounge-fixture="hot-water-sink" data-world-footprint="${escape(JSON.stringify(sink.footprint))}"><title>給湯用シンク</title>`+round(bowl.x,bowl.y,bowl.w,bowl.d,'#bdcfcc',1,'stroke="#8da6a0" stroke-width=".7"')+round(inner.x,inner.y,inner.w,inner.d,'#8eaca8',1)+`<circle cx="${n(centre.x)}" cy="${n(centre.y)}" r="1" fill="#78938d"/><path d="M${n(tap.x)} ${n(tap.y)}V${n(centre.y)}" stroke="#eaf0e9" stroke-width="1.4" stroke-linecap="round"/><circle cx="${n(tap.x)}" cy="${n(tap.y)}" r="1" fill="#c4a49a"/></g>`;
+  }else body+=[.24,.40,.56,.72].map(at=>`<circle cx="${n(p.x+w*at)}" cy="${n(p.y+d*.5)}" r="${n(d*.19)}" fill="#b3cec6" stroke="#8fa999" stroke-width=".7"/>`).join('');
+ }
  else if(kind==='reading-shelf')body=round(p.x,p.y,w,d,'#c9b594',2,outline)+Array.from({length:12},(_,i)=>rect(p.x+2+i*(w-4)/12,p.y+2,(w-4)/12-1,d-4,['#a1b9a9','#d8bc9a','#bec3cf'][i%3])).join('');
  else if(kind==='plant')body=round(p.x+w*.23,p.y+d*.25,w*.54,d*.54,'#cfbea1',3,outline)+[[-.17,-.10],[.16,-.05],[0,.17]].map(([x,y],i)=>`<ellipse cx="${n(p.x+w*(.5+x))}" cy="${n(p.y+d*(.5+y))}" rx="${n(w*.24)}" ry="${n(d*.20)}" fill="${i%2?'#a9c69a':'#8eaf86'}"/>`).join('');
  else if(kind==='welcome-relief')body=round(p.x,p.y,w,d,'#d5bc83',1,outline);
